@@ -28,6 +28,7 @@ package org.aw20.jettydesktop.ui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -120,6 +121,7 @@ public class Start implements ConfigActionInterface {
 		frame.setBounds(100, 100, 610, 414);
 		frame.setMinimumSize( new Dimension(610, 414) );
 		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		frame.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/aw20/logo/aw20.jpg")));
 		
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
 			public void windowClosing(java.awt.event.WindowEvent e) {
