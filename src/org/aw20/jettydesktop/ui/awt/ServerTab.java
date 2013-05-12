@@ -26,8 +26,7 @@
 package org.aw20.jettydesktop.ui.awt;
 
 import java.awt.BorderLayout;
-import java.awt.Button;
-import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -37,30 +36,35 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.border.MatteBorder;
 import javax.swing.text.DefaultCaret;
 
 import org.aw20.jettydesktop.ui.ConfigActionInterface;
 import org.aw20.jettydesktop.ui.Executor;
 import org.aw20.jettydesktop.ui.ExecutorInterface;
 import org.aw20.jettydesktop.ui.ServerConfigMap;
+import org.aw20.util.DateUtil;
 
 public class ServerTab extends JPanel implements ExecutorInterface{
 	private static final long serialVersionUID = 1L;
 
 	private final ServerConfigMap serverConfigMap;
 	private final ConfigActionInterface configActionI;
-	private Button startstopButton;
-	private Button editConfigButton;
-	private Button deleteButton;
-	private Button gotoButton;
+	private JButton startstopButton;
+	private JButton editConfigButton;
+	private JButton deleteButton;
+	private JButton gotoButton;
 	
 	private Executor	executor = null;
 	private JTextArea textArea;
+	private JLabel		labelStatus;
+	private JButton btnClose;
 	
 	public ServerTab(ServerConfigMap _serverConfigMap, ConfigActionInterface _configActionI ) {
 		this.serverConfigMap 	= _serverConfigMap;
@@ -69,29 +73,68 @@ public class ServerTab extends JPanel implements ExecutorInterface{
 		setLayout(new BorderLayout(0, 0));
 		
 		JScrollPane jConsoleScrollPane = new JScrollPane();
+		jConsoleScrollPane.setMinimumSize( new Dimension(400, 500) );
 		
 		textArea = new JTextArea();
 		textArea.setTabSize(2);
 		textArea.setFont(new Font("Courier New", Font.PLAIN, 12));
 		textArea.setEditable(false);
-		textArea.setBorder(new MatteBorder(1, 1, 1, 1, (Color) new Color(0, 0, 0)));
-		
+
 		DefaultCaret caret = (DefaultCaret) textArea.getCaret();
     caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
 		jConsoleScrollPane.setViewportView(textArea);
 		add(jConsoleScrollPane, BorderLayout.CENTER);
 		
+		
+		labelStatus	= new JLabel("Last Updated");
+		labelStatus.setBorder( BorderFactory.createEmptyBorder(3, 3, 3, 3) );
+		add(labelStatus, BorderLayout.SOUTH);
+		
+		
 		Panel panel_1 = new Panel();
 		add(panel_1, BorderLayout.NORTH);
 		GridBagLayout gbl_panel_1 = new GridBagLayout();
-		gbl_panel_1.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0};
+		gbl_panel_1.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
 		gbl_panel_1.rowHeights = new int[]{0, 0};
-		gbl_panel_1.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
+		gbl_panel_1.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
 		gbl_panel_1.rowWeights = new double[]{0.0, Double.MIN_VALUE};
 		panel_1.setLayout(gbl_panel_1);
 		
-		deleteButton = new Button("Delete");
+		editConfigButton = new JButton("Edit");
+		editConfigButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				configActionI.onEdit(serverConfigMap);
+			}
+		});
+		
+		btnClose = new JButton("Close");
+		btnClose.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				configActionI.onClose(serverConfigMap);
+			}
+		});
+		
+		
+		GridBagConstraints gbc_btnClose = new GridBagConstraints();
+		gbc_btnClose.insets = new Insets(5,5,5,5);
+		gbc_btnClose.gridx = 0;
+		gbc_btnClose.gridy = 0;
+		panel_1.add(btnClose, gbc_btnClose);
+		GridBagConstraints gbc_button_3 = new GridBagConstraints();
+		gbc_button_3.insets = new Insets(5, 5, 5, 5);
+		gbc_button_3.gridx = 1;
+		gbc_button_3.gridy = 0;
+		panel_1.add(editConfigButton, gbc_button_3);
+		
+		JButton clearButton = new JButton("Clear");
+		clearButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				textArea.setText("");
+			}
+		});
+		
+		deleteButton = new JButton("Delete");
 		deleteButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int result = JOptionPane.showConfirmDialog( getParent(), "Do you wish to delete this server?");
@@ -102,35 +145,17 @@ public class ServerTab extends JPanel implements ExecutorInterface{
 		});
 		GridBagConstraints gbc_button_4 = new GridBagConstraints();
 		gbc_button_4.insets = new Insets(5, 5, 5, 5);
-		gbc_button_4.gridx = 0;
+		gbc_button_4.gridx = 2;
 		gbc_button_4.gridy = 0;
 		panel_1.add(deleteButton, gbc_button_4);
+
+		GridBagConstraints gbc_btnClear = new GridBagConstraints();
+		gbc_btnClear.insets = new Insets(5, 5, 5, 5);
+		gbc_btnClear.gridx = 3;
+		gbc_btnClear.gridy = 0;
+		panel_1.add(clearButton, gbc_btnClear);
 		
-		editConfigButton = new Button("Edit Config");
-		editConfigButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				configActionI.onEdit(serverConfigMap);
-			}
-		});
-		GridBagConstraints gbc_button_3 = new GridBagConstraints();
-		gbc_button_3.insets = new Insets(5, 5, 5, 5);
-		gbc_button_3.gridx = 1;
-		gbc_button_3.gridy = 0;
-		panel_1.add(editConfigButton, gbc_button_3);
-		
-		Button clearButton = new Button("Clear Console");
-		clearButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				textArea.setText("");
-			}
-		});
-		GridBagConstraints gbc_button = new GridBagConstraints();
-		gbc_button.insets = new Insets(5, 5, 5, 5);
-		gbc_button.gridx = 2;
-		gbc_button.gridy = 0;
-		panel_1.add(clearButton, gbc_button);
-		
-		startstopButton = new Button("Start Server");
+		startstopButton = new JButton("Start Server");
 		startstopButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if ( executor == null ){
@@ -142,12 +167,12 @@ public class ServerTab extends JPanel implements ExecutorInterface{
 		});
 		GridBagConstraints gbc_button_1 = new GridBagConstraints();
 		gbc_button_1.anchor = GridBagConstraints.EAST;
-		gbc_button_1.insets = new Insets(5, 5, 5, 5);
-		gbc_button_1.gridx = 4;
+		gbc_button_1.insets = new Insets(5, 5,5, 5);
+		gbc_button_1.gridx = 5;
 		gbc_button_1.gridy = 0;
 		panel_1.add(startstopButton, gbc_button_1);
 		
-		gotoButton = new Button("GoTo WebApp");
+		gotoButton = new JButton("Open WebApp");
 		gotoButton.setEnabled(false);
 		gotoButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -164,7 +189,7 @@ public class ServerTab extends JPanel implements ExecutorInterface{
 		GridBagConstraints gbc_button_2 = new GridBagConstraints();
 		gbc_button_2.anchor = GridBagConstraints.EAST;
 		gbc_button_2.insets = new Insets(5, 5, 5, 5);
-		gbc_button_2.gridx = 5;
+		gbc_button_2.gridx = 6;
 		gbc_button_2.gridy = 0;
 		panel_1.add(gotoButton, gbc_button_2);
 	}
@@ -175,17 +200,19 @@ public class ServerTab extends JPanel implements ExecutorInterface{
 	
 	public void stopServer(){
 		startstopButton.setEnabled(false);
-		startstopButton.setLabel( "Stopping..." );
+		startstopButton.setText( "Stopping..." );
 		executor.exit();
 	}
 	
 	private void startServer(){
 		startstopButton.setEnabled(false);
-		startstopButton.setLabel( "Starting..." );
+		startstopButton.setText( "Starting..." );
 		try {
 			executor	= new Executor(serverConfigMap, this );
 		} catch (IOException e) {
 			onConsole( e.getMessage() );
+			startstopButton.setEnabled(true);
+			startstopButton.setText( "Start Server" );
 		}
 	}
 	
@@ -202,6 +229,7 @@ public class ServerTab extends JPanel implements ExecutorInterface{
 	public void onConsole(String message) {
 		textArea.append(message);
 		textArea.append("\r\n");
+		labelStatus.setText( "Console updated: " + DateUtil.getHttpDate(System.currentTimeMillis()) );
 	}
 
 	@Override
@@ -210,8 +238,9 @@ public class ServerTab extends JPanel implements ExecutorInterface{
 		gotoButton.setEnabled(true);
 		editConfigButton.setEnabled(false);
 		deleteButton.setEnabled(false);
+		btnClose.setEnabled(false);
 		startstopButton.setEnabled(true);
-		startstopButton.setLabel("Stop Server");
+		startstopButton.setText("Stop Server");
 	}
 
 	@Override
@@ -220,7 +249,8 @@ public class ServerTab extends JPanel implements ExecutorInterface{
 		editConfigButton.setEnabled(true);
 		deleteButton.setEnabled(true);
 		startstopButton.setEnabled(true);
-		startstopButton.setLabel("Start Server");
+		btnClose.setEnabled(true);
+		startstopButton.setText("Start Server");
 		
 		executor	= null;
 	}

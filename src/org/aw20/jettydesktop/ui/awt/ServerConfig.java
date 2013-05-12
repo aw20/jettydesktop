@@ -203,7 +203,7 @@ public class ServerConfig extends JDialog {
 			gbl_panel.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
 			panel.setLayout(gbl_panel);
 			{
-				JLabel lblRuntime = new JLabel("Runtime");
+				JLabel lblRuntime = new JLabel("Runtime:");
 				GridBagConstraints gbc_lblRuntime = new GridBagConstraints();
 				gbc_lblRuntime.insets = new Insets(5, 5, 0, 5);
 				gbc_lblRuntime.gridx = 0;
@@ -275,7 +275,7 @@ public class ServerConfig extends JDialog {
 				panel.add(btnBrowseCustomJVM, gbc_btnBrowseCustomJVM);
 			}
 			{
-				JLabel lblMemory = new JLabel("Memory");
+				JLabel lblMemory = new JLabel("Memory:");
 				GridBagConstraints gbc_lblMemory = new GridBagConstraints();
 				gbc_lblMemory.anchor = GridBagConstraints.EAST;
 				gbc_lblMemory.insets = new Insets(5, 5, 5, 5);

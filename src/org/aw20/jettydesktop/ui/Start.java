@@ -26,6 +26,7 @@
 package org.aw20.jettydesktop.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -117,6 +118,7 @@ public class Start implements ConfigActionInterface {
 		frame = new JFrame();
 		frame.setTitle("JettyDesktop v2.0.0 by aw2.0 Ltd");
 		frame.setBounds(100, 100, 610, 414);
+		frame.setMinimumSize( new Dimension(610, 414) );
 		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		
 		frame.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -268,6 +270,8 @@ public class Start implements ConfigActionInterface {
 		ServerTab	sT	= new ServerTab( get(servername), this );
 		tabbedPane.add(sT, servername);
 		tabbedPane.setSelectedComponent(sT);
+		
+		frame.pack();
 	}
 	
 	
@@ -322,14 +326,7 @@ public class Start implements ConfigActionInterface {
 	public void onDelete(ServerConfigMap scm) {
 		
 		// Remove from the tabs
-		for ( int x=0; x < tabbedPane.getComponentCount(); x++ ){
-			ServerTab sT	= (ServerTab)tabbedPane.getComponent(x);
-			if ( sT.getConfig().getName().equals(scm.getName()) ){
-				tabbedPane.remove(x);
-				break;
-			}
-		}
-		
+		onClose(scm);
 		
 		// Remove from the list
 		for ( int x=0; x < serverConfigList.size(); x++ ){
@@ -341,6 +338,19 @@ public class Start implements ConfigActionInterface {
 		
 		saveSettings();
 		rebuildServerMenu();
+	}
+
+	@Override
+	public void onClose(ServerConfigMap scm) {
+		
+		// Remove from the tabs
+		for ( int x=0; x < tabbedPane.getComponentCount(); x++ ){
+			ServerTab sT	= (ServerTab)tabbedPane.getComponent(x);
+			if ( sT.getConfig().getName().equals(scm.getName()) ){
+				tabbedPane.remove(x);
+				break;
+			}
+		}
 	}
 	
 }

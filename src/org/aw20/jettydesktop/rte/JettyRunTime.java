@@ -33,10 +33,9 @@ import org.eclipse.jetty.webapp.WebAppContext;
 public class JettyRunTime extends Object {
 
 	public static void main(String[] args) {
-		System.out.println( "Jetty Desktop Launcher by aw2.0 Ltd http://aw20.is/"  );
-		System.out.println( "  Jetty Version: " + Server.getVersion() );
-		System.out.println( "  http://" + args[0] + ":" + args[1] );
-		
+		System.out.println( "Jetty Version: " + Server.getVersion() );
+		System.out.println( "http://" + args[0] + ":" + args[1] );
+
 		try {
 			new JettyRunTime( args[0], args[1], args[2] );
 		} catch (Exception e) {
@@ -61,7 +60,7 @@ public class JettyRunTime extends Object {
 		server.setHandler(context);
 		server.start();
 		
-		System.out.println( "Started." );
+		System.out.println( "Jetty has started." );
 	}
 	
 }

@@ -23,13 +23,28 @@
  *  
  *  May 2013
  */
-package org.aw20.jettydesktop.ui;
+package org.aw20.util;
 
+import java.net.InetSocketAddress;
+import java.net.Socket;
 
-public interface ConfigActionInterface {
+public class SocketUtil extends Object {
 
-	public void onEdit( ServerConfigMap scm );
-	public void onDelete( ServerConfigMap scm );
-	public void onClose( ServerConfigMap scm );
+	public static boolean isRemotePortAlive( String ip, int port ){
+		return isRemotePortAlive( ip, port, 3000 );
+	}
+	
+	public static boolean isRemotePortAlive( String ip, int port, int timeoutMs ){
+		try{
+
+			Socket s = new Socket();
+			s.connect( new InetSocketAddress( ip, port ), timeoutMs );
+			s.close();
+			return true;
+			
+		}catch(Exception e){
+			return false;
+		}
+	}
 	
 }

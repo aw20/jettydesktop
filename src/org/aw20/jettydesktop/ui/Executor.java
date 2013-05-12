@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.aw20.jettydesktop.rte.JettyRunTime;
+import org.aw20.util.SocketUtil;
 
 public class Executor extends Thread {
 	
@@ -51,6 +52,13 @@ public class Executor extends Thread {
 	public Executor( ServerConfigMap options, ExecutorInterface executorI ) throws IOException{
 		this.executorI	= executorI;
 		
+		// Check to see if this server is already running
+		if ( SocketUtil.isRemotePortAlive(options.getIP(), Integer.parseInt(options.getPort())) ){
+			throw new IOException("Port#" + options.getPort() + " appears to be in use already" );
+		}
+		
+		
+		// Start up the server
 		String USR_HOME = System.getProperty("user.dir") + File.separator;
 
 		String JDK_HOME;
@@ -101,7 +109,7 @@ public class Executor extends Thread {
 		if (executorI != null)
 			executorI.onServerStart();
 
-		bis			= new BufferedReader( new InputStreamReader( process.getInputStream() ) );
+		bis	= new BufferedReader( new InputStreamReader( process.getInputStream() ) );
 		
 		while (bRun){
 
@@ -125,11 +133,15 @@ public class Executor extends Thread {
 	}
 
 	private String getClasspath(String usrdir){
-		StringBuilder	sb = new StringBuilder();
+		StringBuilder	sb = new StringBuilder(64);
 		
-		sb.append( usrdir + "bin" )
+		if ( new File(usrdir, "jettydesktop.jar").isFile() ){
+			sb.append( usrdir + "jettydesktop.jar" );
+		}else{
+			sb.append( usrdir + "bin" )
 			.append( File.pathSeparator + usrdir + "lib" + File.separator + "jetty-all-8.1.0.RC5.jar" )
 			.append( File.pathSeparator + usrdir + "lib" + File.separator + "servlet-api-3.0.jar" );
+		}
 		
 		return sb.toString();
 	}
