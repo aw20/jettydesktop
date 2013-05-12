@@ -9,7 +9,7 @@ Overview
 
 Inspired by the Java CFML OpenBD (http://openbd.org/) open source project to allow developers to quickly run up OpenBD CFML applications.
 
-Please read the following for an overview:  https://github.com/aw20/jettydesktop/wiki/Overview
+Please read the following for an overview:  https://github.com/aw20/jettydesktop/wiki
 
 Installation
 ============
