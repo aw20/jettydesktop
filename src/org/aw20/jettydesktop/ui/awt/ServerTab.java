@@ -89,11 +89,11 @@ public class ServerTab extends JPanel implements ExecutorInterface{
 		
 		labelStatus	= new JLabel("Last Updated");
 		labelStatus.setBorder( BorderFactory.createEmptyBorder(3, 3, 3, 3) );
-		add(labelStatus, BorderLayout.SOUTH);
+		add(labelStatus, BorderLayout.NORTH);
 		
 		
 		Panel panel_1 = new Panel();
-		add(panel_1, BorderLayout.NORTH);
+		add(panel_1, BorderLayout.SOUTH);
 		GridBagLayout gbl_panel_1 = new GridBagLayout();
 		gbl_panel_1.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
 		gbl_panel_1.rowHeights = new int[]{0, 0};

@@ -7,6 +7,8 @@
  
 Release Notes
  
+- #5 fixed Window Resizes
+- #1 fixed Menu's behind server window
 - #2 added Web App Ordering
 - #4 fixed Editing WebApp Options
 - #3 fixed IP Address binding
