@@ -352,7 +352,7 @@ public class ServerConfig extends JDialog {
 		
 		// Server IP
 		tmp = textServerIP.getText().trim();
-		if ( !isValidIP(tmp) ){
+		if ( tmp.length() != 0 && !isValidIP(tmp) ){
 			JOptionPane.showMessageDialog(this, "Invalid IP address");
 			return false;
 		}else

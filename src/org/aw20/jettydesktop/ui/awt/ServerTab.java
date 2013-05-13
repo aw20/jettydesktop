@@ -223,6 +223,8 @@ public class ServerTab extends JPanel implements ExecutorInterface{
 	public void setConfig(ServerConfigMap scm){
 		serverConfigMap.clear();
 		serverConfigMap.putAll( scm );
+		
+		System.out.println( serverConfigMap );
 	}
 
 	@Override

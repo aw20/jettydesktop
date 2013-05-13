@@ -83,7 +83,9 @@ public class Executor extends Thread {
 		
 		programArgs.add( JettyRunTime.class.getName() );
 	
-		programArgs.add( options.getIP() );
+		if ( options.getIP().length() > 0 )
+			programArgs.add( options.getIP() );
+		
 		programArgs.add( options.getPort() );
 		programArgs.add( options.getWebFolder() );
 		

@@ -38,7 +38,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -54,7 +54,8 @@ import org.aw20.jettydesktop.ui.awt.ServerConfig;
 import org.aw20.jettydesktop.ui.awt.ServerTab;
 
 public class Start implements ConfigActionInterface {
-
+	private static String VERSION = "2.0.1";
+	
 	private List<ServerConfigMap>	serverConfigList;
 	
 	private JFrame frame;
@@ -117,7 +118,7 @@ public class Start implements ConfigActionInterface {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setTitle("JettyDesktop v2.0.0 by aw2.0 Ltd");
+		frame.setTitle("JettyDesktop v" + VERSION + " by aw2.0 Ltd");
 		frame.setBounds(100, 100, 610, 414);
 		frame.setMinimumSize( new Dimension(610, 414) );
 		frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -197,7 +198,7 @@ public class Start implements ConfigActionInterface {
 		JMenuItem mntmAbout = new JMenuItem("About");
 		mntmAbout.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog (null, "Designed/Developed by aw2.0 Ltd\r\nhttp://aw20.is/\r\n\r\nGPLv3.0 License\r\nv2.0.0 May 2013", "About JettyDesktop", JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog (null, "Designed/Developed by aw2.0 Ltd\r\nhttp://aw20.is/\r\n\r\nGPLv3.0 License\r\nv" + VERSION + " May 2013", "About JettyDesktop", JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
 		
@@ -241,11 +242,17 @@ public class Start implements ConfigActionInterface {
 			return;
 		
 		mnServer.addSeparator();
-		Iterator<ServerConfigMap>	it	= serverConfigList.iterator();
-		while ( it.hasNext() ){
-			ServerConfigMap scm	= it.next();
+		
+		// Get the names
+		String[]	names	= new String[serverConfigList.size()];
+		for ( int x=0; x < names.length; x++ )
+			names[x] = serverConfigList.get(x).getName();
+
+		Arrays.sort( names );
+		
+		for ( int x=0; x < names.length; x++ ){
 			
-			JMenuItem menu = new JMenuItem(scm.getName());
+			JMenuItem menu = new JMenuItem(names[x]);
 			menu.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					openServer( ((JMenuItem)e.getSource()).getText() );
@@ -296,16 +303,18 @@ public class Start implements ConfigActionInterface {
 		ServerConfigMap	scm	= popup.getConfig();
 
 		// We need to run through the list see if its already there
+		boolean bFound = false;
 		for ( int x=0; x < serverConfigList.size(); x++ ){
 			if ( serverConfigList.get(x).getName().equals( scm.getName() ) ){
 				serverConfigList.set(x, scm);
-				saveSettings();
-				rebuildServerMenu();
-				return;
+				bFound = true;
+				break;
 			}
 		}
 
-		serverConfigList.add(scm);
+		if ( !bFound )
+			serverConfigList.add(scm);
+		
 		saveSettings();
 		rebuildServerMenu();
 		

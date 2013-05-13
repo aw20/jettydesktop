@@ -34,10 +34,17 @@ public class JettyRunTime extends Object {
 
 	public static void main(String[] args) {
 		System.out.println( "Jetty Version: " + Server.getVersion() );
-		System.out.println( "http://" + args[0] + ":" + args[1] );
+		
+		if ( args.length == 2 )
+			System.out.println( "http://*:" + args[0] );
+		else
+			System.out.println( "http://" + args[0] + ":" + args[1] );
 
 		try {
-			new JettyRunTime( args[0], args[1], args[2] );
+			if ( args.length == 2 )
+				new JettyRunTime( null, args[0], args[1] );
+			else
+				new JettyRunTime( args[0], args[1], args[2] );
 		} catch (Exception e) {
 			System.out.println( e.getMessage() );
 		}
@@ -47,7 +54,10 @@ public class JettyRunTime extends Object {
 	
 	public JettyRunTime( String ip, String port, String webapp ) throws Exception{
 		
-		server = new Server( InetSocketAddress.createUnresolved(ip, Integer.valueOf(port)) );
+		if ( ip == null )
+			server = new Server( Integer.valueOf(port) );
+		else
+			server = new Server( InetSocketAddress.createUnresolved(ip, Integer.valueOf(port)) );
 		
 		WebAppContext context = new WebAppContext();
 		
