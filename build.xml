@@ -8,7 +8,7 @@
 	<property name="build" 		location="./bin"/>
 		
 	<!-- Output directories -->
-	<property name="dist" 		location="build/"/>
+	<property name="dist" 		location="dist/"/>
 	<property name="jarpath" 	location="lib"/>
 	
 	<path id="project.jars">
@@ -50,6 +50,13 @@
 				<attribute name="Main-Class" value="org.aw20.jettydesktop.ui.Start"/>
 			</manifest>
 		</jar>
+		
+		<jar jarfile="JettyDesktop.zip" 
+			filesonly="true"
+ 			compress="true">
+			<fileset dir="${dist}" />
+		</jar>
+		
 	</target>
 	
 </project>
