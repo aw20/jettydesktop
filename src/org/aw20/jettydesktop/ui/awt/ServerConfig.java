@@ -211,7 +211,7 @@ public class ServerConfig extends JDialog {
 				panel.add(lblRuntime, gbc_lblRuntime);
 			}
 			{
-				rdbtnCurrentJVM = new JRadioButton( System.getProperty("java.vm.name") + " " + System.getProperty("java.vm.version") );
+				rdbtnCurrentJVM = new JRadioButton( System.getProperty("java.vm.name") + " " + System.getProperty("java.version") + " " + System.getProperty("java.vm.version") );
 				rdbtnCurrentJVM.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						rdbtnCustomJVM.setSelected(false);
