@@ -28,6 +28,7 @@ package org.aw20.jettydesktop.ui;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,117 +36,128 @@ import java.util.List;
 import org.aw20.jettydesktop.rte.JettyRunTime;
 import org.aw20.util.SocketUtil;
 
-public class Executor extends Thread {
-	
+public class Executor extends Object {
+
 	/**
 	 * 
-	 *  "C:\Program Files (x86)\Java\jre6\bin\javaw.exe" -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:55560 
-	 *  -Dfile.encoding=Cp1252 -classpath C:\github\jettydesktop\bin org.aw20.jettydesktop.ui.Executor
-	*/
-
+	 * "C:\Program Files (x86)\Java\jre6\bin\javaw.exe" -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:55560 -Dfile.encoding=Cp1252 -classpath C:\github\jettydesktop\bin org.aw20.jettydesktop.ui.Executor
+	 */
 
 	private Process process;
-	private BufferedReader		bis;
+
 	private ExecutorInterface executorI;
+
 	private boolean bRun = true;
-	
-	public Executor( ServerConfigMap options, ExecutorInterface executorI ) throws IOException{
-		this.executorI	= executorI;
-		
+
+	private ioConsumer ioconsumers[];
+
+	public Executor(ServerConfigMap options, ExecutorInterface executorI) throws IOException {
+		this.executorI = executorI;
+
 		// Check to see if this server is already running
-		if ( SocketUtil.isRemotePortAlive(options.getIP(), Integer.parseInt(options.getPort())) ){
-			throw new IOException("Port#" + options.getPort() + " appears to be in use already" );
+		if (SocketUtil.isRemotePortAlive(options.getIP(), Integer.parseInt(options.getPort()))) {
+			throw new IOException("Port#" + options.getPort() + " appears to be in use already");
 		}
-		
-		
+
 		// Start up the server
 		String USR_HOME = System.getProperty("user.dir") + File.separator;
 
 		String JDK_HOME;
-		if ( options.getCurrentJVM() == null )		
+		if (options.getCurrentJVM() == null)
 			JDK_HOME = options.getCustomJVM() + File.separator + "bin" + File.separator;
 		else
 			JDK_HOME = System.getProperty("java.home") + File.separator + "bin" + File.separator;
 
-		if ( new File(JDK_HOME, "javaw.exe").exists() )
+		if (new File(JDK_HOME, "javaw.exe").exists())
 			JDK_HOME += "javaw.exe";
 		else
 			JDK_HOME += "javaw";
-		
-		List<String>	programArgs	= new ArrayList<String>();
-		programArgs.add( JDK_HOME );
-		
-		if ( options.getMemoryJVM() != null )
-			programArgs.add( "-Xmx" + options.getMemoryJVM() + "m" );
-		
-		programArgs.add( "-classpath" );
-		programArgs.add( getClasspath(USR_HOME) );
-		
-		programArgs.add( JettyRunTime.class.getName() );
-	
-		if ( options.getIP().length() > 0 )
-			programArgs.add( options.getIP() );
-		
-		programArgs.add( options.getPort() );
-		programArgs.add( options.getWebFolder() );
-		
-		ProcessBuilder	pb	= new ProcessBuilder(programArgs); 
+
+		List<String> programArgs = new ArrayList<String>();
+		programArgs.add(JDK_HOME);
+
+		if (options.getMemoryJVM() != null)
+			programArgs.add("-Xmx" + options.getMemoryJVM() + "m");
+
+		programArgs.add("-classpath");
+		programArgs.add(getClasspath(USR_HOME));
+
+		programArgs.add(JettyRunTime.class.getName());
+
+		if (options.getIP().length() > 0)
+			programArgs.add(options.getIP());
+
+		programArgs.add(options.getPort());
+		programArgs.add(options.getWebFolder());
+
+		ProcessBuilder pb = new ProcessBuilder(programArgs);
 
 		// Start the process
-		process	= pb.start();
+		process = pb.start();
 
-		start();
-	}
-	
-	public boolean isWebAppRunning(){
-		return true;
-	}
-	
-	public void exit(){
-		process.destroy();
-		bRun = false;
-		interrupt();
-	}
-	
-	public void run(){
-		if (executorI != null)
+		if (executorI != null) {
 			executorI.onServerStart();
+		}
 
-		bis	= new BufferedReader( new InputStreamReader( process.getInputStream() ) );
-		
-		while (bRun){
+		ioconsumers = new ioConsumer[2];
+		ioconsumers[0] = new ioConsumer(process.getErrorStream());
+		ioconsumers[1] = new ioConsumer(process.getInputStream());
+	}
 
-			String line;
-			try {
-				while ( (line=bis.readLine()) != null ){
-					if ( executorI != null )
-						executorI.onConsole(line);
-				}		
-			} catch (IOException e) {
-				break;
+	class ioConsumer extends Thread {
+
+		BufferedReader br;
+
+		public ioConsumer(InputStream io) {
+			br = new BufferedReader(new InputStreamReader(io));
+			start();
+		}
+
+		public void run() {
+			
+			while (bRun) {
+				String line;
+				try {
+					while ((line = br.readLine()) != null) {
+						if (executorI != null)
+							executorI.onConsole(line);
+					}
+				} catch (IOException e) {
+					break;
+				}
 			}
 			
-		}
-		
+			try {
+				br.close();
+			} catch (IOException e) {}
 
-		if (executorI != null){
-			executorI.onConsole( "Exited" );
-			executorI.onServerExit();
+			if (executorI != null) {
+				executorI.onServerExit();
+			}
 		}
 	}
 
-	private String getClasspath(String usrdir){
-		StringBuilder	sb = new StringBuilder(64);
-		
-		if ( new File(usrdir, "jettydesktop.jar").isFile() ){
-			sb.append( usrdir + "jettydesktop.jar" );
-		}else{
-			sb.append( usrdir + "bin" )
-			.append( File.pathSeparator + usrdir + "lib" + File.separator + "jetty-all-8.1.0.RC5.jar" )
-			.append( File.pathSeparator + usrdir + "lib" + File.separator + "servlet-api-3.0.jar" );
+	public boolean isWebAppRunning() {
+		return true;
+	}
+
+	public void exit() {
+		process.destroy();
+		bRun = false;
+		ioconsumers[0].interrupt();
+		ioconsumers[1].interrupt();
+	}
+
+	private String getClasspath(String usrdir) {
+		StringBuilder sb = new StringBuilder(64);
+
+		if (new File(usrdir, "jettydesktop.jar").isFile()) {
+			sb.append(usrdir + "jettydesktop.jar");
+		} else {
+			sb.append(usrdir + "bin").append(File.pathSeparator + usrdir + "lib" + File.separator + "jetty-all-8.1.0.RC5.jar").append(File.pathSeparator + usrdir + "lib" + File.separator + "servlet-api-3.0.jar");
 		}
-		
+
 		return sb.toString();
 	}
-	
+
 }

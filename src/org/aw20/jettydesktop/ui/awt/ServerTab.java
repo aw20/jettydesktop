@@ -45,6 +45,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.text.DefaultCaret;
 
+import org.aw20.jettydesktop.rte.JettyRunTime;
 import org.aw20.jettydesktop.ui.ConfigActionInterface;
 import org.aw20.jettydesktop.ui.Executor;
 import org.aw20.jettydesktop.ui.ExecutorInterface;
@@ -228,16 +229,19 @@ public class ServerTab extends JPanel implements ExecutorInterface{
 	}
 
 	@Override
-	public void onConsole(String message) {
+	public synchronized void onConsole(String message) {
 		textArea.append(message);
 		textArea.append("\r\n");
 		labelStatus.setText( "Console updated: " + DateUtil.getHttpDate(System.currentTimeMillis()) );
+		
+		if ( message.indexOf( JettyRunTime.JETTYSTARTED ) != -1 )
+			gotoButton.setEnabled(true);
 	}
 
 	@Override
 	public void onServerStart() {
 		onConsole( "Server Starting" );
-		gotoButton.setEnabled(true);
+		gotoButton.setEnabled(false);
 		editConfigButton.setEnabled(false);
 		deleteButton.setEnabled(false);
 		btnClose.setEnabled(false);
@@ -246,7 +250,11 @@ public class ServerTab extends JPanel implements ExecutorInterface{
 	}
 
 	@Override
-	public void onServerExit() {
+	public synchronized void onServerExit() {
+		if ( executor == null )
+			return;
+		
+		onConsole("Server terminated.");
 		gotoButton.setEnabled(false);
 		editConfigButton.setEnabled(true);
 		deleteButton.setEnabled(true);

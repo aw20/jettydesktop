@@ -32,6 +32,8 @@ import org.eclipse.jetty.webapp.WebAppContext;
 
 public class JettyRunTime extends Object {
 
+	public static String JETTYSTARTED = "... Jetty has started.";
+	
 	public static void main(String[] args) {
 		System.out.println( "Jetty Version: " + Server.getVersion() );
 		
@@ -53,6 +55,7 @@ public class JettyRunTime extends Object {
 	private Server server;
 	
 	public JettyRunTime( String ip, String port, String webapp ) throws Exception{
+		System.out.println( "Jetty starting up ... please wait" );
 		
 		if ( ip == null )
 			server = new Server( Integer.valueOf(port) );
@@ -70,7 +73,7 @@ public class JettyRunTime extends Object {
 		server.setHandler(context);
 		server.start();
 		
-		System.out.println( "Jetty has started." );
+		System.out.println( JETTYSTARTED );
 	}
 	
 }
