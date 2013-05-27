@@ -68,10 +68,12 @@ public class Executor extends Object {
 		else
 			JDK_HOME = System.getProperty("java.home") + File.separator + "bin" + File.separator;
 
-		if (new File(JDK_HOME, "javaw.exe").exists())
+		if (new File(JDK_HOME, "javaw.exe").exists() )
 			JDK_HOME += "javaw.exe";
-		else
+		else if (new File(JDK_HOME, "javaw").exists() )
 			JDK_HOME += "javaw";
+		else
+			JDK_HOME += "java";
 
 		List<String> programArgs = new ArrayList<String>();
 		programArgs.add(JDK_HOME);

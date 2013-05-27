@@ -23,3 +23,9 @@ Please see the WIKI for detailed instructions.
 License
 ============
 Released under the GNU General Public License v3.0.
+
+Release Notes
+============
+
+27th May 2013
+- Updated runtime to look for javaw.exe / javaw / java
