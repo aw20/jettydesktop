@@ -26,6 +26,7 @@
 package org.aw20.jettydesktop.ui.awt;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -290,6 +291,7 @@ public class ServerConfig extends JDialog {
 				gbc_textFieldMemoryJVM.insets = new Insets(5, 5, 5, 5);
 				gbc_textFieldMemoryJVM.gridx = 1;
 				gbc_textFieldMemoryJVM.gridy = 2;
+				textFieldMemoryJVM.setMinimumSize( new Dimension(100, textFieldMemoryJVM.getHeight()) );
 				panel.add(textFieldMemoryJVM, gbc_textFieldMemoryJVM);
 				textFieldMemoryJVM.setColumns(10);
 			}

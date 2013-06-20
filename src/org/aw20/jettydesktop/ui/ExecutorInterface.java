@@ -31,5 +31,6 @@ public interface ExecutorInterface {
 	public void onServerStart();
 	public void onServerExit();
 	public void onConsole( String message );
+	public void onMemory(String memory);
 	
 }

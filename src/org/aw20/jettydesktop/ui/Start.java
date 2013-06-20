@@ -54,7 +54,7 @@ import org.aw20.jettydesktop.ui.awt.ServerConfig;
 import org.aw20.jettydesktop.ui.awt.ServerTab;
 
 public class Start implements ConfigActionInterface {
-	private static String VERSION = "2.0.6";
+	private static String VERSION = "2.0.7";
 	
 	private List<ServerConfigMap>	serverConfigList;
 	

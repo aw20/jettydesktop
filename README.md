@@ -27,5 +27,10 @@ Released under the GNU General Public License v3.0.
 Release Notes
 ============
 
+19th June 2013
+- Fixed: Issue#8 If host is blank default to 127.0.0.1 when opening app in browser
+- Fixed: Issue#7 Max the memory boxes minimum size
+- Fixed: Issue#6 Memory Usage
+
 27th May 2013
 - Updated runtime to look for javaw.exe / javaw / java

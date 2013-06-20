@@ -25,7 +25,11 @@
  */
 package org.aw20.jettydesktop.rte;
 
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -37,16 +41,16 @@ public class JettyRunTime extends Object {
 	public static void main(String[] args) {
 		System.out.println( "Jetty Version: " + Server.getVersion() );
 		
-		if ( args.length == 2 )
+		if ( args.length == 3 )
 			System.out.println( "http://*:" + args[0] );
 		else
 			System.out.println( "http://" + args[0] + ":" + args[1] );
 
 		try {
-			if ( args.length == 2 )
-				new JettyRunTime( null, args[0], args[1] );
+			if ( args.length == 3 )
+				new JettyRunTime( null, args[0], args[1], args[2] );
 			else
-				new JettyRunTime( args[0], args[1], args[2] );
+				new JettyRunTime( args[0], args[1], args[2], args[3] );
 		} catch (Exception e) {
 			System.out.println( e.getMessage() );
 		}
@@ -54,13 +58,18 @@ public class JettyRunTime extends Object {
 
 	private Server server;
 	
-	public JettyRunTime( String ip, String port, String webapp ) throws Exception{
+	public JettyRunTime( String ip, String port, String webapp, String adminport ) throws Exception{
 		System.out.println( "Jetty starting up ... please wait" );
 		
 		if ( ip == null )
 			server = new Server( Integer.valueOf(port) );
 		else
 			server = new Server( InetSocketAddress.createUnresolved(ip, Integer.valueOf(port)) );
+		
+		int aport	= Integer.valueOf(adminport);
+		if ( aport > 0 ){
+			new adminPort(aport);
+		}
 		
 		WebAppContext context = new WebAppContext();
 		
@@ -74,6 +83,45 @@ public class JettyRunTime extends Object {
 		server.start();
 		
 		System.out.println( JETTYSTARTED );
+	}
+	
+	
+	class adminPort extends Thread {
+		
+		ServerSocket	ss;
+		Socket s;
+		int port;
+		PrintWriter	pw;
+		
+		public adminPort( int port ){
+			this.port = port;
+			setDaemon(true);
+			start();
+		}
+		
+		public void run(){
+			try {
+				ss	= new ServerSocket(port);
+				s		=	ss.accept();
+				pw	= new	PrintWriter( new OutputStreamWriter( s.getOutputStream() ) ); 
+				
+				for(;;){
+					Thread.sleep(2000);
+
+	      	long freeMem 	= (Runtime.getRuntime().freeMemory() / 1024000);
+	      	long totalMem	= (Runtime.getRuntime().totalMemory() / 1024000);
+	      	long usedMem	= totalMem - freeMem;
+	      	pw.println("Memory Usage: " + usedMem + "MB of " + totalMem + "MB  ");
+	      	pw.flush();
+
+				}
+				
+			} catch (Exception e) {
+				System.out.println(e);
+			}
+			
+		}
+		
 	}
 	
 }

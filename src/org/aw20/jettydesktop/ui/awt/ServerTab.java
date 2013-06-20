@@ -66,6 +66,8 @@ public class ServerTab extends JPanel implements ExecutorInterface{
 	private JTextArea textArea;
 	private JLabel		labelStatus;
 	private JButton btnClose;
+	private JPanel panel;
+	private JLabel RemoteMemoryLabel;
 	
 	public ServerTab(ServerConfigMap _serverConfigMap, ConfigActionInterface _configActionI ) {
 		this.serverConfigMap 	= _serverConfigMap;
@@ -86,11 +88,6 @@ public class ServerTab extends JPanel implements ExecutorInterface{
 
 		jConsoleScrollPane.setViewportView(textArea);
 		add(jConsoleScrollPane, BorderLayout.CENTER);
-		
-		
-		labelStatus	= new JLabel("Last Updated");
-		labelStatus.setBorder( BorderFactory.createEmptyBorder(3, 3, 3, 3) );
-		add(labelStatus, BorderLayout.NORTH);
 		
 		
 		Panel panel_1 = new Panel();
@@ -181,7 +178,11 @@ public class ServerTab extends JPanel implements ExecutorInterface{
 					return;
 				
 				try {
-					java.awt.Desktop.getDesktop().browse(java.net.URI.create("http://" + serverConfigMap.getIP() + ":" + serverConfigMap.getPort() + "/"));
+					String host	= serverConfigMap.getIP();
+					if ( host == null || host.length() == 0 )
+						host	= "127.0.0.1";
+					
+					java.awt.Desktop.getDesktop().browse(java.net.URI.create("http://" + host + ":" + serverConfigMap.getPort() + "/"));
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -193,6 +194,18 @@ public class ServerTab extends JPanel implements ExecutorInterface{
 		gbc_button_2.gridx = 6;
 		gbc_button_2.gridy = 0;
 		panel_1.add(gotoButton, gbc_button_2);
+		
+		panel = new JPanel();
+		add(panel, BorderLayout.NORTH);
+		panel.setLayout(new BorderLayout(0, 0));
+		
+		
+		labelStatus	= new JLabel("Last Updated");
+		panel.add(labelStatus, BorderLayout.WEST);
+		labelStatus.setBorder( BorderFactory.createEmptyBorder(3, 3, 3, 3) );
+		
+		RemoteMemoryLabel = new JLabel("Memory Usage: 0 / 0 MB  ");
+		panel.add(RemoteMemoryLabel, BorderLayout.EAST);
 	}
 	
 	public boolean isServerRunning(){
@@ -224,10 +237,12 @@ public class ServerTab extends JPanel implements ExecutorInterface{
 	public void setConfig(ServerConfigMap scm){
 		serverConfigMap.clear();
 		serverConfigMap.putAll( scm );
-		
-		System.out.println( serverConfigMap );
 	}
 
+	public void onMemory( String m ){
+		RemoteMemoryLabel.setText(m);
+	}
+	
 	@Override
 	public synchronized void onConsole(String message) {
 		textArea.append(message);

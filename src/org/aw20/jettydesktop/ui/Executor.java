@@ -30,6 +30,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,12 +46,11 @@ public class Executor extends Object {
 	 */
 
 	private Process process;
-
 	private ExecutorInterface executorI;
-
 	private boolean bRun = true;
-
 	private ioConsumer ioconsumers[];
+	private adminPortWatcher	AdminPortWatcher = null;
+	private int	adminPort;
 
 	public Executor(ServerConfigMap options, ExecutorInterface executorI) throws IOException {
 		this.executorI = executorI;
@@ -59,6 +60,8 @@ public class Executor extends Object {
 			throw new IOException("Port#" + options.getPort() + " appears to be in use already");
 		}
 
+		findFreePort();
+				
 		// Start up the server
 		String USR_HOME = System.getProperty("user.dir") + File.separator;
 
@@ -91,6 +94,7 @@ public class Executor extends Object {
 
 		programArgs.add(options.getPort());
 		programArgs.add(options.getWebFolder());
+		programArgs.add( String.valueOf(adminPort) );
 
 		ProcessBuilder pb = new ProcessBuilder(programArgs);
 
@@ -104,8 +108,78 @@ public class Executor extends Object {
 		ioconsumers = new ioConsumer[2];
 		ioconsumers[0] = new ioConsumer(process.getErrorStream());
 		ioconsumers[1] = new ioConsumer(process.getInputStream());
+		
+		if ( adminPort > 0 ){
+			try{
+				AdminPortWatcher	= new adminPortWatcher();
+			}catch(IOException ioe){
+				AdminPortWatcher = null;
+			}
+		}
 	}
 
+	
+	private void findFreePort(){
+		try{
+			adminPort	= 34000;
+			
+			for ( int x=0; x < 1000; x++ ){
+				adminPort += x;
+
+				Socket s = new Socket();
+				s.connect( new InetSocketAddress( "127.0.0.1", adminPort ), 1000 );
+				s.close();
+			}
+
+			adminPort = -1;
+			
+		}catch(Exception e){
+			executorI.onConsole("Using Free AdminPort=" + adminPort );
+			return;
+		}
+	}
+	
+	
+	class adminPortWatcher extends Thread {
+		
+		BufferedReader br;
+		Socket s;
+		
+		public adminPortWatcher() throws IOException{
+			s = new Socket();
+			s.connect( new InetSocketAddress( "127.0.0.1", adminPort ), 1000 );
+			br = new BufferedReader(new InputStreamReader(s.getInputStream()));
+			start();
+		}
+		
+		public void run(){
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				return;
+			}
+
+			while (bRun) {
+				String line;
+				try {
+					while ((line = br.readLine()) != null) {
+						if (executorI != null)
+							executorI.onMemory(line);
+					}
+				} catch (IOException e) {
+					break;
+				}
+			}
+			
+			try {
+				br.close();
+				s.close();
+			} catch (IOException e) {}
+
+		}
+	}
+	
+	
 	class ioConsumer extends Thread {
 
 		BufferedReader br;
@@ -148,6 +222,9 @@ public class Executor extends Object {
 		bRun = false;
 		ioconsumers[0].interrupt();
 		ioconsumers[1].interrupt();
+		
+		if ( AdminPortWatcher != null )
+			AdminPortWatcher.interrupt();
 	}
 
 	private String getClasspath(String usrdir) {
