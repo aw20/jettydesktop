@@ -54,7 +54,7 @@ import org.aw20.jettydesktop.ui.awt.ServerConfig;
 import org.aw20.jettydesktop.ui.awt.ServerTab;
 
 public class Start implements ConfigActionInterface {
-	private static String VERSION = "2.0.7";
+	private static String VERSION = "2.0.8";
 	
 	private List<ServerConfigMap>	serverConfigList;
 	
@@ -198,7 +198,7 @@ public class Start implements ConfigActionInterface {
 		JMenuItem mntmAbout = new JMenuItem("About");
 		mntmAbout.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog (null, "Designed/Developed by aw2.0 Ltd\r\nhttp://aw20.is/\r\n\r\nGPLv3.0 License\r\nv" + VERSION + " May 2013", "About JettyDesktop", JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog (null, "Designed/Developed by aw2.0 Ltd\r\nhttp://aw20.is/\r\n\r\nGPLv3.0 License\r\nv" + VERSION + " September 2013", "About JettyDesktop", JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
 		

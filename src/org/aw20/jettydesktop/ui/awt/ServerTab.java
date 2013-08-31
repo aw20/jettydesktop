@@ -182,7 +182,11 @@ public class ServerTab extends JPanel implements ExecutorInterface{
 					if ( host == null || host.length() == 0 )
 						host	= "127.0.0.1";
 					
-					java.awt.Desktop.getDesktop().browse(java.net.URI.create("http://" + host + ":" + serverConfigMap.getPort() + "/"));
+					String defaultUri	= serverConfigMap.getDefaultWebUri();
+					if ( defaultUri == null )
+						defaultUri = "/";
+					
+					java.awt.Desktop.getDesktop().browse(java.net.URI.create("http://" + host + ":" + serverConfigMap.getPort() + defaultUri ));
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}

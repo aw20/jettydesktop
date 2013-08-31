@@ -84,6 +84,9 @@ public class Executor extends Object {
 		if (options.getMemoryJVM() != null)
 			programArgs.add("-Xmx" + options.getMemoryJVM() + "m");
 
+		if ( options.getDefaultJVMArgs() != null )
+			programArgs.add( options.getDefaultJVMArgs() );
+
 		programArgs.add("-classpath");
 		programArgs.add(getClasspath(USR_HOME));
 

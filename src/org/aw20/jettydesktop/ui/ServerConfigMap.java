@@ -100,4 +100,20 @@ public class ServerConfigMap extends HashMap<String, String> implements Serializ
 	public String getMemoryJVM(){
 		return get("MEMORYJVM");
 	}
+
+	public String getDefaultJVMArgs() {
+		return get("DEFAULTJVM");
+	}
+
+	public String getDefaultWebUri() {
+		return get("DEFAULTURI");
+	}
+
+	public void setDefaultJVMArgs(String args) {
+		put("DEFAULTJVM", args);
+	}
+
+	public void setDefaultWebUri(String args) {
+		put("DEFAULTURI", args.trim() );
+	}
 }

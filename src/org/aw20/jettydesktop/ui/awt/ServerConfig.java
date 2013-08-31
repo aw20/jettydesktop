@@ -62,12 +62,14 @@ public class ServerConfig extends JDialog {
 	private JRadioButton rdbtnCurrentJVM, rdbtnCustomJVM;
 
 	private ServerConfigMap	currentConfigMap = null;
+	private JTextField textJVMArgs;
+	private JTextField textDefaultURI;
 
 	public ServerConfig( ServerConfigMap serverConfigMap ) {
 		setModal(true);
 		setResizable(false);
 		setTitle("Web Configuration");
-		setBounds(100, 100, 450, 336);
+		setBounds(100, 100, 450, 398);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
@@ -146,9 +148,9 @@ public class ServerConfig extends JDialog {
 			contentPanel.add(panel, BorderLayout.CENTER);
 			GridBagLayout gbl_panel = new GridBagLayout();
 			gbl_panel.columnWidths = new int[]{0, 0, 0, 0};
-			gbl_panel.rowHeights = new int[]{0, 0};
+			gbl_panel.rowHeights = new int[]{0, 0, 0};
 			gbl_panel.columnWeights = new double[]{0.0, 1.0, 0.0, Double.MIN_VALUE};
-			gbl_panel.rowWeights = new double[]{0.0, Double.MIN_VALUE};
+			gbl_panel.rowWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
 			panel.setLayout(gbl_panel);
 			{
 				JLabel lblNewLabel = new JLabel("Web Folder:");
@@ -188,9 +190,29 @@ public class ServerConfig extends JDialog {
 					}
 				});
 				GridBagConstraints gbc_btnWebAppBrowse = new GridBagConstraints();
+				gbc_btnWebAppBrowse.insets = new Insets(0, 0, 5, 0);
 				gbc_btnWebAppBrowse.gridx = 2;
 				gbc_btnWebAppBrowse.gridy = 0;
 				panel.add(btnWebAppBrowse, gbc_btnWebAppBrowse);
+			}
+			{
+				JLabel lblDefaultUri = new JLabel("Default URI:");
+				GridBagConstraints gbc_lblDefaultUri = new GridBagConstraints();
+				gbc_lblDefaultUri.anchor = GridBagConstraints.EAST;
+				gbc_lblDefaultUri.insets = new Insets(5, 5, 5, 5);
+				gbc_lblDefaultUri.gridx = 0;
+				gbc_lblDefaultUri.gridy = 1;
+				panel.add(lblDefaultUri, gbc_lblDefaultUri);
+			}
+			{
+				textDefaultURI = new JTextField();
+				GridBagConstraints gbc_textDefaultURI = new GridBagConstraints();
+				gbc_textDefaultURI.insets = new Insets(5, 5, 5, 5);
+				gbc_textDefaultURI.fill = GridBagConstraints.HORIZONTAL;
+				gbc_textDefaultURI.gridx = 1;
+				gbc_textDefaultURI.gridy = 1;
+				panel.add(textDefaultURI, gbc_textDefaultURI);
+				textDefaultURI.setColumns(10);
 			}
 		}
 		{
@@ -199,14 +221,14 @@ public class ServerConfig extends JDialog {
 			contentPanel.add(panel, BorderLayout.SOUTH);
 			GridBagLayout gbl_panel = new GridBagLayout();
 			gbl_panel.columnWidths = new int[]{0, 0, 0, 0, 0};
-			gbl_panel.rowHeights = new int[]{0, 0, 0, 0};
+			gbl_panel.rowHeights = new int[]{0, 0, 0, 0, 0};
 			gbl_panel.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
-			gbl_panel.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
+			gbl_panel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 			panel.setLayout(gbl_panel);
 			{
 				JLabel lblRuntime = new JLabel("Runtime:");
 				GridBagConstraints gbc_lblRuntime = new GridBagConstraints();
-				gbc_lblRuntime.insets = new Insets(5, 5, 0, 5);
+				gbc_lblRuntime.insets = new Insets(5, 5, 5, 5);
 				gbc_lblRuntime.gridx = 0;
 				gbc_lblRuntime.gridy = 0;
 				panel.add(lblRuntime, gbc_lblRuntime);
@@ -221,7 +243,7 @@ public class ServerConfig extends JDialog {
 				GridBagConstraints gbc_rdbtnCurrentJVM = new GridBagConstraints();
 				gbc_rdbtnCurrentJVM.gridwidth = 2;
 				gbc_rdbtnCurrentJVM.anchor = GridBagConstraints.WEST;
-				gbc_rdbtnCurrentJVM.insets = new Insets(5, 5, 0, 5);
+				gbc_rdbtnCurrentJVM.insets = new Insets(5, 5, 5, 5);
 				gbc_rdbtnCurrentJVM.gridx = 1;
 				gbc_rdbtnCurrentJVM.gridy = 0;
 				panel.add(rdbtnCurrentJVM, gbc_rdbtnCurrentJVM);
@@ -265,32 +287,50 @@ public class ServerConfig extends JDialog {
 							File webApp = chooser.getSelectedFile();
 							textFieldCustomJVM.setText(webApp.getAbsolutePath());
 						}
-
 						
 					}
 				});
 				GridBagConstraints gbc_btnBrowseCustomJVM = new GridBagConstraints();
-				gbc_btnBrowseCustomJVM.insets = new Insets(5, 0, 5, 5);
+				gbc_btnBrowseCustomJVM.insets = new Insets(5, 0, 5, 0);
 				gbc_btnBrowseCustomJVM.gridx = 3;
 				gbc_btnBrowseCustomJVM.gridy = 1;
 				panel.add(btnBrowseCustomJVM, gbc_btnBrowseCustomJVM);
 			}
 			{
+				JLabel lblJvmArguments = new JLabel("JVM Arguments");
+				GridBagConstraints gbc_lblJvmArguments = new GridBagConstraints();
+				gbc_lblJvmArguments.anchor = GridBagConstraints.EAST;
+				gbc_lblJvmArguments.insets = new Insets(5, 25, 5, 5);
+				gbc_lblJvmArguments.gridx = 1;
+				gbc_lblJvmArguments.gridy = 2;
+				panel.add(lblJvmArguments, gbc_lblJvmArguments);
+			}
+			{
+				textJVMArgs = new JTextField();
+				GridBagConstraints gbc_textJVMArgs = new GridBagConstraints();
+				gbc_textJVMArgs.insets = new Insets(5, 5, 5, 5);
+				gbc_textJVMArgs.fill = GridBagConstraints.HORIZONTAL;
+				gbc_textJVMArgs.gridx = 2;
+				gbc_textJVMArgs.gridy = 2;
+				panel.add(textJVMArgs, gbc_textJVMArgs);
+				textJVMArgs.setColumns(10);
+			}
+			{
 				JLabel lblMemory = new JLabel("Memory:");
 				GridBagConstraints gbc_lblMemory = new GridBagConstraints();
 				gbc_lblMemory.anchor = GridBagConstraints.EAST;
-				gbc_lblMemory.insets = new Insets(5, 5, 5, 5);
+				gbc_lblMemory.insets = new Insets(5, 5, 0, 5);
 				gbc_lblMemory.gridx = 0;
-				gbc_lblMemory.gridy = 2;
+				gbc_lblMemory.gridy = 3;
 				panel.add(lblMemory, gbc_lblMemory);
 			}
 			{
 				textFieldMemoryJVM = new JTextField();
 				GridBagConstraints gbc_textFieldMemoryJVM = new GridBagConstraints();
 				gbc_textFieldMemoryJVM.anchor = GridBagConstraints.WEST;
-				gbc_textFieldMemoryJVM.insets = new Insets(5, 5, 5, 5);
+				gbc_textFieldMemoryJVM.insets = new Insets(5, 5, 0, 5);
 				gbc_textFieldMemoryJVM.gridx = 1;
-				gbc_textFieldMemoryJVM.gridy = 2;
+				gbc_textFieldMemoryJVM.gridy = 3;
 				textFieldMemoryJVM.setMinimumSize( new Dimension(100, textFieldMemoryJVM.getHeight()) );
 				panel.add(textFieldMemoryJVM, gbc_textFieldMemoryJVM);
 				textFieldMemoryJVM.setColumns(10);
@@ -299,9 +339,9 @@ public class ServerConfig extends JDialog {
 				JLabel lblMb = new JLabel("MB");
 				GridBagConstraints gbc_lblMb = new GridBagConstraints();
 				gbc_lblMb.anchor = GridBagConstraints.WEST;
-				gbc_lblMb.insets = new Insets(5, 5, 5, 5);
+				gbc_lblMb.insets = new Insets(5, 5, 0, 5);
 				gbc_lblMb.gridx = 2;
-				gbc_lblMb.gridy = 2;
+				gbc_lblMb.gridy = 3;
 				panel.add(lblMb, gbc_lblMb);
 			}
 		}
@@ -376,6 +416,11 @@ public class ServerConfig extends JDialog {
 		}else
 			config.setWebFolder(tmp);
 		
+		tmp	= textDefaultURI.getText();
+		if ( tmp.length() > 0 )
+			config.setDefaultWebUri( tmp );
+		
+		
 		// JVM
 		if ( rdbtnCurrentJVM.isSelected() ){
 			config.setCurrentJVM();
@@ -387,6 +432,13 @@ public class ServerConfig extends JDialog {
 			}else
 				config.setCustomJVM(tmp);
 		}
+		
+		
+		// Default JVM ARGs
+		tmp	= textJVMArgs.getText();
+		if ( tmp.length() > 0 )
+			config.setDefaultJVMArgs( tmp );
+		
 
 		// Memory
 		tmp = textFieldMemoryJVM.getText().trim();
@@ -438,6 +490,20 @@ public class ServerConfig extends JDialog {
 		}else{
 			rdbtnCurrentJVM.setSelected(false);
 			rdbtnCustomJVM.setSelected(true);
+		}
+		
+		String defaultJVMArgs	= serverConfigMap.getDefaultJVMArgs();
+		if ( defaultJVMArgs == null ){
+			textJVMArgs.setText("");
+		}else{
+			textJVMArgs.setText(defaultJVMArgs);
+		}
+		
+		String defaultWebUri	= serverConfigMap.getDefaultWebUri();
+		if ( defaultWebUri == null ){
+			textDefaultURI.setText("/");
+		}else{
+			textDefaultURI.setText(defaultWebUri);
 		}
 	}
 }
