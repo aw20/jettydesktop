@@ -26,6 +26,8 @@ Released under the GNU General Public License v3.0.
 
 Release Notes
 ============
+7th July 2014
+- Updated to jetty 9.2.2
 
 1st September 2013
 - Added: Additional JVM arguments input
