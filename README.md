@@ -14,7 +14,7 @@ Please read the following for an overview:  https://github.com/aw20/jettydesktop
 Installation
 ============
 
-Jetty Desktop requires Java6+ to be installed, but after that, it ships with everything you need to start running your web applications in Jetty (v8.1).
+Jetty Desktop requires Java7+ to be installed, but after that, it ships with everything you need to start running your web applications in Jetty (v9.2+).
 
 You can download the .ZIP file https://github.com/aw20/jettydesktop/raw/master/JettyDesktop.zip
 
@@ -26,6 +26,9 @@ Released under the GNU General Public License v3.0.
 
 Release Notes
 ============
+11th Nov 2014
+- Recompile/Repackage in Java 7
+
 7th July 2014
 - Updated to jetty 9.2.2
 
