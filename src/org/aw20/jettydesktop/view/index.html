@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+	<head>
+
+		<script src="jquery-1.11.3.min.js"></script>
+		<script src="jetty.js"></script>
+
+		<title>jetty test</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+		<link rel="stylesheet" href="jetty.css" type="text/css" />
+
+	</head>
+	<body>
+
+
+		<div class="header">
+			<h1>JettyDesktop v.2.1.0</h1>
+			<a href="javascript:void(0)">help</a>
+			<button class="btn addwebapp" id="btn_add">add webapp</button>
+			<!--- <div class="info" id="info">
+				<span id="updated"></span>
+				<span id="memory">Memory Usage:</span>
+			</div> --->
+		</div>
+
+
+		<div class="main">
+
+			<div class="nav" id="nav">
+				<h3>apps</h3>
+				<div id="items"></div>
+			</div>
+
+			<div id="console_template" class="console">
+	<pre>--------------THIS IS PLACEHOLDER TEXT------------
+		Server Starting
+2015-11-17 17:03:04.863:INFO::main: Logging initialized @65ms
+Jetty Version: 9.2.z-SNAPSHOT
+http://*:80
+Jetty starting up ... please wait
+2015-11-17 17:03:04.921:INFO:oejs.Server:main: jetty-9.2.z-SNAPSHOT
+2015-11-17 17:03:07.092:INFO:oejw.StandardDescriptorProcessor:main: NO JSP Support for /, did not find org.apache.jasper.servlet.JspServlet
+2015-11-17 17:03:07.103:WARN:oejs.SecurityHandler:main: ServletContext@o.e.j.w.WebAppContext@1bcffb5{/,file:/E:/tickdv2/trunk/tickd/webapp/,STARTING} has uncovered http methods for path: /
+log4j:WARN No appenders could be found for logger (org.apache.commons.vfs.impl.StandardFileSystemManager).
+log4j:WARN Please initialize the log4j system properly.
+Loading QuickServer v1.4.7 ... Done
+Mail25 Mailet Container @alanwilliamson.org v1.2
+2015-11-17 17:03:09.292:INFO:oejsh.ContextHandler:main: Started o.e.j.w.WebAppContext@1bcffb5{/,file:/E:/tickdv2/trunk/tickd/webapp/,AVAILABLE}
+2015-11-17 17:03:09.324:INFO:oejs.ServerConnector:main: Started ServerConnector@e6b5c8{HTTP/1.1}{0.0.0.0:80}
+... Jetty has started.
+2015-11-17 17:03:09.325:INFO:oejs.Server:main: Started @4541ms
+environment: local
+--------------THIS IS PLACEHOLDER TEXT------------
+	</pre>
+			</div>
+
+			<div class="editoptions hide">
+				<div id="edit_{x}" class="template hide">
+					<fieldset>
+						<legend>Server name</legend>
+						<div class="control">
+							<label for="form_name">Name</label>
+							<input id="form_name_{x}" type="text" />
+						</div>
+
+						<div class="control">
+							<label for="form_ip">IP address</label>
+							<input id="form_ip_{x}" type="text" />
+						</div>
+
+						<div class="control">
+							<label for="form_port">Port</label>
+							<input id="form_port_{x}" type="text" />
+						</div>
+					</fieldset>
+
+					<fieldset>
+						<legend>Web application</legend>
+						<div class="control">
+							<label for="form_web_folder">web folder</label>
+							<!---<input id="form_web_folder_{x}" type="text" /> --->
+							<!--- <input type="file" id="form_web_folder_{x}" webkitdirectory directory/> --->
+							<input type="text" id="form_web_folder_{x}_text"/>
+							<button id="form_web_folder_{x}" class="btn select_server">get folder</button>
+							<!--- <input type="button" value="browse" /> --->
+						</div>
+
+						<div class="control">
+							<label for="form_uri">default URI</label>
+							<input id="form_uri_{x}" type="text" />
+						</div>
+					</fieldset>
+
+					<fieldset>
+						<legend>Java virtual machine</legend>
+						<div class="control">
+							<label>runtime</label>
+							<div class="listit">
+								<input type="radio" id="form_radio_hotspot_{x}" />
+								<label id="form_label_java_{x}"></label>
+							</div>
+							<div class="listit">
+								<input type="radio" id="form_radio_custom_{x}" />
+								<label>Custom JVM</label>
+								<input type="text" id="form_customjvm_{x}" />
+								<input type="button" value="browse" />
+							</div>
+							<div class="listit">
+								<label>JVM Arguments</label>
+								<input type="text" id="form_jvmargs_{x}" />
+							</div>
+						</div>
+
+						<div class="control">
+							<label for="">Memory</label>
+							<input type="text"  id="form_memory_{x}"/> MB
+						</div>
+					</fieldset>
+
+					<button id="btn_save_{x}" class="btn j_save">save</button>
+					<button id="btn_cancel_{x}" class="btn j_cancel">cancel</button>
+				</div>
+			</div>
+
+		</div>
+
+		<div class="footer">
+			<button id="btn_edit" class="btn j_edit" disabled>edit</button>
+			<button id="btn_delete" class="btn" disabled>delete</button>
+			<button id="btn_clear" class="btn">clear</button>
+
+			<button id="btn_open" class="btn right" disabled>open</button>
+			<button id="btn_stop" class="btn right" disabled>stop</button>
+			<button id="btn_start" class="btn right" disabled>start</button>
+		</div>
+	</body>
+</html>

@@ -28,12 +28,31 @@ package org.aw20.jettydesktop.ui;
 import java.io.Serializable;
 import java.util.HashMap;
 
+import com.google.gson.Gson;
+
 public class ServerConfigMap extends HashMap<String, String> implements Serializable {
 	private static final long serialVersionUID = 1L;
+	
+	public ServerConfigMap(){}
+
+	ServerConfigMap(String name, String ip, String port, String folder, String jvm, String memory){
+		this.setName(name);
+		this.setIP(ip);
+		this.setPort(port);
+		this.setWebFolder(folder);
+		this.setMemoryJVM(memory);
+		if (jvm != null){
+			this.setCustomJVM(jvm);
+		}
+		else {
+			this.setCurrentJVM();
+		}
+	}
 
 	@SuppressWarnings("serial")
 	public static ServerConfigMap getDefault(){
 		return new ServerConfigMap(){{
+			setId("");
 			setName("");
 			setIP("127.0.0.1");
 			setPort("80");
@@ -46,11 +65,11 @@ public class ServerConfigMap extends HashMap<String, String> implements Serializ
 	public void setName(String name){
 		put("SERVER_NAME", name);
 	}
-	
+		
 	public String getName(){
 		return get("SERVER_NAME");
 	}
-	
+
 	public void setIP(String ip){
 		put("SERVER_IP", ip);
 	}
@@ -115,5 +134,26 @@ public class ServerConfigMap extends HashMap<String, String> implements Serializ
 
 	public void setDefaultWebUri(String args) {
 		put("DEFAULTURI", args.trim() );
+	}
+	
+	public void setId(String args){
+		put("SERVER_ID", args);
+	}
+	
+	public String getId(){
+		return get("SERVER_ID");
+	}
+	
+	public String getRunning(){
+		return get("RUNNING");
+	}
+	
+	public void setRunning(String args){
+		put("RUNNING", args);
+	}
+	
+	public String toJson() {
+		Gson gson = new Gson();
+		return ( gson.toJson( this ) );
 	}
 }

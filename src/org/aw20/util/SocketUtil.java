@@ -36,13 +36,13 @@ public class SocketUtil extends Object {
 	
 	public static boolean isRemotePortAlive( String ip, int port, int timeoutMs ){
 		try{
-
 			Socket s = new Socket();
 			s.connect( new InetSocketAddress( ip, port ), timeoutMs );
 			s.close();
 			return true;
 			
 		}catch(Exception e){
+			//e.printStackTrace();
 			return false;
 		}
 	}
