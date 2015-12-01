@@ -36,12 +36,10 @@
 				<path refid="project.jars"/>
 			</classpath>
 		</javac>
-		<copy file="${src}/org/aw20/jettydesktop/view/logo.png" todir="${build}/org/aw20/jettydesktop/view/"/>
+		<copy todir="${build}/org/aw20/jettydesktop/view/">
+            <fileset dir="${src}/org/aw20/jettydesktop/view/" includes="​*.html,*​.js,*.css"/>
+        </copy>
 		<copy file="${src}/org/aw20/jettydesktop/rte/webdefault.xml" todir="${build}/org/aw20/jettydesktop/rte/"/>
-		<copy file="${src}/org/aw20/jettydesktop/view/index.html" todir="${build}/org/aw20/jettydesktop/view/"/>
-		<copy file="${src}/org/aw20/jettydesktop/view/jetty.js" todir="${build}/org/aw20/jettydesktop/view/"/>
-		<copy file="${src}/org/aw20/jettydesktop/view/jquery-1.11.3.min.js" todir="${build}/org/aw20/jettydesktop/view/"/>
-		<copy file="${src}/org/aw20/jettydesktop/view/jetty.css" todir="${build}/org/aw20/jettydesktop/view/"/>
 	</target>
 
 	<target name="jar" depends="clean,compile">
