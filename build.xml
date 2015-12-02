@@ -11,10 +11,14 @@
 	<property name="dist" 		location="dist/"/>
 	<property name="jarpath" 	location="lib"/>
 	
-	<path id="project.jars">
-		<pathelement location="${jarpath}/jetty-all-9.2.2.v20140723.jar"/>
+	<!--<path id="project.jars">
+		<pathelement location="${jarpath}/jetty-all-9.3.6.v20151106-uber.jar"/>
 		<pathelement location="${jarpath}/servlet-api-3.1.0.jar"/>
 		<pathelement location="${jarpath}/gson-2.4.jar"/>
+	</path>-->
+	
+	<path id="project.jars">
+		<fileset dir="${jarpath}" includes="*.jar"/>
 	</path>
 
 	<path id="project.class.path">
@@ -37,7 +41,12 @@
 			</classpath>
 		</javac>
 		<copy todir="${build}/org/aw20/jettydesktop/view/">
-            <fileset dir="${src}/org/aw20/jettydesktop/view/" includes="​*.html,*​.js,*.css"/>
+            <fileset dir="${src}/org/aw20/jettydesktop/view/">
+				<include name="*.html"/>
+            	<include name="*.css"/>
+				<include name="*.js"/>
+            	<include name="*.png"/>
+            </fileset>
         </copy>
 		<copy file="${src}/org/aw20/jettydesktop/rte/webdefault.xml" todir="${build}/org/aw20/jettydesktop/rte/"/>
 	</target>
@@ -47,9 +56,9 @@
 			filesonly="true"
  			compress="true">
 			<fileset dir="${build}" />
-			<zipfileset src="${jarpath}/jetty-all-9.2.2.v20140723.jar" excludes="META-INF/*" />
-			<zipfileset src="${jarpath}/servlet-api-3.1.0.jar" excludes="META-INF/*" />
-			<zipfileset src="${jarpath}/gson-2.4.jar" excludes="META-INF/*" />
+			
+			<zipgroupfileset dir="${jarpath}" includes="*.jar"/>
+
 			<manifest>
 				<attribute name="Main-Class" value="org.aw20.jettydesktop.controller.Start"/>
 			</manifest>
