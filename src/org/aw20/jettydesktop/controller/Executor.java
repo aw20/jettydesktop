@@ -37,14 +37,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import org.aw20.jettydesktop.rte.JettyRunTime;
-import org.aw20.jettydesktop.ui.ServerConfigMap;
-import org.aw20.util.AppFunctions;
-import org.aw20.util.SocketUtil;
-import org.aw20.util.StringUtils;
-
 import javafx.application.Platform;
 import javafx.scene.web.WebEngine;
+
+import org.aw20.jettydesktop.rte.JettyRunTime;
+import org.aw20.jettydesktop.ui.ServerConfigMap;
+import org.aw20.util.SocketUtil;
 
 
 public class Executor extends Object {
@@ -61,35 +59,36 @@ public class Executor extends Object {
 	private adminPortWatcher AdminPortWatcher = null;
 	private int adminPort;
 	private ServerConfigMap scm = null;
-	
+
 	private WebEngine webEngineSingleton = Start.getWebEngineInstance();
-	
+
 	private static Vector allInstances;
-	  
-    static
-    {
-        allInstances = new Vector();
-    }
-    
-    public static synchronized Vector getAllInstances()
-    {
-        return( ( Vector )allInstances.clone() );
-    }
-    
-    protected void finalize()
-    {
-        allInstances.removeElement( this );
-    }
+
+
+	static {
+		allInstances = new Vector();
+	}
+
+
+	public static synchronized Vector getAllInstances() {
+		return ( (Vector) allInstances.clone() );
+	}
+
+
+	protected void finalize() {
+		allInstances.removeElement( this );
+	}
+
 
 	public Executor( ServerConfigMap serverConfigMap, AppFunctions appFunctions ) throws IOException {
-		
+
 		allInstances.add( this );
-		
+
 		scm = serverConfigMap;
 		this.appFunctions = appFunctions;
 
 		// Check to see if this server is already running
-		if ( SocketUtil.isRemotePortAlive( serverConfigMap.getIP(), Integer.parseInt( serverConfigMap.getPort()) )) {			
+		if ( SocketUtil.isRemotePortAlive( serverConfigMap.getIP(), Integer.parseInt( serverConfigMap.getPort() ) ) ) {
 			throw new IOException( "Port#" + serverConfigMap.getPort() + " appears to be in use already" );
 		}
 
@@ -112,19 +111,18 @@ public class Executor extends Object {
 			JDK_HOME += "java";
 
 		List<String> programArgs = new ArrayList<String>();
-		 programArgs.add( JDK_HOME );
-		//programArgs.add( "C:\\Program Files\\Java\\jdk1.8.0_65\\bin\\javaw.exe" );
+		programArgs.add( JDK_HOME );
 
-		if ( serverConfigMap.getMemoryJVM() != null)
+		if ( serverConfigMap.getMemoryJVM() != null )
 			programArgs.add( "-Xmx" + serverConfigMap.getMemoryJVM() + "m" );
-		
-		
+
+
 		String jvmArgs = serverConfigMap.getDefaultJVMArgs();
-		
-		if ( jvmArgs != null)
+
+		if ( jvmArgs != null )
 			programArgs.add( serverConfigMap.getDefaultJVMArgs() );
-		else 
-			programArgs.add(jvmArgs);
+		else
+			programArgs.add( jvmArgs );
 
 		programArgs.add( "-classpath" );
 		programArgs.add( getClasspath( USR_HOME ) );
@@ -137,18 +135,14 @@ public class Executor extends Object {
 		programArgs.add( serverConfigMap.getPort() );
 		programArgs.add( serverConfigMap.getWebFolder() );
 		programArgs.add( String.valueOf( adminPort ) );
-		
-		
-		
+
+
 		ProcessBuilder pb = new ProcessBuilder( programArgs );
 
-		//ProcessBuilder pb = new ProcessBuilder("C:\\Program Files\\Java\\jdk1.8.0_25\\bin\\javaw.exe", "-Xmx64m", "-classpath", "C:\\Users\\Lucy\\workspace\\JettyDesktopApp\\bin;C:\\Users\\Lucy\\workspace\\JettyDesktopApp\\lib\\jetty-all-9.2.2.v20140723.jar;C:\\Users\\Lucy\\workspace\\JettyDesktopApp\\lib\\servlet-api-3.1.0.jar", "org.aw20.jettydesktop.rte.JettyRunTime", "127.0.0.1", "8001", "E:\\projects\\aw2.0\\statsmonitor3\\webapp", "34000");
-				
-		// find working dir for pb - should be same as jetty??
-		// recreate in cmdline with program args
 		// what is the error stream below outputting?
+
 		// Start the process
-		
+
 		process = pb.start();
 		// this is where the JNI error occurs
 		ioconsumers = new ioConsumer[3];
@@ -169,9 +163,9 @@ public class Executor extends Object {
 
 	private void findFreePort() {
 		try {
-			adminPort	= 34000;
-			
-			for ( int x=0; x < 1000; x++ ){
+			adminPort = 34000;
+
+			for ( int x = 0; x < 1000; x++ ) {
 				adminPort += x;
 
 				Socket s = new Socket();
@@ -182,9 +176,10 @@ public class Executor extends Object {
 			adminPort = -1;
 
 		} catch ( Exception e ) {
-			webEngineSingleton.executeScript("document.getElementById('console_" + scm.getId() + "').innerHTML += '<pre>Using Free AdminPort=" + adminPort + "</pre>';");
-			webEngineSingleton.executeScript("document.getElementById('console_" + scm.getId() + "').innerHTML += '<pre>" + e.getMessage() + "</pre>';");
-			
+			webEngineSingleton.executeScript( "document.getElementById('console_" + scm.getId() + "').innerHTML += '<pre>Using Free AdminPort=" + adminPort + "</pre>';" );
+			webEngineSingleton.executeScript( "document.getElementById('console_" + scm.getId() + "').innerHTML += '<pre>Server not started.</pre>';" );
+			// webEngineSingleton.executeScript("document.getElementById('console_" + scm.getId() + "').innerHTML += '<pre>" + e.getMessage() + "</pre>';");
+
 			return;
 		}
 	}
@@ -212,20 +207,21 @@ public class Executor extends Object {
 			}
 
 			while ( isbRun() ) {
-			String line;
+				String line;
 				try {
 					while ( ( line = br.readLine() ) != null ) {
 						try {
-							Thread.sleep(1000);
-						} catch (InterruptedException ignored) {}
-						
+							Thread.sleep( 1000 );
+						} catch ( InterruptedException ignored ) {}
+
 						final String l = line;
 						if ( appFunctions != null )
-							Platform.runLater(new Runnable(){
-								public void run(){
+							Platform.runLater( new Runnable() {
+
+								public void run() {
 									appFunctions.onMemory( l );
 								}
-							});
+							} );
 					}
 				} catch ( IOException e ) {
 					break;
@@ -265,14 +261,15 @@ public class Executor extends Object {
 					while ( ( line = br.readLine() ) != null ) {
 						final String l = line;
 						if ( appFunctions != null )
-							Platform.runLater(new Runnable(){
-								public void run(){
-										webEngineSingleton.executeScript("document.getElementById('console_" + scm.getId() + "').innerHTML += '<pre>" + l + "</pre>';");
-										webEngineSingleton.executeScript("document.getElementById('console_" + scm.getId() + "').scrollTop = document.getElementById('console_" + scm.getId() + "').scrollHeight;");
-									//appFunctions.onLastUpdated(LocalDateTime.now ( ).toString ().replace ( "T", " " ));
-								
+							Platform.runLater( new Runnable() {
+
+								public void run() {
+									webEngineSingleton.executeScript( "document.getElementById('console_" + scm.getId() + "').innerHTML += '<pre>" + l + "</pre>';" );
+									webEngineSingleton.executeScript( "document.getElementById('console_" + scm.getId() + "').scrollTop = document.getElementById('console_" + scm.getId() + "').scrollHeight;" );
+									// appFunctions.onLastUpdated(LocalDateTime.now ( ).toString ().replace ( "T", " " ));
+
 								}
-							});
+							} );
 					}
 				} catch ( IOException e ) {
 					break;
@@ -292,11 +289,14 @@ public class Executor extends Object {
 
 
 	public void exit() {
-		process.destroy();
-		setbRun(false);
-		ioconsumers[0].interrupt();
-		ioconsumers[1].interrupt();
-		
+		if ( process != null ) {
+			process.destroy();
+			setbRun( false );
+			ioconsumers[0].interrupt();
+			ioconsumers[1].interrupt();
+			ioconsumers[2].interrupt();
+		}
+
 		if ( AdminPortWatcher != null )
 			AdminPortWatcher.interrupt();
 	}
@@ -308,7 +308,7 @@ public class Executor extends Object {
 		if ( new File( usrdir, "jettydesktop.jar" ).isFile() ) {
 			sb.append( usrdir + "jettydesktop.jar" );
 		} else {
-			sb.append( usrdir + "bin" ).append( File.pathSeparator + usrdir + "lib" + File.separator + "jetty-all-9.2.6.v20141205.jar" ).append( File.pathSeparator + usrdir + "lib" + File.separator + "servlet-api-3.1.0.jar" );
+			sb.append( usrdir + "bin" ).append( File.pathSeparator + usrdir + "lib" + File.separator + "jetty-all-9.3.6.v20151106-uber.jar" ).append( File.pathSeparator + usrdir + "lib" + File.separator + "servlet-api-3.1.0.jar" );
 		}
 
 		return sb.toString();
@@ -320,7 +320,7 @@ public class Executor extends Object {
 	}
 
 
-	public void setbRun(boolean bRun) {
+	public void setbRun( boolean bRun ) {
 		this.bRun = bRun;
 	}
 

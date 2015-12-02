@@ -25,7 +25,6 @@ import javafx.stage.WindowEvent;
 import netscape.javascript.JSObject;
 
 import org.aw20.jettydesktop.view.Resources;
-import org.aw20.util.AppFunctions;
 
 
 public class Start extends Application {
@@ -38,15 +37,18 @@ public class Start extends Application {
 	static WebView webView = new WebView();
 	public WebEngine webEngineSingleton = getWebEngineInstance();
 
-	static File temp = new File( System.getProperty( "java.io.tmpdir" ) );
+	public static File temp = new File( System.getProperty( "java.io.tmpdir" ) );
 
 
 	public static void main( String[] args ) {
-		File f = new File( "resources/" );
+		System.out.println( temp.getAbsolutePath() );
+		File f = new File( "resources/" ).getAbsoluteFile();
 		if ( f.exists() ) {
 			temp = f;
 		}
+		File f1 = new File( temp + "/index.html" );
 
+		// if ( !f1.exists() ) //this line is for Tony
 		try ( InputStream htmlBytes = res.getHtmlResource().openStream(); InputStream jsBytes = res.getJSResource().openStream(); InputStream jqueryBytes = res.getJQueryResource().openStream(); InputStream cssBytes = res.getCSSResource().openStream(); InputStream logoBytes = res.getPNGResource().openStream(); ) {
 
 			Files.copy( htmlBytes, new File( temp, "index.html" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
@@ -99,7 +101,6 @@ public class Start extends Application {
 		primaryStage.setResizable( true );
 		primaryStage.getIcons().add( new Image( "/org/aw20/jettydesktop/view/logo.png" ) );
 		primaryStage.show();
-
 		Platform.runLater( new Runnable() {
 
 			public void run() {

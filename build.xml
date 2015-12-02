@@ -42,10 +42,7 @@
 		</javac>
 		<copy todir="${build}/org/aw20/jettydesktop/view/">
             <fileset dir="${src}/org/aw20/jettydesktop/view/">
-				<include name="*.html"/>
-            	<include name="*.css"/>
-				<include name="*.js"/>
-            	<include name="*.png"/>
+            	<exclude name="*.java"/>
             </fileset>
         </copy>
 		<copy file="${src}/org/aw20/jettydesktop/rte/webdefault.xml" todir="${build}/org/aw20/jettydesktop/rte/"/>
