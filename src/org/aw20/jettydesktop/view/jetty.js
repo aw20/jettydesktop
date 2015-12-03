@@ -233,7 +233,9 @@ $( document ).ready(function() {
 
     $('.delete').click(function () {
     	app.deleteWebApp(selectedServer);
-    	$( '#edit_' + selectedServer ).addClass( 'hide' );
+    	$( '#edit_' + selectedServer ).remove();
+    	$( '#console_' + selectedServer ).remove();
+    	
     	updateHtml();
     	$( '.j_settings' ).removeClass( 'active' );
     });
