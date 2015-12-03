@@ -11,12 +11,6 @@
 	<property name="dist" 		location="dist/"/>
 	<property name="jarpath" 	location="lib"/>
 	
-	<!--<path id="project.jars">
-		<pathelement location="${jarpath}/jetty-all-9.3.6.v20151106-uber.jar"/>
-		<pathelement location="${jarpath}/servlet-api-3.1.0.jar"/>
-		<pathelement location="${jarpath}/gson-2.4.jar"/>
-	</path>-->
-	
 	<path id="project.jars">
 		<fileset dir="${jarpath}" includes="*.jar"/>
 	</path>

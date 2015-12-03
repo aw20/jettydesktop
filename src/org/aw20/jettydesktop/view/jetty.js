@@ -104,7 +104,7 @@ $( document ).ready(function() {
     		$( '#console_' + id ).addClass('hide');
     		$( '#edit_' + id ).addClass('hide');
     	}
-    	$( '#console_template' ).after('<div class="console hide console_server" id="console_' + newServer + '"><p>webapp_ ' + newServer + '</p></div>');
+    	$( '#console_template' ).after('<div class="console hide console_server" id="console_' + newServer + '"><p></p></div>');
 		//load form
 		var template = editTemplate.replace(/{x}/g, newServer);
 
@@ -233,6 +233,7 @@ $( document ).ready(function() {
 
     $('.delete').click(function () {
     	app.deleteWebApp(selectedServer);
+    	$( '#edit_' + selectedServer ).addClass( 'hide' );
     	updateHtml();
     	$( '.j_settings' ).removeClass( 'active' );
     });
@@ -278,6 +279,7 @@ $( document ).ready(function() {
 			
 			$('.settings').append(template);
 			$( '#edit_' + name ).removeClass( 'template' );
+			$( '#edit_' + name ).addClass( 'hide' );
 
 			//populate form
 			$('#form_name_' + name).val(apps[i].SERVER_NAME);
