@@ -64,9 +64,27 @@ public class AppFunctions {
 	}
 
 
+	public String onServerRestart( String serverId ) {
+		// boolean stop = stopServer( serverId );
+		boolean started;
+		if ( stopServer( serverId ) ) {
+			if ( startServer( serverId ) ) {
+				return "";
+			}
+			else {
+				return "Server not restarted successfully";
+			}
+		}
+
+
+		return serverId;
+
+	}
+
+
 	public String onServerStart( String serverId ) throws IOException {
 		if ( startServer( serverId ) ) {
-			return ( "Server started" );
+			return ( "" );
 		}
 		else {
 			return ( "Server not started" );
@@ -75,7 +93,12 @@ public class AppFunctions {
 
 
 	public String onServerStop( String serverId ) throws IOException {
-		return stopServer( serverId );
+		if ( stopServer( serverId ) ) {
+			return "Server stopped.";
+		}
+		else {
+			return "Server not stopped.";
+		}
 	}
 
 
@@ -272,7 +295,7 @@ public class AppFunctions {
 	}
 
 
-	private String stopServer( String serverId ) {
+	private boolean stopServer( String serverId ) {
 		for ( int i = 0; i < serverConfigList.size(); ++i ) {
 			if ( serverConfigList.get( i ).getId().equals( serverId ) ) {
 				serverConfigMap = serverConfigList.get( i );
@@ -282,9 +305,9 @@ public class AppFunctions {
 		// get correct version of executor on exiting app and stopping all servers
 		executor.exit();
 		if ( executor.isbRun() == false )
-			return "Server stopped";
+			return true;
 		else
-			return "Server not stopped";
+			return false;
 	}
 
 

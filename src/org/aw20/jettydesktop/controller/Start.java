@@ -9,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 
+import org.aw20.jettydesktop.view.Resources;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -24,8 +26,6 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import netscape.javascript.JSObject;
 
-import org.aw20.jettydesktop.view.Resources;
-
 
 public class Start extends Application {
 
@@ -38,104 +38,129 @@ public class Start extends Application {
 	public WebEngine webEngineSingleton = getWebEngineInstance();
 
 	public static File temp = new File( System.getProperty( "java.io.tmpdir" ) );
+	
+	private static File dest;
 
 
 	public static void main( String[] args ) {
-		System.out.println( temp.getAbsolutePath() );
-		File f = new File( "resources/" ).getAbsoluteFile();
-		if ( f.exists() ) {
-			temp = f;
-		}
-		File f1 = new File( temp + "/index.html" );
+	File f = new File( "resources/" ).getAbsoluteFile();
+	if ( f.exists() ) {
+		temp = f;
+	}
+	File f1 = new File( temp + "/index.html" );
 
-		// if ( !f1.exists() ) //this line is for Tony
-		try ( InputStream htmlBytes = res.getHtmlResource().openStream(); InputStream jsBytes = res.getJSResource().openStream(); InputStream jqueryBytes = res.getJQueryResource().openStream(); InputStream cssBytes = res.getCSSResource().openStream(); InputStream logoBytes = res.getPNGResource().openStream(); ) {
+	dest = new File( temp + "/jettystyle" );
+	if ( !dest.exists() ) {
+		dest.mkdir();
+		System.out.println( "Directory made: " + dest );
+	}
 
-			Files.copy( htmlBytes, new File( temp, "index.html" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-			Files.copy( jsBytes, new File( temp, "jetty.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-			Files.copy( jqueryBytes, new File( temp, "jquery-1.11.3.min.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-			Files.copy( cssBytes, new File( temp, "jetty.css" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-			Files.copy( logoBytes, new File( temp, "logo.png" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-		} catch ( IOException e ) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	// if ( !f1.exists() ) //this line is for Tony
+	try ( InputStream htmlBytes = res.getHtmlResource().openStream(); 
+			InputStream jsBytes = res.getJSResource().openStream(); 
+			InputStream jqueryBytes = res.getJQueryResource().openStream(); 
+			InputStream cssBytes = res.getCSSResource().openStream(); 
+			InputStream cssAwesomeBytes = res.getCSSAwesomeResource().openStream(); 
+			InputStream logoBytes = res.getPNGResource().openStream(); 
+			InputStream fa1Bytes = res.getFA1Resource().openStream();
+			InputStream fa2Bytes = res.getFA2Resource().openStream(); 
+			InputStream fa3Bytes = res.getFA3Resource().openStream(); 
+			InputStream fa4Bytes = res.getFA4Resource().openStream(); 
+			InputStream fa5Bytes = res.getFA5Resource().openStream(); 
+			InputStream fa6Bytes = res.getFA6Resource().openStream(); ) {
 
-		launch( args );
+		Files.copy( htmlBytes, new File( dest, "index.html" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+		Files.copy( jsBytes, new File( dest, "jetty.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+		Files.copy( jqueryBytes, new File( dest, "jquery-1.11.3.min.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+		Files.copy( cssBytes, new File( dest, "jetty.css" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+		Files.copy( cssAwesomeBytes, new File( dest, "font-awesome.css" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+		Files.copy( logoBytes, new File( dest, "logo.png" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+		Files.copy( fa1Bytes, new File( dest, "FontAwesome.otf" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+		Files.copy( fa2Bytes, new File( dest, "fontawesome-webfont.eot" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+		Files.copy( fa3Bytes, new File( dest, "fontawesome-webfont.svg" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+		Files.copy( fa4Bytes, new File( dest, "fontawesome-webfont.ttf" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+		Files.copy( fa5Bytes, new File( dest, "fontawesome-webfont.woff" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+		Files.copy( fa6Bytes, new File( dest, "fontawesome-webfont.woff2" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+	} catch ( IOException e ) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+
+	launch( args );
 	}
 
 
 	@Override
 	public void start( Stage primaryStage ) {
 
-		AnchorPane anchorPane = new AnchorPane();
-		stage = primaryStage;
-		primaryStage.setTitle( "" );
+	AnchorPane anchorPane = new AnchorPane();
+	stage = primaryStage;
+	primaryStage.setTitle( "" );
 
-		final AppFunctions appFunctions = AppFunctions.getInstance();
-		URL index = null;
-		try {
-			index = new File( temp, "index.html" ).toURL();
+	final AppFunctions appFunctions = AppFunctions.getInstance();
+	URL index = null;
+	try {
+		index = new File( dest, "index.html" ).toURL();
 
-		} catch ( MalformedURLException e ) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	} catch ( MalformedURLException e ) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
 
-		JSObject win = (JSObject) webEngine.executeScript( "window" );
-		win.setMember( "app", appFunctions );
-		webView.setContextMenuEnabled( false );
-		webEngine.load( index.toExternalForm() );
-		// Set Layout Constraint
-		AnchorPane.setTopAnchor( webView, 0.0 );
-		AnchorPane.setBottomAnchor( webView, 0.0 );
-		AnchorPane.setLeftAnchor( webView, 0.0 );
-		AnchorPane.setRightAnchor( webView, 0.0 );
+	JSObject win = (JSObject) webEngine.executeScript( "window" );
+	win.setMember( "app", appFunctions );
+	webView.setContextMenuEnabled( false );
+	webEngine.load( index.toExternalForm() );
+	// Set Layout Constraint
+	AnchorPane.setTopAnchor( webView, 0.0 );
+	AnchorPane.setBottomAnchor( webView, 0.0 );
+	AnchorPane.setLeftAnchor( webView, 0.0 );
+	AnchorPane.setRightAnchor( webView, 0.0 );
 
-		// Add WebView to AnchorPane
-		anchorPane.getChildren().add( webView );
+	// Add WebView to AnchorPane
+	anchorPane.getChildren().add( webView );
 
-		primaryScene = new Scene( anchorPane );
+	primaryScene = new Scene( anchorPane );
 
-		primaryStage.setScene( primaryScene );
-		primaryStage.setResizable( true );
-		primaryStage.getIcons().add( new Image( "/org/aw20/jettydesktop/view/logo.png" ) );
-		primaryStage.show();
-		Platform.runLater( new Runnable() {
+	primaryStage.setScene( primaryScene );
+	primaryStage.setResizable( true );
+	primaryStage.getIcons().add( new Image( "/org/aw20/jettydesktop/view/logo.png" ) );
+	primaryStage.show();
+	Platform.runLater( new Runnable() {
 
-			public void run() {
+		public void run() {
 
-				Start.stage.setOnCloseRequest( new EventHandler<WindowEvent>() {
+		Start.stage.setOnCloseRequest( new EventHandler<WindowEvent>() {
 
-					public void handle( WindowEvent t ) {
-						if ( appFunctions.serverConfigList == null ) {
-							Platform.exit();
-						} else {
-							int count = 0;
+			public void handle( WindowEvent t ) {
+			if ( appFunctions.serverConfigList == null ) {
+				Platform.exit();
+			} else {
+				int count = 0;
 
-							for ( int i = 0; i < appFunctions.serverConfigList.size(); ++i ) {
-								if ( ( "true" ).equals( appFunctions.serverConfigList.get( i ).getRunning() ) ) {
-									count++;
-								}
-							}
-							if ( count > 0 ) {
-								Alert alert = new Alert( AlertType.CONFIRMATION, "Stop all apps (" + count + ") running ?", ButtonType.YES, ButtonType.NO );
-								Optional<ButtonType> result = alert.showAndWait();
+				for ( int i = 0; i < appFunctions.serverConfigList.size(); ++i ) {
+				if ( ( "true" ).equals( appFunctions.serverConfigList.get( i ).getRunning() ) ) {
+					count++;
+				}
+				}
+				if ( count > 0 ) {
+				Alert alert = new Alert( AlertType.CONFIRMATION, "Stop all apps (" + count + ") running ?", ButtonType.YES, ButtonType.NO );
+				Optional<ButtonType> result = alert.showAndWait();
 
-								if ( result.get() == ButtonType.YES ) {
-									appFunctions.stopServers();
-									Platform.exit();
-								} else {
-									t.consume();
-								}
-							} else {
-								Platform.exit();
-							}
-						}
-					}
-				} );
+				if ( result.get() == ButtonType.YES ) {
+					appFunctions.stopServers();
+					Platform.exit();
+				} else {
+					t.consume();
+				}
+				} else {
+				Platform.exit();
+				}
+			}
 			}
 		} );
+		}
+	} );
 	}
 
 	// create Singleton instance
@@ -143,10 +168,10 @@ public class Start extends Application {
 
 
 	public static WebEngine getWebEngineInstance() {
-		if ( webEngine == null ) {
-			webEngine = webView.getEngine();
-		}
-		return webEngine;
+	if ( webEngine == null ) {
+		webEngine = webView.getEngine();
+	}
+	return webEngine;
 	}
 
 
