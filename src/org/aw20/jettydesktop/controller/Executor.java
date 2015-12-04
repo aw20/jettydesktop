@@ -33,6 +33,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -112,7 +113,8 @@ public class Executor extends Object {
 
 		List<String> programArgs = new ArrayList<String>();
 		programArgs.add( JDK_HOME );
-
+		//programArgs.add( null );
+		
 		if ( serverConfigMap.getMemoryJVM() != null )
 			programArgs.add( "-Xmx" + serverConfigMap.getMemoryJVM() + "m" );
 
@@ -264,9 +266,10 @@ public class Executor extends Object {
 							Platform.runLater( new Runnable() {
 
 								public void run() {
+									//webEngineSingleton.executeScript( "$('console_" + scm.getId() + "').find('pre').text += '" + l + "';" );
 									webEngineSingleton.executeScript( "document.getElementById('console_" + scm.getId() + "').innerHTML += '<pre>" + l + "</pre>';" );
 									webEngineSingleton.executeScript( "document.getElementById('console_" + scm.getId() + "').scrollTop = document.getElementById('console_" + scm.getId() + "').scrollHeight;" );
-									// appFunctions.onLastUpdated(LocalDateTime.now ( ).toString ().replace ( "T", " " ));
+									appFunctions.onLastUpdated(LocalDateTime.now ( ).toString ().replace ( "T", " " ));
 
 								}
 							} );

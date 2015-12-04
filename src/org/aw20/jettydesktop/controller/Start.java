@@ -60,7 +60,6 @@ public class Start extends Application {
 			InputStream jsBytes = res.getJSResource().openStream(); 
 			InputStream jqueryBytes = res.getJQueryResource().openStream(); 
 			InputStream cssBytes = res.getCSSResource().openStream(); 
-			InputStream cssAwesomeBytes = res.getCSSAwesomeResource().openStream(); 
 			InputStream logoBytes = res.getPNGResource().openStream(); 
 			InputStream fa1Bytes = res.getFA1Resource().openStream();
 			InputStream fa2Bytes = res.getFA2Resource().openStream(); 
@@ -73,7 +72,6 @@ public class Start extends Application {
 		Files.copy( jsBytes, new File( dest, "jetty.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
 		Files.copy( jqueryBytes, new File( dest, "jquery-1.11.3.min.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
 		Files.copy( cssBytes, new File( dest, "jetty.css" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-		Files.copy( cssAwesomeBytes, new File( dest, "font-awesome.css" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
 		Files.copy( logoBytes, new File( dest, "logo.png" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
 		Files.copy( fa1Bytes, new File( dest, "FontAwesome.otf" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
 		Files.copy( fa2Bytes, new File( dest, "fontawesome-webfont.eot" ).toPath(), StandardCopyOption.REPLACE_EXISTING );

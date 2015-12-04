@@ -262,14 +262,15 @@ public class AppFunctions {
 	public void onMemory( String line ) {
 		// call update memory usage on jetty desktop app
 		// Platform
-		// webEngineSingleton.executeScript("document.getElementById('memory').innerHTML = '" + line + "'");
+		 webEngineSingleton.executeScript("$('#id1:first-child').text = '" + line + "'");
 	}
 
 
 	// TODO
 	public void onLastUpdated( String line ) {
 		// call update last updated on jetty desktop app
-		webEngineSingleton.executeScript( "document.getElementById('updated').innerHTML = 'Last Updated: " + line + "'" );
+		webEngineSingleton.executeScript( "$('#id1:first-child').text = 'Last Updated: " + line + "'" );
+		//webEngineSingleton.executeScript( "app.outputToEclipse(document.documentElement.innerHTML);" );
 	}
 
 

@@ -11,6 +11,10 @@ $( document ).ready(function() {
 	refreshServerList();
 	refreshEditFormsAndConsoles();
 	
+	$( '.j_reveal' ).on( 'click', function() {
+        $( '.main' ).toggleClass( 'reveal' );
+    });
+	
 	$(document).on('click', '.j_settings', function() {
 		$( '.settings, #settings_footer, #edit_' + selectedServer).removeClass( 'hide' );
 		$( '#console_footer, #console_' + selectedServer ).addClass( 'hide' );
@@ -87,7 +91,7 @@ $( document ).ready(function() {
 		$( '#webapp_' + selectedServer ).addClass('current');
     });
 
-    $(document).on('click', '.add', function() {
+    $(document).on('click', '.addwebapp', function() {
     	newServer = apps.length + 1;
     	
     	servers.push(newServer);
@@ -169,7 +173,7 @@ $( document ).ready(function() {
 		$( '#btn_clear' ).prop( 'disabled', false );
     });
     
-    $('.fa-play').click(function (){    	
+    $(document).on('click', '.play', function() {   	
     	selectedServer = $(this).closest('a').attr('id').split('_')[1];   
     	$(this).closest('a').addClass('current');    	
     	
@@ -194,9 +198,13 @@ $( document ).ready(function() {
 			$( '#btn_open' ).prop( 'disabled', true );
 		}
 		
+		$(this).removeClass('play');
+		$(this).addClass('stop');
+		//app.outputToEclipse(document.documentElement.innerHTML);
+		
     });
 
-    $('.fa-stop').click(function (){
+    $(document).on('click', '.stop', function() {
     	selectedServer = $(this).closest('a').attr('id').split('_')[1]; 
     	$(this).closest('a').removeClass('running');
     	document.getElementById('console_' + selectedServer).innerHTML += '<pre>Stopping Server...</pre>';
@@ -204,13 +212,10 @@ $( document ).ready(function() {
 
 		$( '#btn_delete' ).prop( 'disabled', false );
 		$( '#btn_open' ).prop( 'disabled', true );
-    });
-    
-    $('.fa-repeat').click(function (){
-    	selectedServer = $(this).closest('a').attr('id').split('_')[1]; 
-    	document.getElementById('console_' + selectedServer).innerHTML += '<pre>Restarting Server...</pre>';
-    	document.getElementById('console_' + selectedServer).innerHTML += '<pre>' + app.onServerRestart(selectedServer) + '</pre>';
-
+		
+		$(this).addClass('play');
+		$(this).removeClass('stop');
+		//app.outputToEclipse(document.documentElement.innerHTML);
     });
 
     $('#btn_open').click(function(){
@@ -262,7 +267,7 @@ $( document ).ready(function() {
 			servers.push(apps[i].SERVER_ID);
 			var id = apps[i].SERVER_ID;
 
-			var a = '<a id="webapp_' + id + '" class="app list_item" data-index="' + id + '" href="javascript:void(0)"><b></b>' + apps[i].SERVER_NAME + '<div class="actions"><span class="fa fa-play"></span><span class="fa fa-stop"></span><span class="fa fa-repeat"></span></div></a>';
+			var a = '<a id="webapp_' + id + '" class="app list_item" data-index="' + id + '" href="javascript:void(0)"><span class="play"></span>' + apps[i].SERVER_NAME + '</a>';
 
 		    $('#items').append(a);
 		}
@@ -275,7 +280,7 @@ $( document ).ready(function() {
 			var name = apps[i].SERVER_ID;
 			
 			//load console
-			$( '#console_template' ).after('<div class="console hide console_server" id="console_' + name + '"><p></p></div>');
+			$( '#console_template' ).after('<div class="console hide console_server" id="console_' + name + '"><p><pre></pre></p></div>');
 			//load form
 			var template = editTemplate.replace(/{x}/g, name);
 			
