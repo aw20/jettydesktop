@@ -122,8 +122,11 @@ $( document ).ready(function() {
     });
 
     $(document).on('click', '.j_save', function() {
+    	var savedServer = selectedServer;
     	
-    	var savedServer = newServer;
+    	if (newServer != 0){
+    		savedServer = newServer;
+    	}	
 
     	var name = $('#form_name_' + savedServer).val();
     	var ip = $('#form_ip_' + savedServer).val();
@@ -173,7 +176,7 @@ $( document ).ready(function() {
 		$( '#btn_clear' ).prop( 'disabled', false );
     });
     
-    $(document).on('click', '.play', function() {   	
+    $(document).on('click', '.play', function() {
     	selectedServer = $(this).closest('a').attr('id').split('_')[1];   
     	$(this).closest('a').addClass('current');    	
     	
@@ -181,13 +184,15 @@ $( document ).ready(function() {
     	
 		$( '#console_template' ).addClass( 'hide' );
 		$( '#console_' + selectedServer ).removeClass( 'hide' );
+		$( '#j_console' ).addClass( 'active' );
+		$( '#j_settings' ).removeClass( 'active' );
+		$( '#console_footer' ).removeClass('hide');
+		$( '#settings_footer' ).addClass('hide');
 		$( '#edit_' + selectedServer ).addClass( 'hide' );
 		$( '.settings' ).addClass( 'hide' );
-
+		
 		document.getElementById('console_' + selectedServer).innerHTML += '<pre>' + app.onServerStart(selectedServer) + '</pre>';
-
-		$('#console_' + selectedServer).removeClass('hide');
-
+				
 		if (app.getRunning(selectedServer)){
 			$(this).closest('a').addClass('running');
 			$( '#btn_delete' ).prop( 'disabled', true );
@@ -200,7 +205,7 @@ $( document ).ready(function() {
 		
 		$(this).removeClass('play');
 		$(this).addClass('stop');
-		//app.outputToEclipse(document.documentElement.innerHTML);
+		
 		
     });
 

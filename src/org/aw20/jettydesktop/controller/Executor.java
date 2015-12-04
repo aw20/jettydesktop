@@ -118,13 +118,8 @@ public class Executor extends Object {
 		if ( serverConfigMap.getMemoryJVM() != null )
 			programArgs.add( "-Xmx" + serverConfigMap.getMemoryJVM() + "m" );
 
-
-		String jvmArgs = serverConfigMap.getDefaultJVMArgs();
-
-		if ( jvmArgs != null )
+		if ( serverConfigMap.getDefaultJVMArgs() != null )
 			programArgs.add( serverConfigMap.getDefaultJVMArgs() );
-		else
-			programArgs.add( jvmArgs );
 
 		programArgs.add( "-classpath" );
 		programArgs.add( getClasspath( USR_HOME ) );
