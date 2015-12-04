@@ -60,25 +60,15 @@ public class Start extends Application {
 			InputStream jsBytes = res.getJSResource().openStream(); 
 			InputStream jqueryBytes = res.getJQueryResource().openStream(); 
 			InputStream cssBytes = res.getCSSResource().openStream(); 
-			InputStream logoBytes = res.getPNGResource().openStream(); 
-			InputStream fa1Bytes = res.getFA1Resource().openStream();
-			InputStream fa2Bytes = res.getFA2Resource().openStream(); 
-			InputStream fa3Bytes = res.getFA3Resource().openStream(); 
-			InputStream fa4Bytes = res.getFA4Resource().openStream(); 
-			InputStream fa5Bytes = res.getFA5Resource().openStream(); 
-			InputStream fa6Bytes = res.getFA6Resource().openStream(); ) {
+			InputStream logoBytes = res.getPNGResource().openStream();
+			InputStream tooltipBytes = res.getPNGResource().openStream();) {
 
 		Files.copy( htmlBytes, new File( dest, "index.html" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
 		Files.copy( jsBytes, new File( dest, "jetty.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
 		Files.copy( jqueryBytes, new File( dest, "jquery-1.11.3.min.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
 		Files.copy( cssBytes, new File( dest, "jetty.css" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
 		Files.copy( logoBytes, new File( dest, "logo.png" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-		Files.copy( fa1Bytes, new File( dest, "FontAwesome.otf" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-		Files.copy( fa2Bytes, new File( dest, "fontawesome-webfont.eot" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-		Files.copy( fa3Bytes, new File( dest, "fontawesome-webfont.svg" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-		Files.copy( fa4Bytes, new File( dest, "fontawesome-webfont.ttf" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-		Files.copy( fa5Bytes, new File( dest, "fontawesome-webfont.woff" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-		Files.copy( fa6Bytes, new File( dest, "fontawesome-webfont.woff2" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+		Files.copy( tooltipBytes, new File( dest, "jquery.tooltipster.min.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
 	} catch ( IOException e ) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
@@ -123,7 +113,11 @@ public class Start extends Application {
 	primaryStage.setScene( primaryScene );
 	primaryStage.setResizable( true );
 	primaryStage.getIcons().add( new Image( "/org/aw20/jettydesktop/view/logo.png" ) );
+	
+	
 	primaryStage.show();
+	
+	
 	Platform.runLater( new Runnable() {
 
 		public void run() {

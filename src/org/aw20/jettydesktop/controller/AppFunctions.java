@@ -103,6 +103,10 @@ public class AppFunctions {
 
 
 	public String getServerConfigListAsJson() {
+		boolean initialLoad = false;
+		if (serverConfigList == null){
+			initialLoad = true;
+		}
 		loadSettings();
 		Gson gson = new Gson();
 		int count = 0;
@@ -110,7 +114,9 @@ public class AppFunctions {
 			count++;
 			ServerConfigMap element = iter.next();
 			element.setId( Integer.toString( count ) );
-
+			if (initialLoad) {
+				element.setRunning("false");
+			}
 		}
 
 		return gson.toJson( serverConfigList );
@@ -261,7 +267,6 @@ public class AppFunctions {
 	// TODO
 	public void onMemory( String line ) {
 		// call update memory usage on jetty desktop app
-		// Platform
 		 webEngineSingleton.executeScript("$('#memory').text('" + line + "')");
 	}
 
@@ -277,18 +282,22 @@ public class AppFunctions {
 	private boolean startServer( String serverId ) {
 		serverConfigMap = get( serverId );
 		try {
-			executor = new Executor( serverConfigMap, this );
-			serverConfigMap.setRunning( "true" );
+			if (!serverConfigMap.getId().isEmpty() && !serverConfigMap.getPort().isEmpty()) {
+				executor = new Executor( serverConfigMap, this );
+				serverConfigMap.setRunning( "true" );
 
-			for ( int i = 0; i < serverConfigList.size(); ++i ) {
-				if ( serverConfigList.get( i ).getId().equals( serverId ) ) {
-					serverConfigList.get( i ).setRunning( "true" );
+				for ( int i = 0; i < serverConfigList.size(); ++i ) {
+					if ( serverConfigList.get( i ).getId().equals( serverId ) ) {
+						serverConfigList.get( i ).setRunning( "true" );
+					}
 				}
+				return true;
 			}
-			return true;
-
+			else {
+				serverConfigMap.setRunning( "false" );
+				return false;
+			}
 		} catch ( IOException e ) {
-			// webEngineSingleton.executeScript("document.getElementById('console_" + serverConfigMap.getId() + "').innerHTML += 'Port#" + serverConfigMap.getPort() + " appears to be in use already';");
 			serverConfigMap.setRunning( "false" );
 			return false;
 		}

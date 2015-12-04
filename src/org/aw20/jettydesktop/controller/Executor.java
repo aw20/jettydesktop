@@ -82,13 +82,13 @@ public class Executor extends Object {
 
 
 	public Executor( ServerConfigMap serverConfigMap, AppFunctions appFunctions ) throws IOException {
-
+		
 		allInstances.add( this );
 
 		scm = serverConfigMap;
 		this.appFunctions = appFunctions;
 
-		// Check to see if this server is already running
+		// Check to see if this server is already running	
 		if ( SocketUtil.isRemotePortAlive( serverConfigMap.getIP(), Integer.parseInt( serverConfigMap.getPort() ) ) ) {
 			throw new IOException( "Port#" + serverConfigMap.getPort() + " appears to be in use already" );
 		}

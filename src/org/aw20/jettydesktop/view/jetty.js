@@ -10,6 +10,7 @@ $( document ).ready(function() {
 	//get and list saved webapps
 	refreshServerList();
 	refreshEditFormsAndConsoles();
+    
 	
 	$( '.j_reveal' ).on( 'click', function() {
         $( '.main' ).toggleClass( 'reveal' );
@@ -174,6 +175,7 @@ $( document ).ready(function() {
 		//enable open button
 		$( '#btn_open' ).prop( 'disabled', true );
 		$( '#btn_clear' ).prop( 'disabled', false );
+		
     });
     
     $(document).on('click', '.play', function() {
@@ -197,16 +199,13 @@ $( document ).ready(function() {
 			$(this).closest('a').addClass('running');
 			$( '#btn_delete' ).prop( 'disabled', true );
 			$( '#btn_open' ).prop( 'disabled', false );
+			$(this).removeClass('play');
+			$(this).addClass('stop');
 		}
 		else {
 			$( '#btn_delete' ).prop( 'disabled', false );
 			$( '#btn_open' ).prop( 'disabled', true );
 		}
-		
-		$(this).removeClass('play');
-		$(this).addClass('stop');
-		
-		
     });
 
     $(document).on('click', '.stop', function() {
@@ -248,6 +247,10 @@ $( document ).ready(function() {
     	
     	updateHtml();
     	$( '.j_settings' ).removeClass( 'active' );
+    	$( '.j_console' ).addClass( 'hide' );
+    	$( '.j_settings' ).addClass( 'hide' );
+    	$( '.console_template' ).removeClass( 'hide' );
+    	$( '#settings_footer' ).addClass( 'hide' );
     });
 
     $(document).on('click', '.select_server', function() {
@@ -272,8 +275,8 @@ $( document ).ready(function() {
 			servers.push(apps[i].SERVER_ID);
 			var id = apps[i].SERVER_ID;
 
-			var a = '<a id="webapp_' + id + '" class="app list_item" data-index="' + id + '" href="javascript:void(0)"><span class="play"></span>' + apps[i].SERVER_NAME + '</a>';
-
+			//var a = '<a id="webapp_' + id + '" class="app list_item" href="javascript:void(0)"><div class="action tooltip" title="' + apps[i].SERVER_NAME + '"><span class="play"></span></div>' + apps[i].SERVER_NAME + '</a>';
+			var a = '<a id="webapp_' + id + '" class="app list_item" href="javascript:void(0)"><div class="action" title="' + apps[i].SERVER_NAME + '"><span class="play"></span></div>' + apps[i].SERVER_NAME + '</a>';
 		    $('#items').append(a);
 		}
 		orderList();
