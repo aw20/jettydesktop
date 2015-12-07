@@ -18,8 +18,7 @@ $( document ).ready(function() {
         $( '.main' ).toggleClass( 'reveal' );
     });
 	
-	if (apps == "") {
-	
+	if (apps == "") {	
 		addWebApp();
 	}
 	
@@ -95,6 +94,7 @@ $( document ).ready(function() {
 	    	$( '#console_footer, #console_' + selectedServer ).addClass( 'hide' );
     	}
     	else {
+    		$( '.j_console' ).addClass( 'active' );
 	    	$( '#settings_footer, #edit_' + selectedServer ).addClass( 'hide' );
 	    	$( '#console_footer, #console_' + selectedServer + ', #memory_' + selectedServer + ', #lastupdate_' + selectedServer).removeClass( 'hide' );
     	}
@@ -278,9 +278,17 @@ $( document ).ready(function() {
     	$( '#console_template' ).after('<div class="console hide console_server" id="console_' + newServer + '"><p></p></div>');
 		//load form
 		var template = editTemplate.replace(/{x}/g, newServer);
-
-
+		
 		$('.settings').append(template);
+		//add placeholder values here
+		$('#form_name_' + newServer).attr("placeholder", "Webapp name");
+		$('#form_ip_' + newServer).attr("placeholder", "127.0.0.1");
+		$('#form_port_' + newServer).attr("placeholder", "8080");
+		$('#form_web_folder_' + newServer + '_text').attr("placeholder", "C:/path/to/webapp");
+		$('#form_uri_' + newServer).attr("placeholder", "defaulturi");
+		$('#form_jvmargs_' + newServer).attr("placeholder", "-server -Xms2G -Xmx2G");
+		$('#form_memory_' + newServer).attr("placeholder", "64");
+		$('#form_customjvm_' + newServer + '_text').attr("placeholder", "C:/path/to/java");
 
 		$('#form_label_java_' + newServer).text(currentJvm);
 
@@ -291,16 +299,19 @@ $( document ).ready(function() {
     function refreshServerList(){
     	servers = [];
     	
-		for (var i in apps){
-			
+		for (var i in apps){			
 			servers.push(apps[i].SERVER_ID);
 			var id = apps[i].SERVER_ID;
 			
 			var a = '<a id="webapp_' + id + '" class="app list_item" href="javascript:void(0)"><div class="action" title="' + apps[i].SERVER_NAME + '"><span class="play"></span></div>' + apps[i].SERVER_NAME + '</a>';
 			
 			$('#items').append(a);
+			
+			if (app.getRunning(id)){
+		    	$('#webapp_' + id).find('span').addClass('running').addClass('stop').removeClass('play');
+		    }
 		}
-		orderList();
+		orderList();		
 	}
 
     function refreshEditFormsAndConsoles(){
@@ -335,7 +346,6 @@ $( document ).ready(function() {
 			}
 			else{
 				$(' #form_radio_custom_' + name).prop('checked', true);
-				app.outputToEclipse(apps[i].CUSTOMJVM);
 				$(' #form_customjvm_' + name + '_text').val(apps[i].CUSTOMJVM);
 			}
 

@@ -386,8 +386,8 @@ fieldset {
 legend {
   display: block;
   width: 100%;
-  margin: 0 0 0.4em;
-  padding: 0 0 0.4em;
+  margin: 0.4em 0 0.4em;
+  padding: 0.4em 0 0.4em;
   color: gray;
   font-size: 0.9em;
   border-bottom: 1px solid gainsboro;
@@ -408,6 +408,10 @@ input[type="text"], input[type="button"] {
   padding: 0 0.8em;
   line-height: 28px;
   border: 1px solid #c8c8c8;
+}
+
+input[type="text"]{
+	width: 250px;
 }
 
 input[type="button"] {

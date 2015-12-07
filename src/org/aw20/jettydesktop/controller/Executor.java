@@ -34,6 +34,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -60,6 +61,8 @@ public class Executor extends Object {
 	private adminPortWatcher AdminPortWatcher = null;
 	private int adminPort;
 	private ServerConfigMap scm = null;
+
+	DateTimeFormatter formatter = DateTimeFormatter.ofPattern( "dd/MM/yyyy HH:MM:SS" );
 
 	private WebEngine webEngineSingleton = Start.getWebEngineInstance();
 
@@ -175,7 +178,6 @@ public class Executor extends Object {
 		} catch ( Exception e ) {
 			webEngineSingleton.executeScript( "document.getElementById('console_" + scm.getId() + "').innerHTML += '<pre>Using Free AdminPort=" + adminPort + "</pre>';" );
 			webEngineSingleton.executeScript( "document.getElementById('console_" + scm.getId() + "').innerHTML += '<pre>Server not started.</pre>';" );
-			// webEngineSingleton.executeScript("document.getElementById('console_" + scm.getId() + "').innerHTML += '<pre>" + e.getMessage() + "</pre>';");
 
 			return;
 		}
@@ -264,7 +266,7 @@ public class Executor extends Object {
 									// webEngineSingleton.executeScript( "$('console_" + scm.getId() + "').find('pre').text += '" + l + "';" );
 									webEngineSingleton.executeScript( "document.getElementById('console_" + scm.getId() + "').innerHTML += '<pre>" + l + "</pre>';" );
 									webEngineSingleton.executeScript( "document.getElementById('console_" + scm.getId() + "').scrollTop = document.getElementById('console_" + scm.getId() + "').scrollHeight;" );
-									appFunctions.onLastUpdated( LocalDateTime.now().toString().replace( "T", " " ), scm.getId() );
+									appFunctions.onLastUpdated( "Last Updated: " + LocalDateTime.now().format( formatter ).toString(), scm.getId() );
 
 								}
 							} );
