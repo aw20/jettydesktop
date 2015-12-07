@@ -1,5 +1,5 @@
 $( document ).ready(function() {
-	var apps = JSON.parse(app.getServerConfigListAsJson());	
+	var apps = JSON.parse(app.getServerConfigListAsJson());
 	var currentJvm = app.getJava();
 	
 	var selectedServer = 0;
@@ -15,6 +15,10 @@ $( document ).ready(function() {
 	$( '.j_reveal' ).on( 'click', function() {
         $( '.main' ).toggleClass( 'reveal' );
     });
+	
+	if (apps == "") {
+		addWebApp();
+	}
 	
 	$(document).on('click', '.j_settings', function() {
 		$( '.settings, #settings_footer, #edit_' + selectedServer).removeClass( 'hide' );
@@ -81,7 +85,7 @@ $( document ).ready(function() {
     	}
     	
     	if ( $( '.j_settings' ).hasClass( 'active' ) ) {
-	    	$( '#settings_footer, #edit_' + selectedServer ).removeClass( 'hide' );
+    		$( '.settings, #settings_footer, #edit_' + selectedServer).removeClass( 'hide' );
 	    	$( '#console_footer, #console_' + selectedServer ).addClass( 'hide' );
     	}
     	else {
@@ -91,35 +95,9 @@ $( document ).ready(function() {
 		//highlight current
 		$( '#webapp_' + selectedServer ).addClass('current');
     });
-
+    
     $(document).on('click', '.addwebapp', function() {
-    	newServer = apps.length + 1;
-    	
-    	servers.push(newServer);
-    	
-    	$( '.j_settings, .j_console' ).addClass( 'hide' );
-		
-		$( '#settings_footer, #edit_' + newServer ).removeClass( 'hide' );
-    	$( '#console_footer, #console_' + newServer ).addClass( 'hide' );
-
-    	//add hide attr to all consoles + edit forms
-    	for (var i in apps){
-    		var id = apps[i].SERVER_ID;
-    		$( '#webapp_' + id ).removeClass('current');
-    		$( '#console_' + id ).addClass('hide');
-    		$( '#edit_' + id ).addClass('hide');
-    	}
-    	$( '#console_template' ).after('<div class="console hide console_server" id="console_' + newServer + '"><p></p></div>');
-		//load form
-		var template = editTemplate.replace(/{x}/g, newServer);
-
-
-		$('.settings').append(template);
-
-		$('#form_label_java_' + newServer).text(currentJvm);
-
-		$( '.settings, #edit_' + newServer ).removeClass( 'hide' );
-		$( '#console_template' ).addClass( 'hide' );
+    	addWebApp();
     });
 
     $(document).on('click', '.j_save', function() {
@@ -268,6 +246,36 @@ $( document ).ready(function() {
     $('.defaultjvm').click(function () {
     	$('#form_customjvm_' + selectedServer + '_text').val("");
     });
+    
+    function addWebApp(){
+    	newServer = apps.length + 1;
+    	
+    	servers.push(newServer);
+    	
+    	$( '.j_settings, .j_console' ).addClass( 'hide' );
+		
+		$( '#settings_footer, #edit_' + newServer ).removeClass( 'hide' );
+    	$( '#console_footer, #console_' + newServer ).addClass( 'hide' );
+
+    	//add hide attr to all consoles + edit forms
+    	for (var i in apps){
+    		var id = apps[i].SERVER_ID;
+    		$( '#webapp_' + id ).removeClass('current');
+    		$( '#console_' + id ).addClass('hide');
+    		$( '#edit_' + id ).addClass('hide');
+    	}
+    	$( '#console_template' ).after('<div class="console hide console_server" id="console_' + newServer + '"><p></p></div>');
+		//load form
+		var template = editTemplate.replace(/{x}/g, newServer);
+
+
+		$('.settings').append(template);
+
+		$('#form_label_java_' + newServer).text(currentJvm);
+
+		$( '.settings, #edit_' + newServer ).removeClass( 'hide' );
+		$( '#console_template' ).addClass( 'hide' );
+    }
 
     function refreshServerList(){
     	servers = [];
