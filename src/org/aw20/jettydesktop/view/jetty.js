@@ -215,11 +215,17 @@ $( document ).ready(function() {
     		var tagid = $(this).attr('id');
         	selectedServer = tagid.split('_')[1];
     	});
-
-    	var host = apps[selectedServer].SERVER_IP;
-    	var uri = apps[selectedServer].DEFAULTURI;
-
-    	app.openWebApp(host, uri);
+    	
+    	for (var i in apps){
+    		var id = apps[i].SERVER_ID;
+    		if (id == selectedServer){
+    			var host = apps[i].SERVER_IP;
+    	    	var uri = apps[i].DEFAULTURI;
+    	    	
+    	    	app.openWebApp(host, uri);
+    		}
+    	}
+    	
     });
 
     $('#btn_clear').click(function(){

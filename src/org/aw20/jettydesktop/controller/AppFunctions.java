@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -257,12 +258,29 @@ public class AppFunctions {
 	}
 
 
-	public void openWebApp( String host, String defaultUri ) {
-		try {
-			Desktop.getDesktop().browse( java.net.URI.create( "http://" + host + ":" + serverConfigMap.getPort() + defaultUri ) );
-		} catch ( IOException e ) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public void openWebApp( String ip, String defaultUri ) {
+		String host = ip;
+		if ( ip.isEmpty() ) {
+			host = "127.0.0.1";
+		}
+
+		if ( Desktop.isDesktopSupported() ) {
+			Desktop desktop = Desktop.getDesktop();
+			try {
+				URI uri = java.net.URI.create( "http://" + host + ":" + serverConfigMap.getPort() + defaultUri );
+				desktop.browse( uri );
+			} catch ( IOException e ) {
+				// TODO Auto-generated catch block
+				// e.printStackTrace();
+			}
+		} else {
+			Runtime runtime = Runtime.getRuntime();
+			try {
+				runtime.exec( "xdg-open " + java.net.URI.create( "http://" + host + ":" + serverConfigMap.getPort() + defaultUri ) );
+			} catch ( IOException e ) {
+				// TODO Auto-generated catch block
+				// e.printStackTrace();
+			}
 		}
 
 	}
