@@ -3,7 +3,6 @@
 	<head>
 
 		<script src="jquery-1.11.3.min.js"></script>
-		<script src="jquery.tooltipster.min.js"></script>
 		<script src="jetty.js"></script>
 
 		<title>jetty test</title>
@@ -42,7 +41,9 @@
 				</pre>
 			</div><!-- console -->
 			<div class="footer hide" id="console_footer">
-				<p id="memory"></p><p id="lastupdate"></p>
+				<div class="console-info">
+					<p id="memory_{x}" class="hide"></p><p id="lastupdate_{x}" class="hide"></p>
+				</div>
 				<button id="btn_open" disabled>open</button>
 				<button id="btn_clear">clear</button>
 			</div>
@@ -73,7 +74,7 @@
 						<div class="control">
 							<label for="form_web_folder">web folder</label>
 							<input type="text" id="form_web_folder_{x}_text"/>
-							<button id="form_web_folder_{x}" class="btn select_server">get folder</button>
+							<input type="button" id="form_web_folder_{x}" class="btn select_server" value="get folder"/>
 						</div>
 
 						<div class="control">

@@ -10,8 +10,12 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Vector;
 
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
 import javafx.scene.web.WebEngine;
 import javafx.stage.DirectoryChooser;
 
@@ -104,7 +108,7 @@ public class AppFunctions {
 
 	public String getServerConfigListAsJson() {
 		boolean initialLoad = false;
-		if (serverConfigList == null){
+		if ( serverConfigList == null ) {
 			initialLoad = true;
 		}
 		loadSettings();
@@ -114,8 +118,8 @@ public class AppFunctions {
 			count++;
 			ServerConfigMap element = iter.next();
 			element.setId( Integer.toString( count ) );
-			if (initialLoad) {
-				element.setRunning("false");
+			if ( initialLoad ) {
+				element.setRunning( "false" );
 			}
 		}
 
@@ -128,19 +132,30 @@ public class AppFunctions {
 	}
 
 
-	public void deleteWebApp( String serverId ) {
+	public boolean deleteWebApp( String serverId ) {
 		// delete server from settings
-		ServerConfigMap serverConfigMap = get( serverId );// should be current open tab in console
 
-		// Remove from the list
-		for ( int x = 0; x < serverConfigList.size(); x++ ) {
-			if ( serverConfigList.get( x ).getName().equals( serverConfigMap.getName() ) ) {
-				serverConfigList.remove( x );
-				break;
+		Alert alert = new Alert( AlertType.CONFIRMATION, "Are you sure you want to delete this webapp?", ButtonType.YES, ButtonType.NO );
+		Optional<ButtonType> result = alert.showAndWait();
+
+		if ( result.get() == ButtonType.YES ) {
+			ServerConfigMap serverConfigMap = get( serverId );// should be current open tab in console
+
+			// Remove from the list
+			for ( int x = 0; x < serverConfigList.size(); x++ ) {
+				if ( serverConfigList.get( x ).getName().equals( serverConfigMap.getName() ) ) {
+					serverConfigList.remove( x );
+					break;
+				}
 			}
+
+			saveSettings();
+			return true;
 		}
 
-		saveSettings();
+		return false;
+		// else do nothing
+
 	}
 
 
@@ -226,9 +241,12 @@ public class AppFunctions {
 	}
 
 
-	public String getFolder() {
+	public String getFolder( String dir ) {
 		final DirectoryChooser directoryChooser =
 				new DirectoryChooser();
+		if ( dir != null ) {
+			directoryChooser.setInitialDirectory( new File( dir ) );
+		}
 		final File selectedDirectory =
 				directoryChooser.showDialog( Start.stage );
 		if ( selectedDirectory != null ) {
@@ -265,16 +283,18 @@ public class AppFunctions {
 
 
 	// TODO
-	public void onMemory( String line ) {
+	public void onMemory( String line, String id ) {
 		// call update memory usage on jetty desktop app
-		 webEngineSingleton.executeScript("$('#memory').text('" + line + "')");
+		String func = "window.memoryupdated('" + line.toString() + "', " + id + ");";
+		webEngineSingleton.executeScript( func );
 	}
 
 
 	// TODO
-	public void onLastUpdated( String line ) {
+	public void onLastUpdated( String line, String id ) {
 		// call update last updated on jetty desktop app
-		webEngineSingleton.executeScript( "$('#lastupdate').text('Last Updated: " + line + "')" );
+		String func = "window.lastupdated('" + line.toString() + "', " + id + ");";
+		webEngineSingleton.executeScript( func );
 	}
 
 
@@ -282,7 +302,7 @@ public class AppFunctions {
 	private boolean startServer( String serverId ) {
 		serverConfigMap = get( serverId );
 		try {
-			if (!serverConfigMap.getId().isEmpty() && !serverConfigMap.getPort().isEmpty()) {
+			if ( !serverConfigMap.getId().isEmpty() && !serverConfigMap.getPort().isEmpty() ) {
 				executor = new Executor( serverConfigMap, this );
 				serverConfigMap.setRunning( "true" );
 

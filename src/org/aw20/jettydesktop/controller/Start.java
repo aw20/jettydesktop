@@ -28,9 +28,10 @@ import netscape.javascript.JSObject;
 
 
 public class Start extends Application {
+	
+	private String title = "Jetty Desktop";
 
 	protected Scene primaryScene;
-
 	private static Resources res = new Resources();
 
 	public static Stage stage;
@@ -47,12 +48,10 @@ public class Start extends Application {
 	if ( f.exists() ) {
 		temp = f;
 	}
-	File f1 = new File( temp + "/index.html" );
 
 	dest = new File( temp + "/jettystyle" );
 	if ( !dest.exists() ) {
 		dest.mkdir();
-		System.out.println( "Directory made: " + dest );
 	}
 
 	// if ( !f1.exists() ) //this line is for Tony
@@ -83,7 +82,7 @@ public class Start extends Application {
 
 	AnchorPane anchorPane = new AnchorPane();
 	stage = primaryStage;
-	primaryStage.setTitle( "" );
+	primaryStage.setTitle( title );
 
 	final AppFunctions appFunctions = AppFunctions.getInstance();
 	URL index = null;

@@ -1,11 +1,13 @@
 $( document ).ready(function() {
+	
 	var apps = JSON.parse(app.getServerConfigListAsJson());
-	var currentJvm = app.getJava();
+	var currentJvm = app.getJava();	
 	
 	var selectedServer = 0;
 	var newServer = 0;
 	var servers = [];
 	var editTemplate = $('.settings').clone().html();
+	var consoleFooterTemplate = $('.console-info').clone().html();
 	
 	//get and list saved webapps
 	refreshServerList();
@@ -17,6 +19,7 @@ $( document ).ready(function() {
     });
 	
 	if (apps == "") {
+	
 		addWebApp();
 	}
 	
@@ -34,6 +37,7 @@ $( document ).ready(function() {
 
     	//display current edit window
     	$( '#edit_' + selectedServer ).removeClass('hide');
+    	
 	});
 	
 	$(document).on('click', '.j_console', function() {
@@ -68,6 +72,8 @@ $( document ).ready(function() {
     		$( '#webapp_' + id ).removeClass('current');
     		$( '#console_' + id ).addClass('hide');
     		$( '#edit_' + id ).addClass('hide');
+    		$( '#memory_' + id ).addClass('hide');
+    		$( '#lastupdate_' + id ).addClass('hide');
     	}
 
     	if (!app.getRunning(selectedServer)){
@@ -90,13 +96,14 @@ $( document ).ready(function() {
     	}
     	else {
 	    	$( '#settings_footer, #edit_' + selectedServer ).addClass( 'hide' );
-	    	$( '#console_footer, #console_' + selectedServer ).removeClass( 'hide' );
+	    	$( '#console_footer, #console_' + selectedServer + ', #memory_' + selectedServer + ', #lastupdate_' + selectedServer).removeClass( 'hide' );
     	}
 		//highlight current
 		$( '#webapp_' + selectedServer ).addClass('current');
     });
     
     $(document).on('click', '.addwebapp', function() {
+    	$( '.delete' ).attr( 'disabled', true );
     	addWebApp();
     });
 
@@ -151,16 +158,19 @@ $( document ).ready(function() {
 		//disable edit, delete, start buttons
 		$( '#btn_delete' ).prop( 'disabled', false );
 		//enable open button
-		$( '#btn_open' ).prop( 'disabled', true );
+		$( '.delete' ).attr( 'disabled', false );
 		$( '#btn_clear' ).prop( 'disabled', false );
+		
+		$( '#settings_footer').addClass('hide');
 		
     });
     
-    $(document).on('click', '.play', function() {
+    $(document).on('click', '.play', function() {    	
     	selectedServer = $(this).closest('a').attr('id').split('_')[1];   
+    	
     	$(this).closest('a').addClass('current');    	
     	
-    	document.getElementById('console_' + selectedServer).innerHTML += '<pre>Starting Server...</pre>';
+    	$('#console_' + selectedServer).append('<pre>Starting Server...</pre>');
     	
 		$( '#console_template' ).addClass( 'hide' );
 		$( '#console_' + selectedServer ).removeClass( 'hide' );
@@ -171,7 +181,7 @@ $( document ).ready(function() {
 		$( '#edit_' + selectedServer ).addClass( 'hide' );
 		$( '.settings' ).addClass( 'hide' );
 		
-		document.getElementById('console_' + selectedServer).innerHTML += '<pre>' + app.onServerStart(selectedServer) + '</pre>';
+		$('#console_' + selectedServer).append('<pre>' + app.onServerStart(selectedServer) + '</pre>');
 				
 		if (app.getRunning(selectedServer)){
 			$(this).closest('a').addClass('running');
@@ -197,7 +207,6 @@ $( document ).ready(function() {
 		
 		$(this).addClass('play');
 		$(this).removeClass('stop');
-		//app.outputToEclipse(document.documentElement.innerHTML);
     });
 
     $('#btn_open').click(function(){
@@ -219,20 +228,22 @@ $( document ).ready(function() {
 
 
     $('.delete').click(function () {
-    	app.deleteWebApp(selectedServer);
-    	$( '#edit_' + selectedServer ).remove();
-    	$( '#console_' + selectedServer ).remove();
-    	
-    	updateHtml();
-    	$( '.j_settings' ).removeClass( 'active' );
-    	$( '.j_console' ).addClass( 'hide' );
-    	$( '.j_settings' ).addClass( 'hide' );
-    	$( '.console_template' ).removeClass( 'hide' );
-    	$( '#settings_footer' ).addClass( 'hide' );
+    	if (app.deleteWebApp(selectedServer)) {
+	    	$( '#edit_' + selectedServer ).remove();
+	    	$( '#console_' + selectedServer ).remove();
+	    	
+	    	updateHtml();
+	    	$( '.j_settings' ).removeClass( 'active' );
+	    	$( '.j_console' ).addClass( 'hide' );
+	    	$( '.j_settings' ).addClass( 'hide' );
+	    	$( '.console_template' ).removeClass( 'hide' );
+	    	$( '#settings_footer' ).addClass( 'hide' );
+    	}
     });
 
     $(document).on('click', '.select_server', function() {
-    	var dir = app.getFolder();
+    	var folder = $('#form_web_folder_' + selectedServer + '_text').val();
+    	var dir = app.getFolder(folder);
     	$('#form_web_folder_' + selectedServer + '_text').val(dir);
     });
 
@@ -279,24 +290,31 @@ $( document ).ready(function() {
 
     function refreshServerList(){
     	servers = [];
+    	
 		for (var i in apps){
+			
 			servers.push(apps[i].SERVER_ID);
 			var id = apps[i].SERVER_ID;
-
-			//var a = '<a id="webapp_' + id + '" class="app list_item" href="javascript:void(0)"><div class="action tooltip" title="' + apps[i].SERVER_NAME + '"><span class="play"></span></div>' + apps[i].SERVER_NAME + '</a>';
+			
 			var a = '<a id="webapp_' + id + '" class="app list_item" href="javascript:void(0)"><div class="action" title="' + apps[i].SERVER_NAME + '"><span class="play"></span></div>' + apps[i].SERVER_NAME + '</a>';
-		    $('#items').append(a);
+			
+			$('#items').append(a);
 		}
 		orderList();
 	}
 
     function refreshEditFormsAndConsoles(){
 		//load web app consoles + settings page
+    	
 		for (var i in apps){
 			var name = apps[i].SERVER_ID;
 			
 			//load console
 			$( '#console_template' ).after('<div class="console hide console_server" id="console_' + name + '"><p><pre></pre></p></div>');
+			//load console footer 
+			var consoleFooter = consoleFooterTemplate.replace(/{x}/g, name);
+			$('.console-info').append(consoleFooter);
+			
 			//load form
 			var template = editTemplate.replace(/{x}/g, name);
 			
@@ -328,7 +346,6 @@ $( document ).ready(function() {
 			$( "#edit_" + name ).addClass('hide');
 		}
 		$('#console_template').removeClass('hide');
-		//app.outputToEclipse(document.documentElement.innerHTML);
 	}
 
     function updateHtml(){
@@ -338,26 +355,36 @@ $( document ).ready(function() {
     	$( '.settings' ).addClass( 'hide' );
 
     	refreshServerList();
-    	// app.outputToEclipse(document.documentElement.innerHTML);
+    }
+    
+    window.lastupdated = function (line, server) {
+    	$('#lastupdate_' + server).text(line);
+    }
+    
+    window.memoryupdated = function (line, server) {
+    	$('#memory_' + server).text(line);
     }
 
     function orderList() {
+    	
         var classname = document.getElementsByClassName('list_item');
         var divs = [];
         for (var i = 0; i < classname.length; ++i) {
             divs.push(classname[i]);
         }
         divs.sort(function(a, b) {
+        	
             return a.innerHTML.toLowerCase().localeCompare(b.innerHTML.toLowerCase());
         });
 
         divs.forEach(function(el) {
         	$('#items').append(el);
+
         });
     }
 
     //form validation - NONE OF THIS WORKS ON NEW FORM YET
-    function validateFormOnSubmit(theForm) {
+    /*function validateFormOnSubmit(theForm) {
 
 		var reason = "";
 	    reason += validateName(theForm.elements["server_name"].value);
@@ -399,5 +426,5 @@ $( document ).ready(function() {
 			return "Please enter a folder. ";
 		else
 			return "";
-	}
+	}*/
 });

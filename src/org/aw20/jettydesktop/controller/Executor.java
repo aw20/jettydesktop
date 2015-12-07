@@ -82,13 +82,13 @@ public class Executor extends Object {
 
 
 	public Executor( ServerConfigMap serverConfigMap, AppFunctions appFunctions ) throws IOException {
-		
+
 		allInstances.add( this );
 
 		scm = serverConfigMap;
 		this.appFunctions = appFunctions;
 
-		// Check to see if this server is already running	
+		// Check to see if this server is already running
 		if ( SocketUtil.isRemotePortAlive( serverConfigMap.getIP(), Integer.parseInt( serverConfigMap.getPort() ) ) ) {
 			throw new IOException( "Port#" + serverConfigMap.getPort() + " appears to be in use already" );
 		}
@@ -113,8 +113,8 @@ public class Executor extends Object {
 
 		List<String> programArgs = new ArrayList<String>();
 		programArgs.add( JDK_HOME );
-		//programArgs.add( null );
-		
+		// programArgs.add( null );
+
 		if ( serverConfigMap.getMemoryJVM() != null )
 			programArgs.add( "-Xmx" + serverConfigMap.getMemoryJVM() + "m" );
 
@@ -216,7 +216,7 @@ public class Executor extends Object {
 							Platform.runLater( new Runnable() {
 
 								public void run() {
-									appFunctions.onMemory( l );
+									appFunctions.onMemory( l, scm.getId() );
 								}
 							} );
 					}
@@ -261,10 +261,10 @@ public class Executor extends Object {
 							Platform.runLater( new Runnable() {
 
 								public void run() {
-									//webEngineSingleton.executeScript( "$('console_" + scm.getId() + "').find('pre').text += '" + l + "';" );
+									// webEngineSingleton.executeScript( "$('console_" + scm.getId() + "').find('pre').text += '" + l + "';" );
 									webEngineSingleton.executeScript( "document.getElementById('console_" + scm.getId() + "').innerHTML += '<pre>" + l + "</pre>';" );
 									webEngineSingleton.executeScript( "document.getElementById('console_" + scm.getId() + "').scrollTop = document.getElementById('console_" + scm.getId() + "').scrollHeight;" );
-									appFunctions.onLastUpdated(LocalDateTime.now ( ).toString ().replace ( "T", " " ));
+									appFunctions.onLastUpdated( LocalDateTime.now().toString().replace( "T", " " ), scm.getId() );
 
 								}
 							} );
