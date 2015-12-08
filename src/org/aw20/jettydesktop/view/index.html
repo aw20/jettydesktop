@@ -4,6 +4,10 @@
 
 		<script src="jquery-1.11.3.min.js"></script>
 		<script src="jetty.js"></script>
+<!---
+		<script type='text/javascript' src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script>
+ --->
+
 
 		<title>jetty test</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
@@ -50,7 +54,7 @@
 
 
 			<div class="settings hide">
-				<div id="edit_{x}" class="template hide">
+				<div id="edit_{x}" class="template hide edit">
 					<fieldset>
 						<legend>Server name</legend>
 						<div class="control">
@@ -109,12 +113,11 @@
 						</div>
 					</fieldset>
 
-					<!--<button id="btn_cancel_{x}" class="btn j_cancel">cancel</button>-->
 				</div>
 			</div><!-- settings -->
-			<div class="footer hide" id="settings_footer">
-				<button id="btn_save_{x}" class="btn j_save">save</button>
-				<button id="btn_delete_{x}" class="delete">delete</button>
+			<div class="footer" id="settings_footer">
+				<button id="btn_save_{x}" class="btn j_save hide ">save</button>
+				<button id="btn_delete_{x}" class="delete hide">delete</button>
 			</div>
 
 

@@ -121,6 +121,7 @@ public class AppFunctions {
 			element.setId( Integer.toString( count ) );
 			if ( initialLoad ) {
 				element.setRunning( "false" );
+				element.setDeleted( "false" );
 			}
 		}
 
@@ -145,7 +146,8 @@ public class AppFunctions {
 			// Remove from the list
 			for ( int x = 0; x < serverConfigList.size(); x++ ) {
 				if ( serverConfigList.get( x ).getName().equals( serverConfigMap.getName() ) ) {
-					serverConfigList.remove( x );
+					// serverConfigList.remove( x );
+					serverConfigList.get( x ).setDeleted( "true" );
 					break;
 				}
 			}
@@ -245,7 +247,7 @@ public class AppFunctions {
 	public String getFolder( String dir ) {
 		final DirectoryChooser directoryChooser =
 				new DirectoryChooser();
-		if ( dir != null ) {
+		if ( !dir.isEmpty() ) {
 			directoryChooser.setInitialDirectory( new File( dir ) );
 		}
 		final File selectedDirectory =
@@ -297,6 +299,16 @@ public class AppFunctions {
 			serverConfigMap = serverConfigList.get( i );
 			serverConfigMap.setRunning( "false" );
 		}
+	}
+
+
+	public void exit() {
+		for ( int i = serverConfigList.size() - 1; i > 0; --i ) {
+			if ( serverConfigList.get( i ).getDeleted() == "true" ) {
+				serverConfigList.remove( i );
+			}
+		}
+		saveSettings();
 	}
 
 

@@ -147,6 +147,7 @@ public class Start extends Application {
 									t.consume();
 								}
 							} else {
+								appFunctions.exit();
 								Platform.exit();
 							}
 						}
