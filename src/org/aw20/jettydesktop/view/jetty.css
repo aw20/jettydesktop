@@ -279,13 +279,13 @@ pre {
   transition: all 0.3s ease-out;
 }
 .nav a .action span.play {
-  /*shape-inside: polygon(0 0, 12px 6px, 12px 6px, 0 12px);
-  -webkit-clip-path: polygon(0 0, 12px 6px, 12px 6px, 0 12px);*/
+  shape-inside: polygon(0 0, 12px 6px, 12px 6px, 0 12px);
+  -webkit-clip-path: polygon(0 0, 12px 6px, 12px 6px, 0 12px);
 }
 .nav a .action span.stop {
   background-color: #c93a40;
-  /*shape-inside: polygon(0 0, 12px 0, 12px 12px, 0 12px);
-  -webkit-clip-path: polygon(0 0, 12px 0, 12px 12px, 0 12px);*/
+  shape-inside: polygon(0 0, 12px 0, 12px 12px, 0 12px);
+  -webkit-clip-path: polygon(0 0, 12px 0, 12px 12px, 0 12px);
 }
 .nav a .action:hover span.play {
   background-color: #00a99d;
