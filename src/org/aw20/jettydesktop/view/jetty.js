@@ -64,6 +64,7 @@ $( document ).ready(function() {
     	$( '.settings' ).addClass( 'hide' );
     	var tagid = this.id;
     	selectedServer = $(this).data('index');
+    	
     	$( this ).addClass('current');
     	//show settings and console tabs
     	if( $( '.j_settings' ).hasClass( 'hide' ) && $( '.j_console' ).hasClass( 'hide' ) ) {
@@ -114,13 +115,14 @@ $( document ).ready(function() {
     });
 
     $(document).on('click', '.j_save', function() {
-    	if (validate()){
-	    	var savedServer = selectedServer;
-	    	
-	    	if (newServer != 0){
-	    		savedServer = newServer;
-	    	}	
-	
+    	var savedServer = selectedServer;
+    	
+    	if (newServer != 0){
+    		savedServer = newServer;
+    	}
+
+    	if (validate(savedServer)){
+	    		
 	    	var name = $('#form_name_' + savedServer).val();
 	    	var ip = $('#form_ip_' + savedServer).val();
 			var port = $('#form_port_' + savedServer).val();
@@ -154,6 +156,7 @@ $( document ).ready(function() {
 			updateHtml();
 			
 			newServerBool = false;
+			newServer = 0;
 			$( '.delete' ).attr( 'disabled', false );
 			//re add current class & show console
 			if (!selectedServer == 0){
@@ -215,8 +218,7 @@ $( document ).ready(function() {
 			$( '#btn_delete' ).prop( 'disabled', false );
 			$( '#btn_open' ).prop( 'disabled', true );
 		}
-		app.outputToEclipse(document.documentElement.innerHTML);
-	
+		
 		e.stopPropagation();
     });
 
@@ -343,13 +345,13 @@ $( document ).ready(function() {
 			
 			//add placeholder values here
 			$('#form_name_' + newServer).attr("placeholder", "Webapp name");
-			$('#form_ip_' + newServer).attr("placeholder", "optional 127.0.0.1");
+			$('#form_ip_' + newServer).attr("placeholder", "127.0.0.1");
 			$('#form_port_' + newServer).attr("placeholder", "8080");
 			$('#form_web_folder_' + newServer + '_text').attr("placeholder", "C:/path/to/webapp");
-			$('#form_uri_' + newServer).attr("placeholder", "optional defaulturi");
-			$('#form_jvmargs_' + newServer).attr("placeholder", "optional -server -Xms2G -Xmx2G");
-			$('#form_memory_' + newServer).attr("placeholder", "optional 64");
-			$('#form_customjvm_' + newServer + '_text').attr("placeholder", "optional C:/path/to/java");	
+			$('#form_uri_' + newServer).attr("placeholder", "defaulturi");
+			$('#form_jvmargs_' + newServer).attr("placeholder", "-server -Xms2G -Xmx2G");
+			$('#form_memory_' + newServer).attr("placeholder", "64");
+			$('#form_customjvm_' + newServer + '_text').attr("placeholder", "C:/path/to/java");	
 			
 			$('#form_label_java_' + newServer).text(currentJvm);
 			
@@ -365,8 +367,7 @@ $( document ).ready(function() {
 			//disable delete button
 			$( '#btn_delete_' + servers.length ).attr( 'disabled', true );
 			
-		}
-		
+		}		
     }
 
     function refreshServerList(){
@@ -484,29 +485,26 @@ $( document ).ready(function() {
 
 
     //form validation
-    function validate() {
+    function validate(server) {
     	var valid = [];
     	
-    	$( '.j_save' ).each(function( index ) {
-    		var tagid = $(this).attr('id');
-    		selectedServer = tagid.split('_')[2];
-    	});
-    	
-    	validateName($('#form_name_' + selectedServer).val());
-    	validateIP($('#form_ip_' + selectedServer).val());
-    	validatePort($('#form_port_' + selectedServer).val());
-    	validateWebFolder($('#form_web_folder_' + selectedServer + '_text').val())
-    	validateMemory($('#form_memory_' + selectedServer).val());
+    	validateName($('#form_name_' + server).val());
+    	validateIP($('#form_ip_' + server).val());
+    	validatePort($('#form_port_' + server).val());
+    	validateWebFolder($('#form_web_folder_' + server + '_text').val())
+    	validateMemory($('#form_memory_' + server).val());
     	
 		function validateName(name){
 			if (name == "" || name == undefined){
-				$('#form_name_error_' + selectedServer).text('Please enter a valid name.'); 
+				//$('#form_name_error_' + selectedServer).text('Please enter a valid name.');
+				$('#form_name_' + server).css('border-color','red');
 				valid.push(false);
 			}
 			else{
-				$('#form_name_error_' + selectedServer).text(''); 
+				$('#form_name_' + server).css('border','1px solid #c8c8c8');
+				//$('#form_name_error_' + selectedServer).text(''); 
 				valid.push(true);
-			}			
+			}
 		}
 	
 		function validateIP(ip){
@@ -515,42 +513,47 @@ $( document ).ready(function() {
 			}
 			else {
 				if (!/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip)){
-					$('#form_ip_error_' + selectedServer).text('Please enter a valid IP address.'); 
+					$('#form_ip_' + server).css('border-color','red');
+					//$('#form_ip_error_' + server).text('Please enter a valid IP address.'); 
 					valid.push(false);
 				}
 				else {
-					$('#form_ip_error_' + selectedServer).text('');
+					$('#form_ip_' + server).css('border','1px solid #c8c8c8');
+					//$('#form_ip_error_' + server).text('');
 					valid.push(true);
 				}
-			}				
+			}
 		}
 	
 		function validatePort(port){
 			if (port == "" || port == undefined){
-				$('#form_port_error_' + selectedServer).text('Please enter a port.');
+				$('#form_port_' + server).css('border-color','red');
+				//$('#form_port_error_' + server).text('Please enter a port.');
 				valid.push(false);
 			}
 			else {
 				if (!/^[0-9]+$/.test(port)){
-					$('#form_port_error_' + selectedServer).text('Please enter a valid port.'); 
+					$('#form_port_' + server).css('border-color','red');
+					//$('#form_port_error_' + server).text('Please enter a valid port.'); 
 					valid.push(false);
 				}
 				else {
-					$('#form_port_error_' + selectedServer).text('');
+					$('#form_port_' + server).css('border','1px solid #c8c8c8');
+					//$('#form_port_error_' + server).text('');
 					valid.push(true);
 				}
 			}
 		}
 	
 		function validateWebFolder(folder){
-			//app.outputToEclipse(folder);
 			if (folder == "" || folder == undefined) {
-				app.outputToEclipse("in if");
-				$('#form_webfolder_error_' + selectedServer).text('Please select a webapp.');
+				$('#form_web_folder_' + server + "_text").css('border-color','red');
+				//$('#form_webfolder_error_' + server).text('Please select a webapp.');
 				valid.push(false);
 			}
 			else {
-				$('#form_webfolder_error_' + selectedServer).text('');
+				$('#form_web_folder_' + server + "_text").css('border','1px solid #c8c8c8');
+				//$('#form_webfolder_error_' + server).text('');
 				valid.push(true);
 			}
 		}
@@ -561,15 +564,15 @@ $( document ).ready(function() {
 			}
 			else{
 				if (!/^[0-9]+$/.test(memory)){
-					app.outputToEclipse("memory: (" + memory + ")");
-					$('#form_memory_error_' + selectedServer).text('Please enter a valid number.'); 
+					$('#form_memory_' + server).css('border-color','red');
+					//$('#form_memory_error_' + server).text('Please enter a valid number.'); 
 					valid.push(false);
 				}
 				else{
+					$('#form_memory_' + server).css('border','1px solid #c8c8c8');
 					valid.push(true);
 				}
 			}
-			
 		}
 		if (!(valid.indexOf(false) > -1)){
 			return true;
