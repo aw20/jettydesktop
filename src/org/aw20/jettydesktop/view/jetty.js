@@ -56,7 +56,10 @@ $( document ).ready(function() {
 		$( '#edit_' + selectedServer ).removeClass('hide');
 	});
 
-    $(document).on('click', '.app', function() {    	
+    $(document).on('click', '.app', function() {
+    	
+    	$( "body" ).find( ".data" ).addClass('hide');
+    	
     	//this.id is "webapp_1"
     	$( '.settings' ).addClass( 'hide' );
     	var tagid = this.id;
@@ -156,7 +159,9 @@ $( document ).ready(function() {
 			$( '#webapp_' + selectedServer ).addClass('current');
 			$( '#console_' + selectedServer ).removeClass('hide');
 			$( '#console_footer').removeClass('hide');
-			$( '#settings_footer').addClass('hide');			
+			$( '#settings_footer').addClass('hide');
+			$( '.j_console, .j_settings' ).removeClass('hide');
+			$( '.j_console' ).addClass( 'active' );
 		}
 		else {
 			$( '#console_template' ).removeClass('hide');
@@ -172,21 +177,26 @@ $( document ).ready(function() {
 		orderList();
     });
     
-    $(document).on('click', '.play', function() {    	
-    	selectedServer = $(this).closest('a').attr('id').split('_')[1];   
+    $(document).on('click', '#get_html', function() { 
+    	app.outputToEclipse(document.documentElement.innerHTML);
+    });
+    
+    $(document).on('click', '.play', function(e) {    	
+    	selectedServer = $(this).closest('a').attr('id').split('_')[1];
+    	$( "body" ).find( ".data" ).addClass('hide');
+    	$( "body" ).find( "a" ).removeClass('current');
+    	$( this ).closest('a').addClass('current');
+    	
+    	$( '.settings, #settings_footer, #console_template, #edit_' + selectedServer).addClass( 'hide' );
+		$( '#console_footer, #console_' + selectedServer ).removeClass( 'hide' );
+		$( '.j_settings' ).removeClass( 'active' );
+		$( '.j_console' ).addClass( 'active' );
     	
     	$(this).closest('a').addClass('current');    	
     	
     	$('#console_' + selectedServer).append('<pre>Starting Server...</pre>');
     	
-		$( '#console_template' ).addClass( 'hide' );
-		$( '#console_' + selectedServer ).removeClass( 'hide' );
-		$( '#j_console' ).addClass( 'active' );
-		$( '#j_settings' ).removeClass( 'active' );
-		$( '#console_footer' ).removeClass('hide');
-		$( '#settings_footer' ).addClass('hide');
-		$( '#edit_' + selectedServer ).addClass( 'hide' );
-		$( '.settings' ).addClass( 'hide' );
+		$( '.j_settings, .j_console, #memory_' + selectedServer + ', #lastupdate_' + selectedServer ).removeClass( 'hide' );
 		
 		$('#console_' + selectedServer).append('<pre>' + app.onServerStart(selectedServer) + '</pre>');
 				
@@ -201,9 +211,11 @@ $( document ).ready(function() {
 			$( '#btn_delete' ).prop( 'disabled', false );
 			$( '#btn_open' ).prop( 'disabled', true );
 		}
+	
+		e.stopPropagation();
     });
 
-    $(document).on('click', '.stop', function() {
+    $(document).on('click', '.stop', function(e) {
     	selectedServer = $(this).closest('a').attr('id').split('_')[1]; 
     	$(this).closest('a').removeClass('running');
     	document.getElementById('console_' + selectedServer).innerHTML += '<pre>Stopping Server...</pre>';
@@ -214,6 +226,7 @@ $( document ).ready(function() {
 		
 		$(this).addClass('play');
 		$(this).removeClass('stop');
+		e.stopPropagation();
     });
 
     $(document).on('click', '#btn_open', function() {
@@ -426,7 +439,6 @@ $( document ).ready(function() {
 			}
 		}
 		$('#console_template').removeClass('hide');
-		//app.outputToEclipse(document.documentElement.innerHTML);
 	}
 
     function updateHtml(){
@@ -464,49 +476,4 @@ $( document ).ready(function() {
 
         });
     }
-
-    //form validation - NONE OF THIS WORKS ON NEW FORM YET
-    /*function validateFormOnSubmit(theForm) {
-
-		var reason = "";
-	    reason += validateName(theForm.elements["server_name"].value);
-	    reason += validateIP(theForm.elements["ip_address"].value);
-	    reason += validatePort(theForm.elements["port"].value);
-	    reason += validateWebFolder(theForm.web_folder);
-
-	    if (reason != "") {
-	        document.getElementById("p1").innerHTML = "Some fields need correction:\n" + reason;
-	    } else {
-	        simpleCart.checkout();
-	    }
-	    return false;
-	}
-
-	function validateName(name){
-		if (name == "")
-			return "Please enter a name. ";
-		else
-			return "";
-	}
-
-	function validateIP(ip){
-		if (ip == "")
-			return "Please enter an ip address. ";
-		else
-			return "";
-	}
-
-	function validatePort(port){
-		if (port == "")
-			return "Please enter a port. ";
-		else
-			return "";
-	}
-
-	function validateWebFolder(folder){
-		if (folderme == "")
-			return "Please enter a folder. ";
-		else
-			return "";
-	}*/
 });
