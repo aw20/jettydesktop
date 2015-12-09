@@ -114,74 +114,76 @@ $( document ).ready(function() {
     });
 
     $(document).on('click', '.j_save', function() {
-    	var savedServer = selectedServer;
-    	
-    	if (newServer != 0){
-    		savedServer = newServer;
-    	}	
-
-    	var name = $('#form_name_' + savedServer).val();
-    	var ip = $('#form_ip_' + savedServer).val();
-		var port = $('#form_port_' + savedServer).val();
-		var webFolder = $('#form_web_folder_' + savedServer + '_text').val();
-		var uri = $('#form_uri_' + savedServer).val();
-		var defaultJvm, customJvmBool, customJvm;
-
-		if ($(' #form_radio_hotspot_' + savedServer).is(':checked')) {
-			defaultJvm = true;
-			customJvmBool = false;
-			customJvm = "";
-		}
-		else {
-			defaultJvm = false;
-			customJvmBool = true;
-			customJvm = $(' #form_customjvm_' + savedServer + '_text').val();
-		}
-
-		var jvmArgs = $(' #form_jvmargs_' + savedServer).val();
-		var memory = $(' #form_memory_' + savedServer).val();
-
-		//new app
-		if (apps.length != servers.length){
-			app.saveSettings(true, savedServer, name, ip, port, webFolder, uri, defaultJvm, customJvmBool, customJvm, jvmArgs, memory);
-		}
-		//existing app
-		else {
-			app.saveSettings(false, savedServer, name, ip, port, webFolder, uri, defaultJvm, customJvmBool, customJvm, jvmArgs, memory);
-		}
-
-		updateHtml();
-		
-		newServerBool = false;
-		$( '.delete' ).attr( 'disabled', false );
-		//re add current class & show console
-		if (!selectedServer == 0){
-			$( '#webapp_' + selectedServer ).addClass('current');
-			$( '#console_' + selectedServer ).removeClass('hide');
-			$( '#console_footer').removeClass('hide');
+    	if (validate()){
+	    	var savedServer = selectedServer;
+	    	
+	    	if (newServer != 0){
+	    		savedServer = newServer;
+	    	}	
+	
+	    	var name = $('#form_name_' + savedServer).val();
+	    	var ip = $('#form_ip_' + savedServer).val();
+			var port = $('#form_port_' + savedServer).val();
+			var webFolder = $('#form_web_folder_' + savedServer + '_text').val();
+			var uri = $('#form_uri_' + savedServer).val();
+			var defaultJvm, customJvmBool, customJvm;
+	
+			if ($(' #form_radio_hotspot_' + savedServer).is(':checked')) {
+				defaultJvm = true;
+				customJvmBool = false;
+				customJvm = "";
+			}
+			else {
+				defaultJvm = false;
+				customJvmBool = true;
+				customJvm = $(' #form_customjvm_' + savedServer + '_text').val();
+			}
+	
+			var jvmArgs = $(' #form_jvmargs_' + savedServer).val();
+			var memory = $(' #form_memory_' + savedServer).val();
+	
+			//new app
+			if (apps.length != servers.length){
+				app.saveSettings(true, savedServer, name, ip, port, webFolder, uri, defaultJvm, customJvmBool, customJvm, jvmArgs, memory);
+			}
+			//existing app
+			else {
+				app.saveSettings(false, savedServer, name, ip, port, webFolder, uri, defaultJvm, customJvmBool, customJvm, jvmArgs, memory);
+			}
+	
+			updateHtml();
+			
+			newServerBool = false;
+			$( '.delete' ).attr( 'disabled', false );
+			//re add current class & show console
+			if (!selectedServer == 0){
+				$( '#webapp_' + selectedServer ).addClass('current');
+				$( '#console_' + selectedServer ).removeClass('hide');
+				$( '#console_footer').removeClass('hide');
+				$( '#settings_footer').addClass('hide');
+				$( '.j_console, .j_settings' ).removeClass('hide');
+				$( '.j_console' ).addClass( 'active' );
+			}
+			else {
+				$( '#console_template' ).removeClass('hide');
+			}
+			//disable edit, delete, start buttons
+			$( '#btn_delete' ).prop( 'disabled', false );
+			//enable open button
+			$( '.delete' ).attr( 'disabled', false );
+			$( '#btn_clear' ).prop( 'disabled', false );
+			
 			$( '#settings_footer').addClass('hide');
-			$( '.j_console, .j_settings' ).removeClass('hide');
-			$( '.j_console' ).addClass( 'active' );
-		}
-		else {
-			$( '#console_template' ).removeClass('hide');
-		}
-		//disable edit, delete, start buttons
-		$( '#btn_delete' ).prop( 'disabled', false );
-		//enable open button
-		$( '.delete' ).attr( 'disabled', false );
-		$( '#btn_clear' ).prop( 'disabled', false );
-		
-		$( '#settings_footer').addClass('hide');
-		$( '#console_template' ).addClass( 'hide' );
-		orderList();
+			$( '#console_template' ).addClass( 'hide' );
+			orderList();
+	    }
     });
     
     $(document).on('click', '#get_html', function() { 
     	app.outputToEclipse(document.documentElement.innerHTML);
     });
-    
-    $(document).on('click', '.play', function(e) {    	
+  
+    $(document).on('click', '.play', function(e) {
     	selectedServer = $(this).closest('a').attr('id').split('_')[1];
     	$( "body" ).find( ".data" ).addClass('hide');
     	$( "body" ).find( "a" ).removeClass('current');
@@ -192,11 +194,13 @@ $( document ).ready(function() {
 		$( '.j_settings' ).removeClass( 'active' );
 		$( '.j_console' ).addClass( 'active' );
     	
+    	selectedServer = $(this).closest('a').attr('id').split('_')[1];
+    	
     	$(this).closest('a').addClass('current');    	
     	
     	$('#console_' + selectedServer).append('<pre>Starting Server...</pre>');
     	
-		$( '.j_settings, .j_console, #memory_' + selectedServer + ', #lastupdate_' + selectedServer ).removeClass( 'hide' );
+		$( '.j_settings, .j_console, #memory_' + selectedServer + ', #lastupdate_' + selectedServer + ', #btn_save_' + selectedServer + ', #btn_delete_' + selectedServer ).removeClass( 'hide' );
 		
 		$('#console_' + selectedServer).append('<pre>' + app.onServerStart(selectedServer) + '</pre>');
 				
@@ -211,6 +215,7 @@ $( document ).ready(function() {
 			$( '#btn_delete' ).prop( 'disabled', false );
 			$( '#btn_open' ).prop( 'disabled', true );
 		}
+		app.outputToEclipse(document.documentElement.innerHTML);
 	
 		e.stopPropagation();
     });
@@ -338,13 +343,13 @@ $( document ).ready(function() {
 			
 			//add placeholder values here
 			$('#form_name_' + newServer).attr("placeholder", "Webapp name");
-			$('#form_ip_' + newServer).attr("placeholder", "127.0.0.1");
+			$('#form_ip_' + newServer).attr("placeholder", "optional 127.0.0.1");
 			$('#form_port_' + newServer).attr("placeholder", "8080");
 			$('#form_web_folder_' + newServer + '_text').attr("placeholder", "C:/path/to/webapp");
-			$('#form_uri_' + newServer).attr("placeholder", "defaulturi");
-			$('#form_jvmargs_' + newServer).attr("placeholder", "-server -Xms2G -Xmx2G");
-			$('#form_memory_' + newServer).attr("placeholder", "64");
-			$('#form_customjvm_' + newServer + '_text').attr("placeholder", "C:/path/to/java");	
+			$('#form_uri_' + newServer).attr("placeholder", "optional defaulturi");
+			$('#form_jvmargs_' + newServer).attr("placeholder", "optional -server -Xms2G -Xmx2G");
+			$('#form_memory_' + newServer).attr("placeholder", "optional 64");
+			$('#form_customjvm_' + newServer + '_text').attr("placeholder", "optional C:/path/to/java");	
 			
 			$('#form_label_java_' + newServer).text(currentJvm);
 			
@@ -475,5 +480,102 @@ $( document ).ready(function() {
         	$('#items').append(el);
 
         });
+    }
+
+
+    //form validation
+    function validate() {
+    	var valid = [];
+    	
+    	$( '.j_save' ).each(function( index ) {
+    		var tagid = $(this).attr('id');
+    		selectedServer = tagid.split('_')[2];
+    	});
+    	
+    	validateName($('#form_name_' + selectedServer).val());
+    	validateIP($('#form_ip_' + selectedServer).val());
+    	validatePort($('#form_port_' + selectedServer).val());
+    	validateWebFolder($('#form_web_folder_' + selectedServer + '_text').val())
+    	validateMemory($('#form_memory_' + selectedServer).val());
+    	
+		function validateName(name){
+			if (name == "" || name == undefined){
+				$('#form_name_error_' + selectedServer).text('Please enter a valid name.'); 
+				valid.push(false);
+			}
+			else{
+				$('#form_name_error_' + selectedServer).text(''); 
+				valid.push(true);
+			}			
+		}
+	
+		function validateIP(ip){
+			if (ip == "" || ip == undefined){
+				valid.push(true);
+			}
+			else {
+				if (!/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip)){
+					$('#form_ip_error_' + selectedServer).text('Please enter a valid IP address.'); 
+					valid.push(false);
+				}
+				else {
+					$('#form_ip_error_' + selectedServer).text('');
+					valid.push(true);
+				}
+			}				
+		}
+	
+		function validatePort(port){
+			if (port == "" || port == undefined){
+				$('#form_port_error_' + selectedServer).text('Please enter a port.');
+				valid.push(false);
+			}
+			else {
+				if (!/^[0-9]+$/.test(port)){
+					$('#form_port_error_' + selectedServer).text('Please enter a valid port.'); 
+					valid.push(false);
+				}
+				else {
+					$('#form_port_error_' + selectedServer).text('');
+					valid.push(true);
+				}
+			}
+		}
+	
+		function validateWebFolder(folder){
+			//app.outputToEclipse(folder);
+			if (folder == "" || folder == undefined) {
+				app.outputToEclipse("in if");
+				$('#form_webfolder_error_' + selectedServer).text('Please select a webapp.');
+				valid.push(false);
+			}
+			else {
+				$('#form_webfolder_error_' + selectedServer).text('');
+				valid.push(true);
+			}
+		}
+		
+		function validateMemory(memory){
+			if (memory == "" || memory == undefined){
+				valid.push(true);
+			}
+			else{
+				if (!/^[0-9]+$/.test(memory)){
+					app.outputToEclipse("memory: (" + memory + ")");
+					$('#form_memory_error_' + selectedServer).text('Please enter a valid number.'); 
+					valid.push(false);
+				}
+				else{
+					valid.push(true);
+				}
+			}
+			
+		}
+		if (!(valid.indexOf(false) > -1)){
+			return true;
+		}
+		else{
+			return false;
+		}		
     }
 });
