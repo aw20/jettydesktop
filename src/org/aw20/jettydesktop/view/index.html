@@ -3,11 +3,11 @@
 	<head>
 
 		<script src="jquery-1.11.3.min.js"></script>
+
+		<link rel="stylesheet" href="jquery-ui.css">
+  		<script src="jquery-ui.js"></script>
 		<script src="jetty.js"></script>
-
-		<!--- <script type='text/javascript' src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script> --->
-
-
+		<!---<script type='text/javascript' src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script> --->
 
 		<title>jetty test</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
@@ -17,14 +17,15 @@
 
 	</head>
 	<body>
-
-
 		<div class="nav" id="nav">
 			<h1 class="j_reveal">JettyDesktop v.2.1.0</h1>
 			<div id="items"></div>
 			<button class="addwebapp"><span>+</span>add webapp</button>
 		</div>
 
+		<div id="dialog" title="Are you sure?">
+			<span id="dialogText"></span>
+        </div>
 
 		<div class="main reveal">
 
@@ -123,6 +124,5 @@
 
 
 		</div><!-- main -->
-
 	</body>
 </html>

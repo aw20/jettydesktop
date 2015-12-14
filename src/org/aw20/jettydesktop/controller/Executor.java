@@ -35,6 +35,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -62,7 +63,7 @@ public class Executor extends Object {
 	private int adminPort;
 	private ServerConfigMap scm = null;
 
-	DateTimeFormatter formatter = DateTimeFormatter.ofPattern( "dd/MM/yyyy HH:MM:SS" );
+	private DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime( FormatStyle.MEDIUM, FormatStyle.MEDIUM );
 
 	private WebEngine webEngineSingleton = Start.getWebEngineInstance();
 
@@ -85,7 +86,6 @@ public class Executor extends Object {
 
 
 	public Executor( ServerConfigMap serverConfigMap, AppFunctions appFunctions ) throws IOException {
-
 		allInstances.add( this );
 
 		scm = serverConfigMap;
@@ -267,7 +267,6 @@ public class Executor extends Object {
 									webEngineSingleton.executeScript( "document.getElementById('console_" + scm.getId() + "').innerHTML += '<pre>" + l + "</pre>';" );
 									webEngineSingleton.executeScript( "document.getElementById('console_" + scm.getId() + "').scrollTop = document.getElementById('console_" + scm.getId() + "').scrollHeight;" );
 									appFunctions.onLastUpdated( "Last Updated: " + LocalDateTime.now().format( formatter ).toString(), scm.getId() );
-
 								}
 							} );
 					}

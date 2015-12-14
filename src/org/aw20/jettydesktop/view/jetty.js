@@ -1,7 +1,28 @@
 $( document ).ready(function() {
 	
-	var apps = JSON.parse(app.getServerConfigListAsJson());
-	var currentJvm = app.getJava();	
+	$("#dialog").dialog({
+		autoOpen : false, 
+		modal : true, 
+		show : "blind", 
+		hide : "blind",
+		buttons: {
+            'Yes': function(){
+                $(this).dialog('close');
+                callback("yes");
+            },
+            'No': function(){
+                $(this).dialog('close');
+                callback("no");
+            }
+        },
+        closeOnEscape: false,
+        draggable: false,
+        resizable: false
+	});
+	
+	var apps = JSON.parse(java.getServerConfigListAsJson());
+	
+	var currentJvm = java.getJava();	
 	var newServerBool = false;
 	
 	var selectedServer = 0;
@@ -23,7 +44,7 @@ $( document ).ready(function() {
 	if (apps == "") {	
 		addWebApp();
 	}
-	
+
 	$(document).on('click', '.j_settings', function() {
 		$( '#settings_footer, #btn_save_' + selectedServer + ', #btn_delete_' + selectedServer + ', #edit_' + selectedServer + ', .settings' ).removeClass( 'hide' );
     	$( '#console_footer, #console_' + selectedServer ).addClass( 'hide' );
@@ -55,9 +76,8 @@ $( document ).ready(function() {
 		//display current edit window
 		$( '#edit_' + selectedServer ).removeClass('hide');
 	});
-
+	
     $(document).on('click', '.app', function() {
-    	
     	$( "body" ).find( ".data" ).addClass('hide');
     	
     	//this.id is "webapp_1"
@@ -82,11 +102,11 @@ $( document ).ready(function() {
     		$( '#settings, #console_' + newServer + ',#edit_' + newServer + ', #memory_' + newServer + ', #lastupdate_' + newServer + ', #btn_delete_' + newServer + ', #btn_save_' + newServer  ).addClass('hide');
     	}
 
-    	if (!app.getRunning(selectedServer)){
+    	if (!java.getRunning(selectedServer)){
     		$( '#btn_delete_' + id ).prop( 'disabled', false );
     		$( '#btn_open' ).prop( 'disabled', true );
     	}
-    	else if (app.getRunning(selectedServer)){
+    	else if (java.getRunning(selectedServer)){
     		$( '#btn_delete_' + id ).prop( 'disabled', true );
     		$( '#btn_open' ).prop( 'disabled', false );
     	}
@@ -144,13 +164,13 @@ $( document ).ready(function() {
 			var jvmArgs = $(' #form_jvmargs_' + savedServer).val();
 			var memory = $(' #form_memory_' + savedServer).val();
 	
-			//new app
+			//new java
 			if (apps.length != servers.length){
-				app.saveSettings(true, savedServer, name, ip, port, webFolder, uri, defaultJvm, customJvmBool, customJvm, jvmArgs, memory);
+				java.saveSettings(true, savedServer, name, ip, port, webFolder, uri, defaultJvm, customJvmBool, customJvm, jvmArgs, memory);
 			}
-			//existing app
+			//existing java
 			else {
-				app.saveSettings(false, savedServer, name, ip, port, webFolder, uri, defaultJvm, customJvmBool, customJvm, jvmArgs, memory);
+				java.saveSettings(false, savedServer, name, ip, port, webFolder, uri, defaultJvm, customJvmBool, customJvm, jvmArgs, memory);
 			}
 	
 			updateHtml();
@@ -183,7 +203,7 @@ $( document ).ready(function() {
     });
     
     $(document).on('click', '#get_html', function() { 
-    	app.outputToEclipse(document.documentElement.innerHTML);
+    	java.log(document.documentElement.innerHTML);
     });
   
     $(document).on('click', '.play', function(e) {
@@ -198,16 +218,16 @@ $( document ).ready(function() {
 		$( '.j_console' ).addClass( 'active' );
     	
     	selectedServer = $(this).closest('a').attr('id').split('_')[1];
-    	
+
     	$(this).closest('a').addClass('current');    	
     	
     	$('#console_' + selectedServer).append('<pre>Starting Server...</pre>');
     	
 		$( '.j_settings, .j_console, #memory_' + selectedServer + ', #lastupdate_' + selectedServer + ', #btn_save_' + selectedServer + ', #btn_delete_' + selectedServer ).removeClass( 'hide' );
 		
-		$('#console_' + selectedServer).append('<pre>' + app.onServerStart(selectedServer) + '</pre>');
+		$('#console_' + selectedServer).append('<pre>' + java.onServerStart(selectedServer) + '</pre>');
 				
-		if (app.getRunning(selectedServer)){
+		if (java.getRunning(selectedServer)){
 			$(this).closest('a').addClass('running');
 			$( '#btn_delete' ).prop( 'disabled', true );
 			$( '#btn_open' ).prop( 'disabled', false );
@@ -226,7 +246,7 @@ $( document ).ready(function() {
     	selectedServer = $(this).closest('a').attr('id').split('_')[1]; 
     	$(this).closest('a').removeClass('running');
     	document.getElementById('console_' + selectedServer).innerHTML += '<pre>Stopping Server...</pre>';
-    	document.getElementById('console_' + selectedServer).innerHTML += '<pre>' + app.onServerStop(selectedServer) + '</pre>';
+    	document.getElementById('console_' + selectedServer).innerHTML += '<pre>' + java.onServerStop(selectedServer) + '</pre>';
 
 		$( '#btn_delete' ).prop( 'disabled', false );
 		$( '#btn_open' ).prop( 'disabled', true );
@@ -248,7 +268,7 @@ $( document ).ready(function() {
     			var host = apps[i].SERVER_IP;
     	    	var uri = apps[i].DEFAULTURI;
     	    	
-    	    	app.openWebApp(host, uri);
+    	    	java.openWebApp(host, uri);
     		}
     	}
     	
@@ -259,7 +279,14 @@ $( document ).ready(function() {
     });
 
     $(document).on('click', '.delete', function() {
-    	if (app.deleteWebApp(selectedServer)) {
+    	$('#dialogText').html('Delete <span id="var">{y}</span>?');
+    	$('#dialogText').attr('id', 'dialog_delete');
+    	$('#var').text(java.getNameOfApp(selectedServer));
+    	$("#dialog").dialog("open");    	
+    });
+    
+    function deleteApp(){
+    	if (java.deleteWebApp(selectedServer)) {
     		//soft delete
 	    	$( '#edit_' + selectedServer ).addClass('hide');
 	    	$( '#console_' + selectedServer ).addClass('hide');
@@ -275,7 +302,7 @@ $( document ).ready(function() {
 	    	$( '#console_template' ).removeClass( 'hide' );
 	    	$( '#settings_footer' ).addClass( 'hide' );
     	}
-    });
+    }
 
     $(document).on('click', '.select_server', function() {
     	var folder;
@@ -295,12 +322,12 @@ $( document ).ready(function() {
     	else {
     		folder = $('#form_web_folder_' + serv + '_text').val();
     	}
-    	var dir = app.getFolder(folder);
+    	var dir = java.getFolder(folder);
     	$('#form_web_folder_' + serv + '_text').val(dir);
     });
 
     $(document).on('click', '.select_java', function() {
-    	var java = app.getFolder();
+    	var java = java.getFolder();
     	$('#form_customjvm_' + selectedServer + '_text').val(java);
     	$(' #form_radio_custom_' + selectedServer).attr('checked', true);
 		$(' #form_radio_hotspot_' + selectedServer).attr('checked', false);
@@ -309,7 +336,11 @@ $( document ).ready(function() {
     $('.defaultjvm').click(function () {
     	$('#form_customjvm_' + selectedServer + '_text').val("");
     });
-    
+
+	/*function showPopup() {
+		$('body').addClass('popup');
+	}*/
+	
     function addWebApp(){
     	//hide all consoles and settings
     	for (var i in apps){
@@ -380,23 +411,22 @@ $( document ).ready(function() {
 			
 			$('#items').append(a);
 			
-			if (app.getRunning(id)){
+			if (java.getRunning(id)){
 		    	$('#webapp_' + id).find('span').addClass('running').addClass('stop').removeClass('play');
 		    }
 			if (apps[i].DELETED == "true"){
 				$('#webapp_' + id).addClass('hide');
 			}
 		}
-		orderList();
+		//orderList();
 		
 	}
 
     function refreshEditFormsAndConsoles(){
-		//load web app consoles + settings page
+		//load web java consoles + settings page
     	
 		for (var i in apps){
 			var name = apps[i].SERVER_ID;
-			
 			//load console
 			$( '#console_template' ).after('<div class="console hide console_server" data-index="' + name + '" id="console_' + name + '"><p><pre></pre></p></div>');
 			//load console footer 
@@ -448,7 +478,7 @@ $( document ).ready(function() {
 	}
 
     function updateHtml(){
-    	apps = JSON.parse(app.getServerConfigListAsJson());
+    	apps = JSON.parse(java.getServerConfigListAsJson());
     	//empty and reload html
     	$( '#items' ).empty();
     	$( '.settings' ).addClass( 'hide' );
@@ -463,6 +493,22 @@ $( document ).ready(function() {
     
     window.memoryupdated = function (line, server) {
     	$('#memory_' + server).text(line);
+    }
+    
+    window.closewindow = function(count) {
+    	$('#dialogText').html('Stop all apps (<span id="var">{y}</span>) running ?');
+    	$('#dialogText').attr('id', 'dialog_close');
+    	$('#var').text(count);
+    	$("#dialog").dialog("open");
+	}
+    
+    function callback(value){
+        if ($('#dialog_close').length){
+        	java.getButtonPressResponse(value);
+        }
+        else {
+        	deleteApp();
+        }
     }
 
     function orderList() {
@@ -483,7 +529,7 @@ $( document ).ready(function() {
         });
     }
 
-
+    
     //form validation
     function validate(server) {
     	var valid = [];

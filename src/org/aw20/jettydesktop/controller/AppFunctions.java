@@ -11,12 +11,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Vector;
 
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ButtonType;
+import javafx.application.Platform;
 import javafx.scene.web.WebEngine;
 import javafx.stage.DirectoryChooser;
 
@@ -81,7 +78,6 @@ public class AppFunctions {
 			}
 		}
 
-
 		return serverId;
 
 	}
@@ -129,36 +125,25 @@ public class AppFunctions {
 	}
 
 
-	public void outputToEclipse( String msg ) {
+	public void log( String msg ) {
 		System.out.println( msg );
 	}
 
 
-	public boolean deleteWebApp( String serverId ) {
-		// delete server from settings
+	public boolean deleteWebApp( String serverId ) { // delete server from settings
 
-		Alert alert = new Alert( AlertType.CONFIRMATION, "Are you sure you want to delete this webapp?", ButtonType.YES, ButtonType.NO );
-		Optional<ButtonType> result = alert.showAndWait();
+		ServerConfigMap serverConfigMap = get( serverId );// should be current open tab in console
 
-		if ( result.get() == ButtonType.YES ) {
-			ServerConfigMap serverConfigMap = get( serverId );// should be current open tab in console
-
-			// Remove from the list
-			for ( int x = 0; x < serverConfigList.size(); x++ ) {
-				if ( serverConfigList.get( x ).getName().equals( serverConfigMap.getName() ) ) {
-					// serverConfigList.remove( x );
-					serverConfigList.get( x ).setDeleted( "true" );
-					break;
-				}
+		// Remove from the list
+		for ( int x = 0; x < serverConfigList.size(); x++ ) {
+			if ( serverConfigList.get( x ).getName().equals( serverConfigMap.getName() ) ) {
+				serverConfigList.get( x ).setDeleted( "true" );
+				break;
 			}
-
-			saveSettings();
-			return true;
 		}
 
-		return false;
-		// else do nothing
-
+		saveSettings();
+		return true;
 	}
 
 
@@ -302,7 +287,47 @@ public class AppFunctions {
 	}
 
 
-	public void exit() {
+	public int getRunningApps() {
+		int count = 0;
+
+		for ( int i = 0; i < serverConfigList.size(); ++i ) {
+			if ( ( "true" ).equals( serverConfigList.get( i ).getRunning() ) ) {
+				count++;
+			}
+		}
+
+		return count;
+	}
+
+
+	public String getNameOfApp( String selectedServer ) {
+		for ( int i = 0; i < serverConfigList.size(); ++i ) {
+			if ( ( selectedServer ).equals( serverConfigList.get( i ).getId() ) ) {
+				return serverConfigList.get( i ).getName();
+			}
+		}
+		return null;
+	}
+
+
+	public void openDialog() {
+		int count = getRunningApps();
+
+		String func = "window.closewindow(" + count + ");";
+		webEngineSingleton.executeScript( func );
+	}
+
+
+	public void getButtonPressResponse( String res ) {
+		if ( res.toString().equals( "yes" ) ) {
+			stopServers();
+			deleteServers();
+			Platform.exit();
+		}
+	}
+
+
+	public void deleteServers() {
 		for ( int i = serverConfigList.size() - 1; i >= 0; --i ) {
 			if ( serverConfigList.get( i ).getDeleted() == "true" ) {
 				serverConfigList.remove( i );
@@ -377,8 +402,6 @@ public class AppFunctions {
 			count++;
 			ServerConfigMap element = iter.next();
 			element.setId( Integer.toString( count ) );
-			// element.setRunning("false");
-
 		}
 		count = 0;
 		for ( Iterator<ServerConfigMap> iter = serverConfigList.iterator(); iter.hasNext(); ) {

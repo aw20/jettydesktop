@@ -7,15 +7,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.Optional;
 
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebEngine;
@@ -60,7 +56,9 @@ public class Start extends Application {
 				InputStream jqueryBytes = res.getJQueryResource().openStream();
 				InputStream cssBytes = res.getCSSResource().openStream();
 				InputStream logoBytes = res.getPNGResource().openStream();
-				InputStream tooltipBytes = res.getPNGResource().openStream(); ) {
+				InputStream tooltipBytes = res.getPNGResource().openStream();
+				InputStream jqueryuiBytes = res.getUIResource().openStream();
+				InputStream jqueryuicssBytes = res.getUICSSResource().openStream(); ) {
 
 			Files.copy( htmlBytes, new File( dest, "index.html" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
 			Files.copy( jsBytes, new File( dest, "jetty.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
@@ -68,6 +66,8 @@ public class Start extends Application {
 			Files.copy( cssBytes, new File( dest, "jetty.css" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
 			Files.copy( logoBytes, new File( dest, "logo.png" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
 			Files.copy( tooltipBytes, new File( dest, "jquery.tooltipster.min.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+			Files.copy( jqueryuicssBytes, new File( dest, "jquery-ui.css" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+			Files.copy( jqueryuiBytes, new File( dest, "jquery-ui.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
 		} catch ( IOException e ) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -97,9 +97,13 @@ public class Start extends Application {
 		}
 
 		JSObject win = (JSObject) webEngine.executeScript( "window" );
-		win.setMember( "app", appFunctions );
+		win.setMember( "java", appFunctions );
+
+
 		webView.setContextMenuEnabled( false );
+
 		webEngine.load( index.toExternalForm() );
+
 		// Set Layout Constraint
 		AnchorPane.setTopAnchor( webView, 0.0 );
 		AnchorPane.setBottomAnchor( webView, 0.0 );
@@ -109,26 +113,28 @@ public class Start extends Application {
 		// Add WebView to AnchorPane
 		anchorPane.getChildren().add( webView );
 
-		primaryScene = new Scene( anchorPane );
+		primaryScene = new Scene( anchorPane, 300, 250 );
 
 		primaryStage.setScene( primaryScene );
 		primaryStage.setResizable( true );
 		primaryStage.getIcons().add( new Image( "/org/aw20/jettydesktop/view/logo.png" ) );
 
-
 		primaryStage.show();
-
 
 		Platform.runLater( new Runnable() {
 
 			public void run() {
 
+
 				Start.stage.setOnCloseRequest( new EventHandler<WindowEvent>() {
 
 					public void handle( WindowEvent t ) {
+						// if no servers have started exit app - hard delete servers, exit platform
 						if ( appFunctions.serverConfigList == null ) {
+							appFunctions.deleteServers();
 							Platform.exit();
 						} else {
+							// else count the running servers
 							int count = 0;
 
 							for ( int i = 0; i < appFunctions.serverConfigList.size(); ++i ) {
@@ -136,18 +142,14 @@ public class Start extends Application {
 									count++;
 								}
 							}
+							// if servers are running call js to run dialog
 							if ( count > 0 ) {
-								Alert alert = new Alert( AlertType.CONFIRMATION, "Stop all apps (" + count + ") running ?", ButtonType.YES, ButtonType.NO );
-								Optional<ButtonType> result = alert.showAndWait();
-
-								if ( result.get() == ButtonType.YES ) {
-									appFunctions.stopServers();
-									Platform.exit();
-								} else {
-									t.consume();
-								}
-							} else {
-								appFunctions.exit();
+								appFunctions.openDialog();
+								t.consume();// no button pressed
+							}
+							// no servers running - hard delete servers, exit platform
+							else {
+								appFunctions.deleteServers();
 								Platform.exit();
 							}
 						}
@@ -167,6 +169,4 @@ public class Start extends Application {
 		}
 		return webEngine;
 	}
-
-
 }
