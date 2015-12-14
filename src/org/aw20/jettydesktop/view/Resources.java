@@ -31,7 +31,7 @@ public class Resources {
 
 
 	public URL getPNGResource() {
-		return getClass().getResource( "jquery-ui.js" );
+		return getClass().getResource( "logo.png" );
 	}
 
 
