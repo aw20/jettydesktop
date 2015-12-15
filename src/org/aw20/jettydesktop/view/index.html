@@ -3,126 +3,153 @@
 	<head>
 
 		<script src="jquery-1.11.3.min.js"></script>
-
 		<link rel="stylesheet" href="jquery-ui.css">
   		<script src="jquery-ui.js"></script>
+		<link rel="stylesheet" href="jetty.css" type="text/css" />
 		<script src="jetty.js"></script>
-		<!---<script type='text/javascript' src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script> --->
 
 		<title>jetty test</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
-		<link rel="stylesheet" href="jetty.css" type="text/css" />
-
 	</head>
+
 	<body>
-		<div class="nav" id="nav">
-			<h1 class="j_reveal">JettyDesktop v.2.1.0</h1>
-			<div id="items"></div>
-			<button class="addwebapp"><span>+</span>add webapp</button>
+
+
+	<div class="header">
+		<div id="header_{x}" class="hide head">
+			<a class="j_info"><b class="aro"></b></a>
+			<p>
+				<span id="info_name_{x}"></span>
+				&ndash;
+				<span id="info_host_{x}"></span>
+			</p>
+			<p><small id="info_dir_{x}">E:\w50\webapp\trunk\webapp</small></p>
+		</div>
+	</div>
+
+	<div id="dialog" title="Are you sure?">
+		<span id="dialogText"></span>
+    </div>
+
+	<div class="nav" id="nav">
+		<div id="items"></div>
+		<button class="addwebapp"><span>+</span> add webapp</button>
+	</div>
+
+
+	<div class="main">
+
+		<div class="tabs">
+			<a class="j_settings hide">settings</a>
+			<a class="j_console active hide">console</a>
 		</div>
 
-		<div id="dialog" title="Are you sure?">
-			<span id="dialogText"></span>
-        </div>
 
-		<div class="main reveal">
-
-			<div class="tabs">
-				<a class="j_settings hide">settings</a>
-				<a class="j_console active hide">console</a>
-			</div>
-
-
-			<div id="console_template" class="console">
-				<pre>
-
+		<div id="console_template" class="console">
+			<pre>--------------THIS IS PLACEHOLDER TEXT------------
+		Server Starting
+2015-11-17 17:03:04.863:INFO::main: Logging initialized @65ms
+Jetty Version: 9.2.z-SNAPSHOT
+http://*:80
+Jetty starting up ... please wait
+2015-11-17 17:03:04.921:INFO:oejs.Server:main: jetty-9.2.z-SNAPSHOT
+2015-11-17 17:03:07.092:INFO:oejw.StandardDescriptorProcessor:main: NO JSP Support for /, did not find org.apache.jasper.servlet.JspServlet
+2015-11-17 17:03:07.103:WARN:oejs.SecurityHandler:main: ServletContext@o.e.j.w.WebAppContext@1bcffb5{/,file:/E:/tickdv2/trunk/tickd/webapp/,STARTING} has uncovered http methods for path: /
+log4j:WARN No appenders could be found for logger (org.apache.commons.vfs.impl.StandardFileSystemManager).
+log4j:WARN Please initialize the log4j system properly.
+Loading QuickServer v1.4.7 ... Done
+Mail25 Mailet Container @alanwilliamson.org v1.2
+2015-11-17 17:03:09.292:INFO:oejsh.ContextHandler:main: Started o.e.j.w.WebAppContext@1bcffb5{/,file:/E:/tickdv2/trunk/tickd/webapp/,AVAILABLE}
+2015-11-17 17:03:09.324:INFO:oejs.ServerConnector:main: Started ServerConnector@e6b5c8{HTTP/1.1}{0.0.0.0:80}
+... Jetty has started.
+2015-11-17 17:03:09.325:INFO:oejs.Server:main: Started @4541ms
+environment: local
 --------------THIS IS PLACEHOLDER TEXT------------
+			</pre>
 
-
-
-		Click an app to start.
-				</pre>
-			</div><!-- console -->
-			<div class="footer hide" id="console_footer">
-				<div class="console-info">
-					<p id="memory_{x}" class="data hide"></p><p id="lastupdate_{x}" class="data hide"></p>
-				</div>
-
-				<button id="btn_open" disabled>open</button>
-				<button id="btn_clear">clear</button>
+		</div><!-- console -->
+		<div class="footer hide" id="console_footer">
+			<div class="console-info">
+				<p id="memory_{x}" class="hide"></p><p id="lastupdate_{x}" class="hide"></p>
 			</div>
 
+			<button id="btn_open">open</button>
+			<button id="btn_clear">clear</button>
+			<button id="btn_start" class="start">start</button>
+			<button id="btn_stop" class="stop hide">stop</button>
+		</div>
 
-			<div class="settings hide">
-				<div id="edit_{x}" class="template hide edit">
-					<fieldset>
-						<legend>Server name</legend>
-						<div class="control">
-							<label for="form_name">Name *</label>
-							<input id="form_name_{x}" type="text" />
+
+		<div class="settings hide">
+			<div id="edit_{x}" class="template hide edit">
+				<fieldset>
+					<legend>Server name</legend>
+					<div class="control">
+						<label for="form_name">Name</label>
+						<input id="form_name_{x}" type="text" />
+					</div>
+
+					<div class="control">
+						<label for="form_ip">IP address</label>
+						<input id="form_ip_{x}" type="text" />
+					</div>
+
+					<div class="control">
+						<label for="form_port">Port</label>
+						<input id="form_port_{x}" type="text" />
+					</div>
+				</fieldset>
+
+				<fieldset>
+					<legend>Web application</legend>
+					<div class="control">
+						<label for="form_web_folder">web folder</label>
+						<input type="text" id="form_web_folder_{x}_text"/>
+						<input type="button" value="get folder" id="form_web_folder_{x}" class="btn select_server" />
+					</div>
+
+					<div class="control">
+						<label for="form_uri">default URI</label>
+						<input id="form_uri_{x}" type="text" />
+					</div>
+				</fieldset>
+
+				<fieldset>
+					<legend>Java virtual machine</legend>
+					<div class="control">
+						<label>runtime</label>
+						<div class="listit">
+							<input type="radio" class="radio_button defaultjvm" name="jvm-selector_{x}" id="form_radio_hotspot_{x}" checked />
+							<label id="form_label_java_{x}" class="default-jvm"></label>
 						</div>
-
-						<div class="control">
-							<label for="form_ip">IP address</label>
-							<input id="form_ip_{x}" type="text" />
+						<div class="listit">
+							<input type="radio" class="radio_button" name="jvm-selector_{x}" id="form_radio_custom_{x}" />
+							<label>Custom JVM</label>
+							<input type="text" id="form_customjvm_{x}_text" class="select_java"/>
+							<input type="button" value="browse" id="form_customjvm_{x}" class="btn select_java" />
 						</div>
-
-						<div class="control">
-							<label for="form_port">Port *</label>
-							<input id="form_port_{x}" type="text" />
+						<div class="listit">
+							<label>JVM Arguments</label>
+							<input type="text" id="form_jvmargs_{x}" />
 						</div>
-					</fieldset>
+					</div>
 
-					<fieldset>
-						<legend>Web application</legend>
-						<div class="control">
-							<label for="form_web_folder">web folder *</label>
-							<input type="text" id="form_web_folder_{x}_text"/>
-							<input type="button" id="form_web_folder_{x}" class="btn select_server" value="get folder"/>
-						</div>
-
-						<div class="control">
-							<label for="form_uri">default URI</label>
-							<input id="form_uri_{x}" type="text" />
-						</div>
-					</fieldset>
-
-					<fieldset>
-						<legend>Java virtual machine</legend>
-						<div class="control">
-							<label>runtime</label>
-							<div class="listit">
-								<input type="radio" class="radio_button defaultjvm" name="jvm-selector_{x}" id="form_radio_hotspot_{x}" checked />
-								<label id="form_label_java_{x}" class="default-jvm"></label>
-							</div>
-							<div class="listit">
-								<input type="radio" class="radio_button" name="jvm-selector_{x}" id="form_radio_custom_{x}" />
-								<label>Custom JVM</label>
-								<input type="text" id="form_customjvm_{x}_text" class="select_java"/>
-								<input type="button" value="browse" id="form_customjvm_{x}" class="btn select_java" />
-							</div>
-							<div class="listit">
-								<label>JVM Arguments</label>
-								<input type="text" id="form_jvmargs_{x}" />
-							</div>
-						</div>
-
-						<div class="control">
-							<label for="">Memory</label>
-							<input type="text"  id="form_memory_{x}"/> MB
-						</div>
-					</fieldset>
-
-				</div>
-			</div><!-- settings -->
-			<div class="footer" id="settings_footer">
-				<button id="btn_save_{x}" class="btn j_save hide ">save</button>
-				<button id="btn_delete_{x}" class="delete hide">delete</button>
+					<div class="control">
+						<label for="">Memory</label>
+						<input type="text"  id="form_memory_{x}"/> MB
+					</div>
+				</fieldset>
 			</div>
+		</div><!-- settings -->
+		<div class="footer" id="settings_footer">
+			<button id="btn_save_{x}" class="btn j_save hide">save</button>
+			<button id="btn_cancel_{x}" class="btn j_cancel hide">cancel</button>
+			<button id="btn_delete_{x}" class="delete hide" disabled>delete</button>
+		</div>
 
+	</div><!-- main -->
 
-		</div><!-- main -->
 	</body>
 </html>

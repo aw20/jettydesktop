@@ -177,8 +177,6 @@ public class Executor extends Object {
 
 		} catch ( Exception e ) {
 			webEngineSingleton.executeScript( "document.getElementById('console_" + scm.getId() + "').innerHTML += '<pre>Using Free AdminPort=" + adminPort + "</pre>';" );
-			webEngineSingleton.executeScript( "document.getElementById('console_" + scm.getId() + "').innerHTML += '<pre>Server not started.</pre>';" );
-
 			return;
 		}
 	}

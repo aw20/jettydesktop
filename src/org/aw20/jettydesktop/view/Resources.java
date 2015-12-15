@@ -35,6 +35,11 @@ public class Resources {
 	}
 
 
+	public URL getArrowPNGResource() {
+		return getClass().getResource( "arrow.png" );
+	}
+
+
 	public URL getUICSSResource() {
 		return getClass().getResource( "jquery-ui.css" );
 	}

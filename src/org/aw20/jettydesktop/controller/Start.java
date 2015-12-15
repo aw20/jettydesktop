@@ -25,7 +25,7 @@ import org.aw20.jettydesktop.view.Resources;
 
 public class Start extends Application {
 
-	private String title = "Jetty Desktop";
+	private String title = "Jetty Desktop v.2.1.0";
 
 	protected Scene primaryScene;
 	private static Resources res = new Resources();
@@ -56,6 +56,7 @@ public class Start extends Application {
 				InputStream jqueryBytes = res.getJQueryResource().openStream();
 				InputStream cssBytes = res.getCSSResource().openStream();
 				InputStream logoBytes = res.getPNGResource().openStream();
+				InputStream arrowBytes = res.getArrowPNGResource().openStream();
 				InputStream jqueryuiBytes = res.getUIResource().openStream();
 				InputStream jqueryuicssBytes = res.getUICSSResource().openStream(); ) {
 
@@ -64,6 +65,7 @@ public class Start extends Application {
 			Files.copy( jqueryBytes, new File( dest, "jquery-1.11.3.min.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
 			Files.copy( cssBytes, new File( dest, "jetty.css" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
 			Files.copy( logoBytes, new File( dest, "logo.png" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+			Files.copy( arrowBytes, new File( dest, "arrow.png" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
 			Files.copy( jqueryuicssBytes, new File( dest, "jquery-ui.css" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
 			Files.copy( jqueryuiBytes, new File( dest, "jquery-ui.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
 		} catch ( IOException e ) {
@@ -129,7 +131,7 @@ public class Start extends Application {
 					public void handle( WindowEvent t ) {
 						// if no servers have started exit app - hard delete servers, exit platform
 						if ( appFunctions.serverConfigList == null ) {
-							appFunctions.deleteServers();
+							// appFunctions.deleteServers();
 							Platform.exit();
 						} else {
 							// else count the running servers

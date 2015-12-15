@@ -273,7 +273,6 @@ public class AppFunctions {
 	}
 
 
-	// protected methods to access from JettyDesktopApp
 	public void stopServers() {
 		Vector v = Executor.getAllInstances();
 		for ( Object e : v ) {
@@ -337,7 +336,6 @@ public class AppFunctions {
 	}
 
 
-	// TODO
 	public void onMemory( String line, String id ) {
 		// call update memory usage on jetty desktop app
 		String func = "window.memoryupdated('" + line.toString() + "', " + id + ");";
@@ -345,11 +343,16 @@ public class AppFunctions {
 	}
 
 
-	// TODO
 	public void onLastUpdated( String line, String id ) {
 		// call update last updated on jetty desktop app
 		String func = "window.lastupdated('" + line.toString() + "', " + id + ");";
 		webEngineSingleton.executeScript( func );
+	}
+
+
+	public String getJava() {
+		String text = System.getProperty( "java.vm.name" ) + " " + System.getProperty( "java.version" ) + " " + System.getProperty( "java.vm.version" );
+		return text;
 	}
 
 
@@ -441,11 +444,4 @@ public class AppFunctions {
 		} catch ( IOException e ) {}
 
 	}
-
-
-	public String getJava() {
-		String text = System.getProperty( "java.vm.name" ) + " " + System.getProperty( "java.version" ) + " " + System.getProperty( "java.vm.version" );
-		return text;
-	}
-
 }
