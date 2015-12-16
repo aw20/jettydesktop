@@ -450,7 +450,7 @@ $( document ).ready(function() {
 			$('#form_port_' + newServer).attr("placeholder", "8080");
 			$('#form_web_folder_' + newServer + '_text').attr("placeholder", "C:/path/to/webapp");
 			$('#form_uri_' + newServer).attr("placeholder", "defaulturi");
-			$('#form_jvmargs_' + newServer).attr("placeholder", "-server -Xms2G -Xmx2G");
+			$('#form_jvmargs_' + newServer).attr("placeholder", "-d64 -server -Xms8m");
 			$('#form_memory_' + newServer).attr("placeholder", "64");
 			$('#form_customjvm_' + newServer + '_text').attr("placeholder", "C:/path/to/java");	
 			
