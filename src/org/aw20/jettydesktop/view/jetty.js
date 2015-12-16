@@ -48,11 +48,11 @@ $( document ).ready(function() {
 	
 	//on click functions
 	$(document).on('click', '.j_info', function() {
-		$('body, .header').toggleClass('slideup');
+		$('body, .header').toggleClass('slidedown');
 	});
 	
 	$(document).on('click', '.action', function(e) {
-		
+		$('.header').removeClass('hide');
 		var id = $(this).closest('a').attr('id').split('_')[1];
 		selectedServer = id;
 		if ($(this).closest('a').hasClass('running')){
@@ -124,6 +124,7 @@ $( document ).ready(function() {
     $(document).on('click', '.app', function() {
     	$( 'body' ).find( '.data' ).addClass('hide');
     	$( 'body' ).find( '.head' ).addClass('hide');
+    	$('.header').removeClass('hide');
     	
     	//this.id is "webapp_1"
     	$( '.settings' ).addClass( 'hide' );
@@ -171,13 +172,24 @@ $( document ).ready(function() {
     		$( '.j_console' ).addClass( 'active' );
 	    	$( '#settings_footer, #edit_' + selectedServer ).addClass( 'hide' );
 	    	$( '#console_footer, #console_' + selectedServer + ', #memory_' + selectedServer + ', #lastupdate_' + selectedServer).removeClass( 'hide' );
+	    	if (!java.getRunning(selectedServer)){
+	    		$('#btn_start').removeClass('hide');
+	    		$('#btn_stop').addClass('hide');
+	    	}
+	    	else if (java.getRunning(selectedServer)){
+	    		$('#btn_start').addClass('hide');
+	    		$('#btn_stop').removeClass('hide');
+	    	}
     	}
 		//highlight current
 		$( '#webapp_' + selectedServer ).addClass('current');
 		
     });
     
-    $(document).on('click', '.addwebapp', function() {    	
+    $(document).on('click', '.addwebapp', function() {
+    	$( 'body' ).find( '.head' ).addClass('hide');
+    	$('body, .header').removeClass('slidedown');
+    	//$('.header').addClass('hide');
     	addWebApp();
     });
 
@@ -234,7 +246,7 @@ $( document ).ready(function() {
 			
 			newServerBool = false;
 			newServer = 0;
-			$( '.delete' ).attr( 'disabled', false );
+			$( '#btn_delete_' + savedServer ).attr( 'disabled', false );
 			//re add current class & show console
 			if (!selectedServer == 0){
 				$( '#webapp_' + selectedServer ).addClass('current');
@@ -249,13 +261,14 @@ $( document ).ready(function() {
 				$( '#console_template' ).removeClass('hide');
 			}
 			//disable edit, delete, start buttons
-			$( '#btn_delete' ).prop( 'disabled', false );
-			//enable open button
-			$( '.delete' ).attr( 'disabled', false );
+			$( '#btn_delete_' + savedServer ).attr( 'disabled', false );
+
 			$( '#btn_clear' ).prop( 'disabled', false );
 			
 			$( '#settings_footer').addClass('hide');
-			//$( '#console_template' ).addClass( 'hide' );
+			
+			$('.header').removeClass('hide');
+			
 			orderList();
 	    }
     });
@@ -449,7 +462,7 @@ $( document ).ready(function() {
 		}
 		else {
 			//show new settings and footer
-			$( '#btn_save_' + servers.length + ', #btn_delete_' + servers.length + ', .settings, #edit_' + servers.length ).removeClass( 'hide' );
+			$( '#settings_footer, #btn_save_' + servers.length + ', #btn_delete_' + servers.length + ', .settings, #edit_' + servers.length ).removeClass( 'hide' );
 			//hide new console and footer
 			$( '#console_footer, #console_template, #console_' + servers.length ).addClass( 'hide' );
 			//disable delete button
@@ -545,6 +558,7 @@ $( document ).ready(function() {
 				$('#console_' + name).addClass('hide');
 			}
 		}
+		$('.delete').attr( 'disabled', false );
 		$('#console_template').removeClass('hide');
 	}
 

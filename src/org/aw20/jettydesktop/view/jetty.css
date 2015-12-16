@@ -89,15 +89,15 @@ html, body {
 
 body {
   margin: 0;
-  padding: 50px 0 0 225px;
+  padding: 0 0 0 225px;
   font-family: sans-serif, arial;
   overflow: hidden;
   -webkit-transition: all 0.2s ease-out;
   -moz-transition: all 0.2s ease-out;
   transition: all 0.2s ease-out;
 }
-body.slideup {
-  padding-top: 0;
+body.slidedown {
+  padding-top: 50px;
 }
 
 a {
@@ -122,22 +122,6 @@ button {
   -webkit-transition: all 0.2s ease-out;
   -moz-transition: all 0.2s ease-out;
   transition: all 0.2s ease-out;
-}
-
-h1 {
-  background-image: url("/a/img/logo.png");
-  background-position: 8px 10px;
-  background-repeat: no-repeat;
-  background-size: 30px;
-  float: left;
-  height: 44px;
-  width: 225px;
-  margin: -45px 0 0;
-  padding: 0 0 0 44px;
-  color: gray;
-  font-size: 0.9em;
-  font-weight: normal;
-  line-height: 44px;
 }
 
 h3 {
@@ -206,7 +190,7 @@ pre {
 .header {
   background-color: #0076a8;
   position: absolute;
-  top: 0;
+  top: -50px;
   right: 0;
   left: 225px;
   height: 50px;
@@ -221,7 +205,6 @@ pre {
   font-size: 0.9em;
   line-height: 1.4;
 }
-
 .header small {
   color: rgba(255, 255, 255, 0.9);
   font-size: 0.9em;
@@ -229,9 +212,9 @@ pre {
 .header a {
   background-color: #006894;
   position: absolute;
-  top: 0;
+  top: 50px;
   right: 0;
-  height: 50px;
+  height: 34px;
   width: 44px;
   text-align: center;
 }
@@ -243,24 +226,21 @@ pre {
   display: block;
   height: 32px;
   width: 32px;
-  margin: 9px 0 0 6px;
+  margin: 1px 0 0 6px;
   -webkit-transition: all 0.2s ease-out;
   -moz-transition: all 0.2s ease-out;
   transition: all 0.2s ease-out;
 }
-.header.slideup {
-  top: -50px;
+.header.slidedown {
+  top: 0;
 }
-.header.slideup a {
-  top: 50px;
-  height: 34px;
-  line-height: 34px;
+.header.slidedown a {
+  top: 0;
+  height: 50px;
 }
-.header.slideup a .aro {
-  margin: 1px 0 0 6px;
+.header.slidedown a .aro {
+  margin: 9px 0 0 6px;
   transform: rotate(180deg);
-  -webkit-transform: rotate(180deg);
-  -moz-transform: rotate(180deg);
 }
 
 .nav {
@@ -420,8 +400,8 @@ fieldset {
 legend {
   display: block;
   width: 100%;
-  margin: 0.4em 0 0.4em;
-  padding: 0.4em 0 0.4em;
+  margin: 0 0 0.4em;
+  padding: 0 0 0.4em;
   color: gray;
   font-size: 0.9em;
   border-bottom: 1px solid gainsboro;
@@ -442,10 +422,6 @@ input[type="text"], input[type="button"] {
   padding: 0 0.8em;
   line-height: 28px;
   border: 1px solid #c8c8c8;
-}
-
-input[type="text"] {
-  width: 300px;
 }
 
 input[type="button"] {
@@ -503,27 +479,13 @@ input[type="button"]:hover {
   font-size: 0.9em;
   line-height: 44px;
 }
-
 .footer button:hover {
-  background-color: #ebebeb;
+  background-color: rgba(0, 0, 0, 0.1);
 }
-
 .footer button.delete {
   color: #d31e25;
 }
-
-.footer button.delete:hover {
-  background-color: #d31e25;
-  color: white;
-}
-
 .footer button:disabled {
   background-color: transparent;
   color: #a8a8a8;
-}
-
-#plugin_form {
-	background-color: white;
-	height: 100%;
- 	overflow: auto;
 }
