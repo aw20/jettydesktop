@@ -304,6 +304,9 @@ pre {
   border-style: solid;
   border-width: 6px 10px;
 }
+.nav a .action:hover:after {
+  border-color: transparent transparent transparent #00a651;
+}
 .nav a:hover {
   background-color: #1c252c;
   color: rgba(255, 255, 255, 0.9);
@@ -315,8 +318,12 @@ pre {
   background-color: #0076a8;
 }
 .nav a.running .action:after {
+  top: 11px;
   border-color: #b2b2b2;
   border-width: 5px;
+}
+.nav a.running .action:hover:after {
+  border-color: #c13c41;
 }
 .nav a.current {
   background-color: #1c252c;
@@ -346,14 +353,13 @@ pre {
 }
 
 .tabs {
-  background-color: white;
+  background-color: whitesmoke;
   position: absolute;
   top: 0;
   height: 35px;
   width: 100%;
   border-bottom: 1px solid #e6e6e6;
 }
-
 .tabs a {
   float: left;
   height: 35px;
@@ -364,12 +370,13 @@ pre {
   border-right: 1px solid transparent;
   border-left: 1px solid transparent;
 }
-
+.tabs a:first-child {
+  border-left: none;
+}
 .tabs a.active {
   background-color: white;
   color: #444444;
-  border-right: 1px solid #e6e6e6;
-  border-left: 1px solid #e6e6e6;
+  border-color: #e6e6e6;
 }
 
 .console {
@@ -382,16 +389,59 @@ pre {
 .settings {
   background-color: white;
   height: 100%;
+  padding: 0.75em 0;
   overflow-y: auto;
+}
+
+.noapps {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  margin: -75px auto 0;
+  padding: 0.75em;
+  color: gray;
+  text-align: center;
+}
+
+.noapps p {
+	line-height: 1.4;
+}
+
+.noapps p a {
+	font-size: 1em;
+	color: #0076a8;
+}
+
+.noapps .newapp {
+  display: inline-block;
+  margin: 0.5em 0 0;
+  padding: 0.5em 0.8em;
+  color: #0076a8;
+  font-size: 1em;
+  font-weight: bold;
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  border-radius: 2px;
+  background-clip: padding-box;
+  -webkit-transition: all 0.2s ease-out;
+  -moz-transition: all 0.2s ease-out;
+  transition: all 0.2s ease-out;
+}
+.noapps .newapp:hover {
+  background-color: #0076a8;
+  color: white;
 }
 
 .control {
   display: inline-block;
   width: 100%;
   padding: 0 0 0.5em 120px;
+  line-height: 30px;
 }
 
 fieldset {
+  max-width: 600px;
   margin: 0;
   padding: 0.8em;
   border: none;
@@ -409,25 +459,34 @@ legend {
 
 label {
   float: left;
-  width: 100px;
+  width: 110px;
   margin-left: -120px;
   padding: 0 5px 0 0;
   font-size: 0.9em;
   line-height: 30px;
+  text-align: right;
 }
 
 input[type="text"], input[type="button"] {
+  float: left;
   height: 30px;
-  margin: 0;
+  width: 75%;
+  margin: 0 5px 0 0;
   padding: 0 0.8em;
   line-height: 28px;
   border: 1px solid #c8c8c8;
 }
+input[type="text"].inline, input[type="button"].inline {
+  width: auto;
+}
 
 input[type="button"] {
   background-color: transparent;
+  width: auto;
+  margin: 0;
   color: #0076a8;
   font-size: 0.8em;
+  -webkit-appearance: none;
 }
 
 input[type="button"]:hover {
@@ -448,8 +507,9 @@ input[type="button"]:hover {
 }
 
 .listit label {
-  width: auto;
+  width: 90%;
   margin: 0;
+  text-align: left;
 }
 
 .footer {
@@ -488,4 +548,84 @@ input[type="button"]:hover {
 .footer button:disabled {
   background-color: transparent;
   color: #a8a8a8;
+}
+
+.ui-dialog {
+  background-color: white;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  outline: 0;
+  border: 1px solid #e1e1e1;
+  -webkit-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  -moz-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.ui-dialog .ui-dialog-titlebar {
+  position: relative;
+  height: 45px;
+  padding: 0 44px 0 0.8em;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.ui-dialog .ui-dialog-title {
+  float: left;
+  padding: 0.9em 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ui-dialog .ui-dialog-titlebar-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 44px;
+  width: 44px;
+}
+.ui-dialog .ui-dialog-titlebar-close:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.ui-dialog .ui-dialog-titlebar-close .ui-button-text {
+  display: none;
+}
+.ui-dialog .ui-dialog-titlebar-close .ui-icon:after {
+  content: 'x';
+  color: #0076a8;
+  font-size: 1.1em;
+}
+
+.ui-dialog .ui-dialog-content {
+  background: none;
+  position: relative;
+  padding: 0.8em;
+  font-size: 0.9em;
+  overflow: auto;
+}
+
+.ui-dialog .ui-dialog-buttonpane {
+  height: 45px;
+}
+.ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset {
+  float: right;
+}
+.ui-dialog .ui-dialog-buttonpane button {
+  height: 44px;
+  padding: 0 1em;
+  color: #0076a8;
+  font-size: 0.9em;
+  line-height: 44px;
+}
+.ui-dialog .ui-dialog-buttonpane button:hover {
+  color: #444444;
+}
+
+.ui-dialog .ui-resizable-se {
+  width: 12px;
+  height: 12px;
+  right: -5px;
+  bottom: -5px;
+  background-position: 16px 16px;
 }

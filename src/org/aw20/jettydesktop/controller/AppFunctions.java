@@ -9,16 +9,20 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import javafx.application.Platform;
 import javafx.scene.web.WebEngine;
 import javafx.stage.DirectoryChooser;
 
+import org.aw20.jettydesktop.ui.ConsoleLogWatcher;
+import org.aw20.jettydesktop.ui.JavaPlugin;
+import org.aw20.jettydesktop.ui.Plugin;
 import org.aw20.jettydesktop.ui.ServerConfigMap;
-import org.aw20.util.StringUtils;
+import org.aw20.util.PluginUtil;
 
 import com.google.gson.Gson;
 
@@ -28,9 +32,13 @@ public class AppFunctions {
 	private static Executor executor = null;
 	private ServerConfigMap serverConfigMap;
 	public List<ServerConfigMap> serverConfigList;
-	StringUtils comparator = new StringUtils();
+	private static Map<Integer, FileWatcher> fileWatcherList = new HashMap<Integer, FileWatcher>();
+	private List<Plugin> plugins = new ArrayList<Plugin>();
+	private List<String> pluginNamesList = new ArrayList<String>();
 
-	private WebEngine webEngineSingleton = Start.getWebEngineInstance();
+	private File tempFiles = Start.tempPluginFile;
+
+	private static WebEngine webEngineSingleton = Start.getWebEngineInstance();
 
 	// create Singleton instance
 	private static AppFunctions instance = null;
@@ -51,24 +59,29 @@ public class AppFunctions {
 
 	// public methods
 	public boolean getRunning( int id ) {
-		int count = 0;
-		for ( Iterator<ServerConfigMap> iter = serverConfigList.iterator(); iter.hasNext(); ) {
-			if ( serverConfigList.get( count ).getId().equals( Integer.toString( id ) ) ) {
-				if ( serverConfigList.get( count ).getRunning() == null ) {
+		for ( ServerConfigMap server : serverConfigList ) {
+			if ( server.getId().equals( Integer.toString( id ) ) ) {
+				if ( server.getRunning() == null ) {
 					return false;
 				}
-				boolean running = Boolean.parseBoolean( serverConfigList.get( count ).getRunning() );
-				return running;
+				return Boolean.parseBoolean( server.getRunning() );
 			}
-			count++;
 		}
 		return false;
 	}
 
 
+	public boolean getAllDeleted() {
+		for ( ServerConfigMap server : serverConfigList ) {
+			if ( server.getDeleted().equals( "false" ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+
 	public String onServerRestart( String serverId ) {
-		// boolean stop = stopServer( serverId );
-		boolean started;
 		if ( stopServer( serverId ) ) {
 			if ( startServer( serverId ) ) {
 				return "";
@@ -111,13 +124,13 @@ public class AppFunctions {
 		loadSettings();
 		Gson gson = new Gson();
 		int count = 0;
-		for ( Iterator<ServerConfigMap> iter = serverConfigList.iterator(); iter.hasNext(); ) {
+
+		for ( ServerConfigMap server : serverConfigList ) {
 			count++;
-			ServerConfigMap element = iter.next();
-			element.setId( Integer.toString( count ) );
+			server.setId( Integer.toString( count ) );
 			if ( initialLoad ) {
-				element.setRunning( "false" );
-				element.setDeleted( "false" );
+				server.setRunning( "false" );
+				server.setDeleted( "false" );
 			}
 		}
 
@@ -131,13 +144,9 @@ public class AppFunctions {
 
 
 	public boolean deleteWebApp( String serverId ) { // delete server from settings
-
-		ServerConfigMap serverConfigMap = get( serverId );// should be current open tab in console
-
-		// Remove from the list
-		for ( int x = 0; x < serverConfigList.size(); x++ ) {
-			if ( serverConfigList.get( x ).getName().equals( serverConfigMap.getName() ) ) {
-				serverConfigList.get( x ).setDeleted( "true" );
+		for ( ServerConfigMap server : serverConfigList ) {
+			if ( server.getId().equals( serverId ) ) {
+				server.setDeleted( "true" );
 				break;
 			}
 		}
@@ -155,6 +164,8 @@ public class AppFunctions {
 			scm.setName( name );
 			scm.setPort( port );
 			scm.setWebFolder( webFolder );
+			scm.setDeleted( "false" );
+			scm.setRunning( "false" );
 
 			if ( uri == "" ) {
 				scm.setDefaultWebUri( uri );
@@ -187,45 +198,48 @@ public class AppFunctions {
 		}
 		else {
 			// find matching server
-			Iterator<ServerConfigMap> it = serverConfigList.iterator();
-			while ( it.hasNext() ) {
-				ServerConfigMap currentServer = it.next();
-				if ( currentServer.getId().equals( selectedServer ) ) {
-					currentServer.setId( selectedServer );
-					currentServer.setIP( ip );
-					currentServer.setName( name );
-					currentServer.setPort( port );
-					currentServer.setWebFolder( webFolder );
+			for ( ServerConfigMap server : serverConfigList ) {
+				if ( server.getId().equals( selectedServer ) ) {
+					server.setId( selectedServer );
+					server.setIP( ip );
+					server.setName( name );
+					server.setPort( port );
+					server.setWebFolder( webFolder );
+					server.setDeleted( "false" );
+					server.setRunning( "false" );
+
 
 					if ( uri == "" ) {
-						currentServer.setDefaultWebUri( uri );
+						server.setDefaultWebUri( uri );
 					}
 					else {
-						currentServer.setDefaultWebUri( "/" );
+						server.setDefaultWebUri( "/" );
 					}
 
 					if ( customJvmBool ) {
-						currentServer.setCustomJVM( customJvm );
+						server.setCustomJVM( customJvm );
 					}
 					else {
-						currentServer.setCurrentJVM();
+						server.setCurrentJVM();
 					}
 
 					if ( jvmArgs != "" ) {
-						currentServer.setDefaultJVMArgs( jvmArgs );
+						server.setDefaultJVMArgs( jvmArgs );
 					}
 
 					if ( memory != null && !memory.isEmpty() ) {
-						currentServer.setMemoryJVM( memory );
+						server.setMemoryJVM( memory );
 					}
 					else {
-						currentServer.setMemoryJVM( "64" );
+						server.setMemoryJVM( "64" );
 					}
 					break;
 				}
 			}
+
 			saveSettings();
 		}
+		// addPluginOnNewWebapp();
 	}
 
 
@@ -245,43 +259,24 @@ public class AppFunctions {
 	}
 
 
-	public void openWebApp( String ip, String defaultUri ) {
-		String host = ip;
-		if ( ip.isEmpty() ) {
+	public void openWebApp( String host, String defaultUri ) {
+		if ( host.isEmpty() ) {
 			host = "127.0.0.1";
 		}
 
-		if ( Desktop.isDesktopSupported() ) {
-			Desktop desktop = Desktop.getDesktop();
-			try {
-				URI uri = java.net.URI.create( "http://" + host + ":" + serverConfigMap.getPort() + defaultUri );
-				desktop.browse( uri );
-			} catch ( IOException e ) {
-				// TODO Auto-generated catch block
-				// e.printStackTrace();
-			}
-		} else {
-			Runtime runtime = Runtime.getRuntime();
-			try {
-				runtime.exec( "xdg-open " + java.net.URI.create( "http://" + host + ":" + serverConfigMap.getPort() + defaultUri ) );
-			} catch ( IOException e ) {
-				// TODO Auto-generated catch block
-				// e.printStackTrace();
-			}
-		}
-
+		URI uri = java.net.URI.create( "http://" + host + ":" + serverConfigMap.getPort() + defaultUri );
+		goToWebpage( uri );
 	}
 
 
 	public void stopServers() {
 		Vector v = Executor.getAllInstances();
-		for ( Object e : v ) {
-			( (Executor) e ).exit();
+		for ( Object executor : v ) {
+			( (Executor) executor ).exit();
 		}
 
-		for ( int i = 0; i < serverConfigList.size(); ++i ) {
-			serverConfigMap = serverConfigList.get( i );
-			serverConfigMap.setRunning( "false" );
+		for ( ServerConfigMap server : serverConfigList ) {
+			server.setRunning( "false" );
 		}
 	}
 
@@ -289,8 +284,8 @@ public class AppFunctions {
 	public int getRunningApps() {
 		int count = 0;
 
-		for ( int i = 0; i < serverConfigList.size(); ++i ) {
-			if ( ( "true" ).equals( serverConfigList.get( i ).getRunning() ) ) {
+		for ( ServerConfigMap server : serverConfigList ) {
+			if ( ( "true" ).equals( server.getRunning() ) ) {
 				count++;
 			}
 		}
@@ -300,9 +295,9 @@ public class AppFunctions {
 
 
 	public String getNameOfApp( String selectedServer ) {
-		for ( int i = 0; i < serverConfigList.size(); ++i ) {
-			if ( ( selectedServer ).equals( serverConfigList.get( i ).getId() ) ) {
-				return serverConfigList.get( i ).getName();
+		for ( ServerConfigMap server : serverConfigList ) {
+			if ( server.getId().equals( selectedServer ) ) {
+				return server.getName();
 			}
 		}
 		return null;
@@ -312,8 +307,8 @@ public class AppFunctions {
 	public void openDialog() {
 		int count = getRunningApps();
 
-		String func = "window.closewindow(" + count + ");";
-		webEngineSingleton.executeScript( func );
+		String jsFunction = "window.closewindow(" + count + ");";
+		webEngineSingleton.executeScript( jsFunction );
 	}
 
 
@@ -345,14 +340,30 @@ public class AppFunctions {
 
 	public void onLastUpdated( String line, String id ) {
 		// call update last updated on jetty desktop app
-		String func = "window.lastupdated('" + line.toString() + "', " + id + ");";
-		webEngineSingleton.executeScript( func );
+		String jsFunction = "window.lastupdated('" + line.toString() + "', " + id + ");";
+		webEngineSingleton.executeScript( jsFunction );
 	}
 
 
 	public String getJava() {
-		String text = System.getProperty( "java.vm.name" ) + " " + System.getProperty( "java.version" ) + " " + System.getProperty( "java.vm.version" );
-		return text;
+		return System.getProperty( "java.vm.name" ) + " " + System.getProperty( "java.version" ) + " " + System.getProperty( "java.vm.version" );
+	}
+
+
+	public String getJavaSystemProperties( List<String> args ) {
+		// add args to String and return
+		// eg return System.getProperty("java.version", "java.home");
+		return System.getProperty( args.get( 0 ) );
+	}
+
+
+	public String getJettyVersion() {
+		return Start.title;
+	}
+
+
+	public void goToGithub() {
+		goToWebpage( java.net.URI.create( "https://github.com/aw20/jettydesktop" ) );
 	}
 
 
@@ -364,9 +375,9 @@ public class AppFunctions {
 				executor = new Executor( serverConfigMap, this );
 				serverConfigMap.setRunning( "true" );
 
-				for ( int i = 0; i < serverConfigList.size(); ++i ) {
-					if ( serverConfigList.get( i ).getId().equals( serverId ) ) {
-						serverConfigList.get( i ).setRunning( "true" );
+				for ( ServerConfigMap server : serverConfigList ) {
+					if ( server.getId().equals( serverId ) ) {
+						server.setRunning( "true" );
 					}
 				}
 				return true;
@@ -383,9 +394,9 @@ public class AppFunctions {
 
 
 	private boolean stopServer( String serverId ) {
-		for ( int i = 0; i < serverConfigList.size(); ++i ) {
-			if ( serverConfigList.get( i ).getId().equals( serverId ) ) {
-				serverConfigMap = serverConfigList.get( i );
+		for ( ServerConfigMap server : serverConfigList ) {
+			if ( server.getId().equals( serverId ) ) {
+				server.setRunning( "false" );
 				serverConfigMap.setRunning( "false" );
 			}
 		}
@@ -399,19 +410,10 @@ public class AppFunctions {
 
 
 	private ServerConfigMap get( String id ) {
-		// loadSettings();
-		int count = 0;
-		for ( Iterator<ServerConfigMap> iter = serverConfigList.iterator(); iter.hasNext(); ) {
-			count++;
-			ServerConfigMap element = iter.next();
-			element.setId( Integer.toString( count ) );
-		}
-		count = 0;
-		for ( Iterator<ServerConfigMap> iter = serverConfigList.iterator(); iter.hasNext(); ) {
-			if ( serverConfigList.get( count ).getId().equals( id ) ) {
-				return serverConfigList.get( count );
+		for ( ServerConfigMap server : serverConfigList ) {
+			if ( server.getId().equals( id ) ) {
+				return server;
 			}
-			count++;
 		}
 		return null;
 	}
@@ -425,15 +427,15 @@ public class AppFunctions {
 			ois = new ObjectInputStream( in );
 			serverConfigList = (java.util.List<org.aw20.jettydesktop.ui.ServerConfigMap>) ois.readObject();
 			in.close();
+
 		} catch ( Exception e ) {
+			e.printStackTrace();
 			serverConfigList = new ArrayList<ServerConfigMap>();
 		}
-		// Collections.sort(serverConfigList, comparator);
 	}
 
 
 	private void saveSettings() {
-		// TODO Auto-generated method stub
 		ObjectOutputStream OS;
 		try {
 			FileOutputStream out = new FileOutputStream( new File( "jettydesktop.settings" ) );
@@ -443,5 +445,216 @@ public class AppFunctions {
 			out.close();
 		} catch ( IOException e ) {}
 
+	}
+
+
+	private void goToWebpage( URI page ) {
+		if ( Desktop.isDesktopSupported() ) {
+			Desktop desktop = Desktop.getDesktop();
+			try {
+				desktop.browse( page );
+			} catch ( IOException e ) {
+				// do nothing
+			}
+		} else {
+			Runtime runtime = Runtime.getRuntime();
+			try {
+				runtime.exec( "xdg-open " + page );
+			} catch ( IOException e ) {}
+		}
+	}
+
+
+	protected void setConsoleText( String id, String line ) {
+		webEngineSingleton.executeScript( "document.getElementById('console_" + id + "').innerHTML += '<pre>" + line + "</pre>';" );
+		webEngineSingleton.executeScript( "document.getElementById('console_" + id + "').scrollTop = document.getElementById('console_" + id + "').scrollHeight;" );
+	}
+
+
+	// PLUGINS
+	private void setUpPlugins( List<ServerConfigMap> scm ) {
+		for ( String plugin : pluginNamesList ) {
+			for ( ServerConfigMap server : scm ) {
+				setUpPluginForServer( server, plugin );
+			}
+		}
+	}
+
+
+	private void addFilesToHeader( Plugin p ) {
+		if ( p.getCss() != null ) {
+			String filePath = "plugins/" + p.getCss().getName().replace( "\\", "/" );
+			String func = "window.addFileToHeader('" + filePath + "', 'css');";
+			webEngineSingleton.executeScript( func );
+		}
+		if ( p.getJavascript() != null ) {
+			String filePath = "plugins/" + p.getJavascript().getName().replace( "\\", "/" );
+			String func = "window.addFileToHeader('" + filePath + "', 'js');";
+			webEngineSingleton.executeScript( func );
+		}
+	}
+
+
+	public boolean checkForPluginUpdate( String log, String selectedServer ) {
+		for ( Map.Entry<Integer, FileWatcher> watcher : fileWatcherList.entrySet() ) {
+			if ( selectedServer.equals( watcher.getKey() ) )
+				if ( watcher.getValue().getNeedsUpdating().get() )
+					return true;
+		}
+		return false;
+	}
+
+
+	// FOR LOG FILE PLUGINS
+	public void findFile( String log, String selectedServer ) {
+		String webFolder = "";
+
+		for ( ServerConfigMap server : serverConfigList ) {
+			if ( server.getId().equals( selectedServer ) ) {
+				webFolder = server.getWebFolder();
+			}
+		}
+
+		PluginUtil.listOfFiles.clear();
+		PluginUtil.findFileByName( log, webFolder );
+
+		if ( !PluginUtil.listOfFiles.isEmpty() ) {
+			File latestLog = PluginUtil.getLatestFile();
+			String content = PluginUtil.getPluginContent( latestLog );
+			updatePlugin( latestLog.getName(), content, selectedServer );
+		}
+
+	}
+
+
+	public static void updatePlugin( String file, String content, String filename ) {
+		String jsFriendlyName = file.replace( ".", "dot" );
+		String contentSplit[] = content.split( "\\r?\\n" );
+
+		Platform.runLater( new Runnable() {
+
+			public void run() {
+				String serverId = "";
+				if ( filename != null ) {
+					serverId = filename;
+				}
+				else {
+					for ( Map.Entry<Integer, FileWatcher> watcher : fileWatcherList.entrySet() ) {
+						if ( file.equals( watcher.getValue().getFile() ) )
+							serverId = Integer.toString( watcher.getKey() );
+					}
+				}
+				for ( String s : contentSplit ) {
+					s = s.replace( "'", "\\'" );
+					String func = "window.pushToPluginView('" + jsFriendlyName + "', '" + s + "', '" + serverId + "');";
+					try {
+						webEngineSingleton.executeScript( func );
+					} catch ( Throwable e ) {
+						// e.printStackTrace();
+					}
+				}
+			}
+		} );
+	}
+
+
+	// PLUGIN METHODS TO UPDATE
+	public void initialisePlugins() {
+		if ( pluginNamesList.isEmpty() ) {
+			try {
+				// TODO: add plugin file name to pluginNamesList
+				pluginNamesList.add( "plugin-java-details.java.html" );
+				pluginNamesList.add( "plugin-bluedragon.log.html" );
+			} catch ( Throwable e ) {
+				e.printStackTrace();
+			}
+		}
+
+		// empty plugins variable
+		plugins.clear();
+		setUpPlugins( serverConfigList );
+		// add all plugins to html
+		if ( !plugins.isEmpty() ) {
+			addPluginsToJetty();
+		}
+
+		for ( Map.Entry<Integer, FileWatcher> watcher : fileWatcherList.entrySet() ) {
+			watcher.getValue().start();
+		}
+	}
+
+
+	private void setUpPluginForServer( ServerConfigMap server, String pluginName ) {
+		PluginUtil.listOfFiles.clear();
+		// initialise local variables`
+		File blueDragonPlugin = PluginUtil.findFileByName( pluginName, tempFiles.getAbsolutePath() );
+		String name = PluginUtil.getPluginName( blueDragonPlugin );
+		File file = PluginUtil.getFile( blueDragonPlugin.getAbsolutePath() );
+		String serverId = server.getId();
+		File css = null;
+		File js = null;
+
+		// get css if exists
+		if ( PluginUtil.getAdditionalFilesForPlugin( tempFiles, name, "css" ) != null ) {
+			css = PluginUtil.getAdditionalFilesForPlugin( tempFiles, name, "css" ).get( 0 );
+		}
+		// get javascript if exists
+		if ( PluginUtil.getAdditionalFilesForPlugin( tempFiles, name, "js" ) != null ) {
+			js = PluginUtil.getAdditionalFilesForPlugin( tempFiles, name, "js" ).get( 0 );
+		}
+
+		// TODO: add branch here to update jetty view
+		if ( name.contains( ".log" ) ) {
+			// get plugin details for specific server
+			String webFolder = server.getWebFolder(); // current webapp folder
+			String plname = PluginUtil.getPluginName( blueDragonPlugin ); // plugin name eg. bluedragon.log
+			PluginUtil.findFileByName( plname, webFolder ); // find bluedragon.log in webapp folder
+
+			// add watcher to list of watchers if log exists
+			if ( !PluginUtil.listOfFiles.isEmpty() ) {
+				File latestLog = PluginUtil.getLatestFile();
+				fileWatcherList.put( Integer.parseInt( server.getId() ), new FileWatcher( latestLog ) );
+			}
+			else {
+				// add log file doesn't exist message
+			}
+			// TODO: use new class to add new plugin
+			Plugin plugin = new ConsoleLogWatcher( name, file, serverId, css, js );
+			plugins.add( plugin );
+		}
+		// TODO: use new class to add new plugin
+		else if ( name.contains( ".java" ) ) {
+			Plugin plugin = new JavaPlugin( name, file, serverId, css, js );
+			plugins.add( plugin );
+		}
+	}
+
+
+	public void addPluginsToJetty() {
+		for ( Plugin p : plugins ) {
+
+			String pContent = PluginUtil.getPluginContent( p.getHtml() );
+
+			String jsFriendlyName = p.getName().replace( ".", "dot" );
+			String func = "window.getPluginTab('" + p.getName() + "', '" + jsFriendlyName + "', '" + p.getId() + "');";
+			webEngineSingleton.executeScript( func );
+
+			func = "window.getPluginView('" + jsFriendlyName + "', '" + pContent + "', '" + p.getId() + "');";
+			webEngineSingleton.executeScript( func );
+
+			addFilesToHeader( p );
+
+			// TODO: add branch here to update jetty view
+			if ( p.getName().contains( "log" ) ) {
+				// insert initial log into view
+				findFile( p.getName(), p.getId() );
+			}
+			else if ( p.getName().contains( ".java" ) ) {
+				List<String> javaArgs = new ArrayList<>();
+				javaArgs.add( "java.version" );
+
+				updatePlugin( p.getName(), getJavaSystemProperties( javaArgs ), p.getId() );
+			}
+		}
 	}
 }

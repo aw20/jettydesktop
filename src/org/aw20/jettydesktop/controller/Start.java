@@ -21,11 +21,12 @@ import javafx.stage.WindowEvent;
 import netscape.javascript.JSObject;
 
 import org.aw20.jettydesktop.view.Resources;
+import org.aw20.util.FileUtil;
 
 
 public class Start extends Application {
 
-	private String title = "Jetty Desktop v.2.1.0";
+	static String title = "Jetty Desktop v.2.1.0";
 
 	protected Scene primaryScene;
 	private static Resources res = new Resources();
@@ -35,48 +36,62 @@ public class Start extends Application {
 	public WebEngine webEngineSingleton = getWebEngineInstance();
 
 	public static File temp = new File( System.getProperty( "java.io.tmpdir" ) );
-
 	private static File dest;
+	protected static File tempResourcesFile;
+	protected static File tempPluginFile;
 
 
 	public static void main( String[] args ) {
 		File f = new File( "resources/" ).getAbsoluteFile();
-		if ( f.exists() ) {
-			temp = f;
-		}
-
 		dest = new File( temp + "/jettystyle" );
 		if ( !dest.exists() ) {
 			dest.mkdir();
 		}
 
-		// if ( !f1.exists() ) //this line is for Tony
-		try ( InputStream htmlBytes = res.getHtmlResource().openStream();
-				InputStream jsBytes = res.getJSResource().openStream();
-				InputStream jqueryBytes = res.getJQueryResource().openStream();
-				InputStream cssBytes = res.getCSSResource().openStream();
-				InputStream logoBytes = res.getPNGResource().openStream();
-				InputStream arrowBytes = res.getArrowPNGResource().openStream();
-				InputStream jqueryuiBytes = res.getUIResource().openStream();
-				InputStream jqueryuicssBytes = res.getUICSSResource().openStream(); ) {
-
-			Files.copy( htmlBytes, new File( dest, "index.html" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-			Files.copy( jsBytes, new File( dest, "jetty.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-			Files.copy( jqueryBytes, new File( dest, "jquery-1.11.3.min.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-			Files.copy( cssBytes, new File( dest, "jetty.css" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-			Files.copy( logoBytes, new File( dest, "logo.png" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-			Files.copy( arrowBytes, new File( dest, "arrow.png" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-			Files.copy( jqueryuicssBytes, new File( dest, "jquery-ui.css" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-			Files.copy( jqueryuiBytes, new File( dest, "jquery-ui.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
-		} catch ( IOException e ) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if ( f.exists() ) {
+			temp = f;
+			tempResourcesFile = new File( f + "/jettystyle" );
+		}
+		else {
+			tempResourcesFile = dest;
 		}
 
+		tempPluginFile = new File( tempResourcesFile + "/plugins" );
+		// delete contents of tempPluginFile
+		try {
+			FileUtil.deleteDirectory( tempPluginFile );
+		} catch ( IOException e1 ) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		if ( !f.exists() )
+			try ( InputStream htmlBytes = res.getHtmlResource().openStream();
+					InputStream jsBytes = res.getJSResource().openStream();
+					InputStream jqueryBytes = res.getJQueryResource().openStream();
+					InputStream cssBytes = res.getCSSResource().openStream();
+					InputStream logoBytes = res.getPNGResource().openStream();
+					InputStream arrowBytes = res.getArrowPNGResource().openStream();
+					InputStream jqueryuiBytes = res.getUIResource().openStream(); ) {
+
+				Files.copy( htmlBytes, new File( tempResourcesFile, "index.html" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+				Files.copy( jsBytes, new File( tempResourcesFile, "jetty.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+				Files.copy( jqueryBytes, new File( tempResourcesFile, "jquery-1.11.3.min.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+				Files.copy( cssBytes, new File( tempResourcesFile, "jetty.css" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+				Files.copy( logoBytes, new File( tempResourcesFile, "logo.png" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+				Files.copy( arrowBytes, new File( tempResourcesFile, "arrow.png" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+				Files.copy( jqueryuiBytes, new File( tempResourcesFile, "jquery-ui.js" ).toPath(), StandardCopyOption.REPLACE_EXISTING );
+				FileUtil.copy( new File( "plugins/" ), tempPluginFile );
+			} catch ( IOException e ) {
+				e.printStackTrace();
+			}
+
 		launch( args );
+
 	}
 
 
+	@SuppressWarnings( "deprecation" )
 	@Override
 	public void start( Stage primaryStage ) {
 
@@ -89,7 +104,7 @@ public class Start extends Application {
 		final AppFunctions appFunctions = AppFunctions.getInstance();
 		URL index = null;
 		try {
-			index = new File( dest, "index.html" ).toURL();
+			index = new File( tempResourcesFile, "index.html" ).toURL();
 
 		} catch ( MalformedURLException e ) {
 			// TODO Auto-generated catch block

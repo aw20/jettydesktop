@@ -40,12 +40,8 @@ public class Resources {
 	}
 
 
-	public URL getUICSSResource() {
-		return getClass().getResource( "jquery-ui.css" );
-	}
-
-
 	public URL getUIResource() {
 		return getClass().getResource( "jquery-ui.js" );
 	}
+
 }

@@ -1,5 +1,4 @@
 $( document ).ready(function() {
-	
 	$("#dialog").dialog({
 		autoOpen : false, 
 		modal : true, 
@@ -22,7 +21,9 @@ $( document ).ready(function() {
 	
 	//initialise servers from Java
 	var apps = JSON.parse(java.getServerConfigListAsJson());
-	//get current machine JVM
+	//initialise plugins
+	
+	//get current machine JVM for settings tabs
 	var currentJvm = java.getJava();
 
 	//initialise variables
@@ -37,18 +38,37 @@ $( document ).ready(function() {
 	var consoleFooterTemplate = $('.console-info').clone().html();
 	var settingsFooterTemplate = $('#settings_footer').clone().html();
 	var headerTemplate = $('.header').clone().html();
+	var pluginListTemplate = $('.plugin_template').clone().html();
+	var jettyVersionTemplate = $('.jetty_version').clone().removeClass('hide');
 	
 	//get and list saved webapps
 	refreshServerList();
-	refreshEditFormsAndConsoles();	
+	refreshEditFormsAndConsoles();
 	
-	if (apps == "") {	
-		addWebApp();
+	$('.noapps').removeClass('hide');
+	var v = java.getJettyVersion();
+	jettyVersionTemplate.html(jettyVersionTemplate.html().replace("{j}", v));	
+	$('.jetty_version').after(jettyVersionTemplate);
+	
+	if (apps == "") {
+		showNoAppsMsg();
+	}
+	else {
+		showClickAppMsg();
 	}
 	
 	//on click functions
 	$(document).on('click', '.j_info', function() {
 		$('body, .header').toggleClass('slidedown');
+	});
+	
+	$(document).on('click', '.github_link', function(){
+		java.goToGithub();
+	});
+	
+	$(document).on('click', '#noappsButton', function() {
+		$('.noapps').addClass('hide');showClickAppMsg
+		addWebApp();
 	});
 	
 	$(document).on('click', '.action', function(e) {
@@ -63,14 +83,15 @@ $( document ).ready(function() {
 			startServer(id);
 			e.stopPropagation();
 		}
-	});
+	});	
 
 	$(document).on('click', '.j_settings', function() {
 		$( '#settings_footer, .settings, #btn_save_' + selectedServer + ', #btn_delete_' + selectedServer + ', #edit_' + selectedServer + ', .settings' ).removeClass( 'hide' );
-    	$( '#console_footer, #console_template, #console_' + selectedServer ).addClass( 'hide' );
-		
+    	$( '#console_footer, .plugin, #console_template, #console_' + selectedServer ).addClass( 'hide' );
+    	$('.noapps').addClass('hide');
+    	
+    	$( '.tab' ).removeClass( 'active' );
 		$( '.j_settings' ).addClass( 'active' );
-		$( '.j_console' ).removeClass( 'active' );
 
 		//get current webapp from list
     	$( '.current' ).each(function( index ) {
@@ -96,10 +117,10 @@ $( document ).ready(function() {
 			var tagid = $(this).attr('id');
 	    	selectedServer = tagid.split('_')[1];
 		});
-		
-		$( '.settings, #settings_footer, #edit_' + selectedServer).addClass( 'hide' );
-		$( '#console_footer, #console_' + selectedServer ).removeClass( 'hide' );
-		$( '.j_settings' ).removeClass( 'active' );
+		$('.noapps').addClass('hide');
+		$( '.settings, .plugin, #settings_footer, #edit_' + selectedServer).addClass( 'hide' );
+		$( '#console_footer, #btn_clear, #console_' + selectedServer ).removeClass( 'hide' );
+		$( '.tab' ).removeClass( 'active' );
 		$( '.j_console' ).addClass( 'active' );
 				
 		if (!java.getRunning(selectedServer)){
@@ -122,14 +143,19 @@ $( document ).ready(function() {
 	});
 	
     $(document).on('click', '.app', function() {
+    	var currentTab = $('.tabs').find('.active').attr('id');
     	$( 'body' ).find( '.data' ).addClass('hide');
     	$( 'body' ).find( '.head' ).addClass('hide');
-    	$('.header').removeClass('hide');
-    	
+    	$('.tabs').find('.plugin_tab').addClass('hide');
+    	$('.header, #btn_clear').removeClass('hide');
+    	$('.noapps').addClass('hide');
     	//this.id is "webapp_1"
-    	$( '.settings' ).addClass( 'hide' );
+    	$( '.settings, .plugin' ).addClass( 'hide' );
     	var tagid = this.id;
     	selectedServer = $(this).data('index');
+    	
+    	$('.tabs').find('a[id$="_' + selectedServer + '"]').removeClass('hide');
+    	
     	$( 'body' ).find( '.head' ).addClass('hide');
     	$('#header_' + selectedServer).removeClass('hide');
     	
@@ -165,11 +191,19 @@ $( document ).ready(function() {
     	}
     	
     	if ( $( '.j_settings' ).hasClass( 'active' ) ) {
+    		
     		$( '.settings, #btn_save_' + selectedServer + ', #btn_delete_' + selectedServer + ', #edit_' + selectedServer).removeClass( 'hide' );
 	    	$( '#console_footer, #console_' + selectedServer ).addClass( 'hide' );
     	}
-    	else {
-    		$( '.j_console' ).addClass( 'active' );
+    	else if ( $( '.plugin_tab' ).hasClass( 'active' ) ) {
+    		$('#btn_clear').addClass('hide');
+    		var seperated = currentTab.split('_');    		
+    		$('.tab_' + seperated[1]).addClass('active');
+    		var pluginView = "plugin_" + seperated[1] + '_' + selectedServer;//plugin_bluedragondotlog_1
+    		$('#' + pluginView).removeClass('hide');
+    	}
+    	else {    		
+    		$( '.j_console' ).addClass( 'active' );  
 	    	$( '#settings_footer, #edit_' + selectedServer ).addClass( 'hide' );
 	    	$( '#console_footer, #console_' + selectedServer + ', #memory_' + selectedServer + ', #lastupdate_' + selectedServer).removeClass( 'hide' );
 	    	if (!java.getRunning(selectedServer)){
@@ -181,15 +215,20 @@ $( document ).ready(function() {
 	    		$('#btn_stop').removeClass('hide');
 	    	}
     	}
+
 		//highlight current
 		$( '#webapp_' + selectedServer ).addClass('current');
 		
     });
     
     $(document).on('click', '.addwebapp', function() {
+    	$( '.noapps' ).addClass('hide');
+    	$( '.console' ).addClass( 'hide' );
+    	$( '.app' ).removeClass( 'active' );
+    	$( '#console_template' ).removeClass( 'hide' );
     	$( 'body' ).find( '.head' ).addClass('hide');
-    	$('body, .header').removeClass('slidedown');
-    	//$('.header').addClass('hide');
+    	$( 'body, .header' ).removeClass('slidedown');
+    	$( '#btn_clear' ).removeClass('hide');
     	addWebApp();
     });
 
@@ -201,7 +240,6 @@ $( document ).ready(function() {
     	}
 
     	if (validate(savedServer)){
-	    		
 	    	var name = $('#form_name_' + savedServer).val();
 	    	var ip = $('#form_ip_' + savedServer).val();
 			var port = $('#form_port_' + savedServer).val();
@@ -255,6 +293,8 @@ $( document ).ready(function() {
 				$( '#console_footer').removeClass('hide');
 				$( '#settings_footer').addClass('hide');
 				$( '.j_console, .j_settings' ).removeClass('hide');
+				$( '.tab' ).removeClass( 'active' );
+				$( '.tab' ).addClass( 'hide' );
 				$( '.j_console' ).addClass( 'active' );
 			}
 			else {
@@ -262,14 +302,21 @@ $( document ).ready(function() {
 			}
 			//disable edit, delete, start buttons
 			$( '#btn_delete_' + savedServer ).attr( 'disabled', false );
-
-			$( '#btn_clear' ).prop( 'disabled', false );
-			
-			$( '#settings_footer').addClass('hide');
-			
-			$('.header').removeClass('hide');
+			$( '#btn_clear' ).prop( 'disabled', false );			
+			$( '.footer' ).addClass('hide');
+			$( '.header, #btn_clear' ).removeClass('hide');
 			
 			orderList();
+			
+			showClickAppMsg();
+			$( '.console' ).addClass( 'hide' );
+			$( '#console_template' ).removeClass('hide');
+			$( '.noapps' ).removeClass('hide');
+			$( '.app' ).removeClass( 'current' );
+			
+			$( '.plugin_tab' ).remove();
+			$( '.plugin' ).remove();
+			java.initialisePlugins();
 	    }
     });
     
@@ -309,6 +356,8 @@ $( document ).ready(function() {
     });
 
     $(document).on('click', '.delete', function() {
+    	$( '.tab' ).removeClass( 'active' );
+    	
     	$('#dialogText').html('Delete <span id="var">{y}</span>?');
     	$('#dialogText').attr('id', 'dialog_delete');
     	$('#var').text(java.getNameOfApp(selectedServer));
@@ -319,9 +368,9 @@ $( document ).ready(function() {
     	var folder;
     	var serv;
     	
-    	var tagid = $(this).closest('.edit').attr('id');
-        serv = tagid.split('_')[1];
-    	
+    	var tagid = $(this).attr('id');
+        serv = tagid.split('_')[3];
+        
     	if ($('#form_web_folder_' + serv + '_text').val() == undefined){
     		folder = "";
     	}
@@ -333,48 +382,61 @@ $( document ).ready(function() {
     });
 
     $(document).on('click', '.select_java', function() {
-    	var java = java.getFolder();
-    	$('#form_customjvm_' + selectedServer + '_text').val(java);
-    	$(' #form_radio_custom_' + selectedServer).attr('checked', true);
-		$(' #form_radio_hotspot_' + selectedServer).attr('checked', false);
+    	var serv;
+    	
+    	var tagid = $(this).attr('id');
+        serv = tagid.split('_')[2];
+        
+        if ($('#form_customjvm_' + serv + '_text').val() == undefined){
+    		folder = "";
+    	}
+    	else {
+    		folder = $('#form_customjvm_' + serv + '_text').val();
+    	}
+    	var dir = java.getFolder(folder);
+    	
+    	$(' #form_customjvm_' + serv + '_text').val(dir);
+    	$(' #form_radio_custom_' + serv).attr('checked', true);
+		$(' #form_radio_hotspot_' + serv).attr('checked', false);
     });
 
     $(document).on('click', '.defaultjvm', function() {
     	$('#form_customjvm_' + selectedServer + '_text').val("");
     });
     
-    function startServer(id){
-    	$('#console_' + id).append('<pre>Starting Server...</pre>');
-		$('#console_' + id).append('<pre>' + java.onServerStart(id) + '</pre>');
+    function startServer( id ){
+    	$( '#console_' + id ).append('<pre>Starting Server...</pre>');
+		$( '#console_' + id ).append('<pre>' + java.onServerStart(id) + '</pre>');
 				
-		if (java.getRunning(id)){			
+		if ( java.getRunning( id ) ){			
 	    	$( "body" ).find( ".data" ).addClass('hide');
 	    	$( "body" ).find( "a" ).removeClass('current');
-	    	
+	    	$('.noapps').addClass('hide');
 	    	$( 'body' ).find( '.head' ).addClass('hide');
-	    	$('#header_' + id).removeClass('hide');
+	    	$( '#header_' + id ).removeClass('hide');
 	    	
-	    	$( '.settings, #settings_footer, #console_template, #edit_' + id).addClass( 'hide' );
+	    	$( '.settings, .plugin, #settings_footer, #console_template, #edit_' + id).addClass( 'hide' );
 			$( '#console_footer, #console_' + id ).removeClass( 'hide' );
-			$( '.j_settings' ).removeClass( 'active' );
+			$( '.tab' ).removeClass( 'active' );
+			$('.tabs').find('a[id$="_' + selectedServer + '"]').removeClass('hide');
 			$( '.j_console' ).addClass( 'active' );
 			
 			$( '.j_settings, .j_console, #memory_' + id + ', #lastupdate_' + id + ', #btn_save_' + id + ', #btn_delete_' + id ).removeClass( 'hide' );
 			
-			$('#webapp_' + id).addClass('running');
+			$( '#webapp_' + id ).addClass('running');
 			$( '#btn_delete_' + id ).prop( 'disabled', true );
 			$( '#btn_save_' + id ).prop( 'disabled', true );
 			
 			$('.start').addClass('hide');
-			$('.stop').removeClass('hide');
+			$('.stop, #btn_clear').removeClass('hide');
 			$( '#btn_open_' + id ).prop( 'disabled', false );
 		}
     }
     
-    function stopServer(id){
-    	document.getElementById('console_' + id).innerHTML += '<pre>Stopping Server...</pre>';
-    	document.getElementById('console_' + id).innerHTML += '<pre>' + java.onServerStop(id) + '</pre>';
-
+    function stopServer( id ){
+    	$('#console_' + id).innerHTML += '<pre>Stopping Server...</pre>';
+    	$('#console_' + id).innerHTML += '<pre>' + java.onServerStop(id) + '</pre>';
+    	$('.noapps').addClass('hide');
 		$( '#btn_delete_' + id ).prop( 'disabled', false );
 		$( '#btn_save_' + id ).prop( 'disabled', false );
 
@@ -399,10 +461,15 @@ $( document ).ready(function() {
 	    	$( '.j_settings' ).removeClass( 'active' );
 	    	$( '.j_console' ).addClass( 'hide' );
 	    	$( '.j_settings' ).addClass( 'hide' );
-	    	$( '#console_template' ).removeClass( 'hide' );
+	    	$( '.tab' ).addClass( 'hide' ); 	
+	    	$( '#console_template, #btn_clear' ).removeClass( 'hide' );
 	    	$( '#settings_footer' ).addClass( 'hide' );
 	    	
 	    	$( 'body' ).find( '.head' ).addClass('hide');
+	    	
+	    	if (java.getAllDeleted())
+	    		showNoAppsMsg();
+	    		$('.noapps').removeClass('hide');
     	}
     }
 
@@ -416,7 +483,7 @@ $( document ).ready(function() {
     	}
     	
     	//hide tabs
-    	$( '.j_settings, .j_console' ).addClass( 'hide' ); 
+    	$( '.j_settings, .j_console, .plugin_tab, .plugin' ).addClass( 'hide' ); 
 		
 		if (!newServerBool){ //if add new has already been pressed
 			newServerBool = true;
@@ -462,7 +529,7 @@ $( document ).ready(function() {
 		}
 		else {
 			//show new settings and footer
-			$( '#settings_footer, #btn_save_' + servers.length + ', #btn_delete_' + servers.length + ', .settings, #edit_' + servers.length ).removeClass( 'hide' );
+			$( '#settings_footer, #btn_clear, #btn_save_' + servers.length + ', #btn_delete_' + servers.length + ', .settings, #edit_' + servers.length ).removeClass( 'hide' );
 			//hide new console and footer
 			$( '#console_footer, #console_template, #console_' + servers.length ).addClass( 'hide' );
 			//disable delete button
@@ -470,7 +537,8 @@ $( document ).ready(function() {
 			
 		}		
     }
-
+    
+    // initial set up of server list and tabs
     function refreshServerList(){
     	servers = [];
 		for (var i in apps){		
@@ -572,6 +640,19 @@ $( document ).ready(function() {
     	refreshServerList();
     }
     
+    //text to show on start up
+    function showNoAppsMsg(){
+		$('#noappsInfo').text('You\'ve got no webapps');
+		$('#noappsButton').text('+ add webapp');
+		$('#noappsButton').removeClass('hide');
+	}
+	
+	function showClickAppMsg(){
+		$('#noappsInfo').text('Click on an app to start');
+		$('#noappsButton').addClass('hide');
+	}
+    
+    // footer information
     window.lastupdated = function (line, server) {
     	$('#lastupdate_' + server).text(line);
     }
@@ -580,22 +661,80 @@ $( document ).ready(function() {
     	$('#memory_' + server).text(line);
     }
     
+    // close window dialog
     window.closewindow = function(count) {
     	$('#dialogText').html('Stop all apps (<span id="var">{y}</span>) running ?');
     	$('#dialogText').attr('id', 'dialog_close');
     	$('#var').text(count);
     	$("#dialog").dialog("open");
 	}
+        
+    // plugin functions accessed from Java
+    window.getPluginTab = function(name, friendlyName, server){
+		var tab_template = '<a id="j_{f}_{x}" class="hide tab plugin_tab tab_{f}">{t}</a>';
+		var tab = tab_template.replace(/{t}/g, name); //name to display
+		var tab2 = tab.replace(/{f}/g, friendlyName); //name for ID
+		var tab3 = tab2.replace(/{x}/g, server); //name for serverId
+		$('.tabs').append(tab3);
+	}
+	
+	window.getPluginView = function(name, html, server){
+		var p = html.replace(/{t}/g, name);
+		var p2 = p.replace(/{x}/g, server);
+		$('#console_template').after(p2);
+	}
+	
+	window.pushToPluginView = function(name, content, selectedServer){
+		$('#plugin_' + name + '_' + selectedServer).get(0).innerHTML += '<pre>' + content.toString() + '</pre>';
+	}
+	
+	window.addFileToHeader = function(filePath, type){
+		if (type == "css")
+			$('head').append('<link rel="stylesheet" href="' + filePath + '" type="text/css">')
+		else
+			$('head').append('<script src="' + filePath + '"></script>')
+	}
+	
+	$(document).on('click', '.plugin_tab', function(e) {
+		var selectedPlugin = $(this).attr('id').split('_')[1];		
+		$( '#settings_footer, #console_template, .settings, .console, .plugin ' ).addClass( 'hide' );
+		
+		$( '.tab' ).removeClass( 'active' );
+		$(this).addClass('active');
+		
+		$( '#plugin_' + selectedPlugin + '_' + selectedServer ).removeClass('hide');
+		$( '#console_footer' ).removeClass( 'hide' );
+		$( '#btn_clear' ).addClass( 'hide' );
+				
+		var needUpdate = java.checkForPluginUpdate(selectedPlugin.replace("dot", "."), selectedServer);
+		if (needUpdate){
+			java.findLog(selectedPlugin.replace("dot", "."), selectedServer);
+		}
+	});
     
+	// response from dialog (close window  or delete confirmation)
     function callback(value){
-        if ($('#dialog_close').length){
-        	java.getButtonPressResponse(value);
-        }
-        else {
-        	deleteApp();
-        }
+    	if ($( '#dialog_delete' ).length ){
+    		if (value == "yes"){
+    			deleteApp();		
+    		}
+    		else{
+    			//close dialog and do nothing
+    		}
+    		$('#dialog_delete').attr('id', 'dialogText');
+    	}
+    	else if ($('#dialog_close').length ){
+    		if (value == "yes"){
+	        	java.getButtonPressResponse(value);
+	        }
+	        else {
+	        	//close dialog and do nothing
+	        }
+	        $('#dialog_close').attr('id', 'dialogText');
+    	}
     }
 
+    // alphabetical ordering of server list
     function orderList() {
     	
         var classname = document.getElementsByClassName('list_item');
@@ -613,39 +752,6 @@ $( document ).ready(function() {
 
         });
     }
-    
-    //JS for plugins
-	/*$(document).on('click', '.j_plugin', function() {    	
-    	$('#plugin_form').removeClass('hide');
-    	$( '.j_plugin' ).addClass( 'active' );
-    	$('#console_template').addClass('hide');
-    	$('#settings_footer').addClass('hide');
-    	$('#plugin_footer').removeClass('hide');
-
-
-    	$('#form_html').text('<div id="plugin_{p}">   <!-- insert html here -->   </div>');
-    });
-    
-	$(document).on('click', '#btn_add_plugin', function() {
-		var pluginLog, pluginHtml, pluginName;
-		
-		if ($('radio_button_log').is(':checked')){
-			pluginLog = $('#form_log').val();
-			java.log(pluginName + ", " + pluginLog);
-		}
-		else {
-			pluginHtml = $('#form_html').text();
-			java.log(pluginName + ", " + pluginHtml);
-		}
-		
-		pluginName = $('#form_name').val();
-		
-		//java.log(pluginName + ", " + pluginHtml + ", " + pluginLog);
-		java.addToHtml(pluginHtml, pluginName);
-	});*/
-    
-    
-    
 
     
     //form validation
@@ -745,4 +851,7 @@ $( document ).ready(function() {
 			return false;
 		}		
     }
+    
+    java.initialisePlugins();
+    
 });

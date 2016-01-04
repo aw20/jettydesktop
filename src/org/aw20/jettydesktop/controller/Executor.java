@@ -261,9 +261,7 @@ public class Executor extends Object {
 							Platform.runLater( new Runnable() {
 
 								public void run() {
-									// webEngineSingleton.executeScript( "$('console_" + scm.getId() + "').find('pre').text += '" + l + "';" );
-									webEngineSingleton.executeScript( "document.getElementById('console_" + scm.getId() + "').innerHTML += '<pre>" + l + "</pre>';" );
-									webEngineSingleton.executeScript( "document.getElementById('console_" + scm.getId() + "').scrollTop = document.getElementById('console_" + scm.getId() + "').scrollHeight;" );
+									appFunctions.setConsoleText( scm.getId(), l );
 									appFunctions.onLastUpdated( "Last Updated: " + LocalDateTime.now().format( formatter ).toString(), scm.getId() );
 								}
 							} );

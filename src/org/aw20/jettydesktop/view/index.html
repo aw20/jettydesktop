@@ -3,7 +3,6 @@
 	<head>
 
 		<script src="jquery-1.11.3.min.js"></script>
-		<link rel="stylesheet" href="jquery-ui.css">
   		<script src="jquery-ui.js"></script>
 		<link rel="stylesheet" href="jetty.css" type="text/css" />
 		<script src="jetty.js"></script>
@@ -42,35 +41,44 @@
 	<div class="main">
 
 		<div class="tabs">
-			<a class="j_settings hide">settings</a>
-			<a class="j_console active hide">console</a>
+			<a class="tab j_settings hide">settings</a>
+			<a class="tab j_console active hide">console</a>
+
+			<!--- <a class="tab j_html" style="float: right;">html</a> --->
 		</div>
 
 
-		<div id="console_template" class="console">
-			<pre>--------------THIS IS PLACEHOLDER TEXT------------
-		Server Starting
-2015-11-17 17:03:04.863:INFO::main: Logging initialized @65ms
-Jetty Version: 9.2.z-SNAPSHOT
-http://*:80
-Jetty starting up ... please wait
-2015-11-17 17:03:04.921:INFO:oejs.Server:main: jetty-9.2.z-SNAPSHOT
-2015-11-17 17:03:07.092:INFO:oejw.StandardDescriptorProcessor:main: NO JSP Support for /, did not find org.apache.jasper.servlet.JspServlet
-2015-11-17 17:03:07.103:WARN:oejs.SecurityHandler:main: ServletContext@o.e.j.w.WebAppContext@1bcffb5{/,file:/E:/tickdv2/trunk/tickd/webapp/,STARTING} has uncovered http methods for path: /
-log4j:WARN No appenders could be found for logger (org.apache.commons.vfs.impl.StandardFileSystemManager).
-log4j:WARN Please initialize the log4j system properly.
-Loading QuickServer v1.4.7 ... Done
-Mail25 Mailet Container @alanwilliamson.org v1.2
-2015-11-17 17:03:09.292:INFO:oejsh.ContextHandler:main: Started o.e.j.w.WebAppContext@1bcffb5{/,file:/E:/tickdv2/trunk/tickd/webapp/,AVAILABLE}
-2015-11-17 17:03:09.324:INFO:oejs.ServerConnector:main: Started ServerConnector@e6b5c8{HTTP/1.1}{0.0.0.0:80}
-... Jetty has started.
-2015-11-17 17:03:09.325:INFO:oejs.Server:main: Started @4541ms
-environment: local
---------------THIS IS PLACEHOLDER TEXT------------
-			</pre>
 
+
+		<div id="console_template" class="console">
 		</div><!-- console -->
-		<div class="footer hide" id="console_footer">
+
+		<div class="noapps hide">
+			<p class="jetty_version hide">{j}</p>
+			<p>View <a class="github_link" href="javascript:void(0)">Jetty on Github</a> for more information.</p>
+		    <p id="noappsInfo"></p>
+		    <a class="newapp" id="noappsButton"></a>
+		</div>
+
+
+		<div id="plugin_form" class="hide">
+			<fieldset>
+				<legend>plugins</legend>
+				<div class="plugin_template">
+					<div class="control hide">
+						<label for="plugin_name_{p}"></label>
+						<input id="plugin_name_{p}" type="checkbox" value="{p}"><span id="plugin_{p}"></span></input>
+					</div>
+				</div>
+			</fieldset>
+		</div><!-- plugins -->
+
+		<div class="footer hide" id="plugin_footer">
+			<button id="btn_add_plugins">add plugins</button>
+		</div>
+
+
+		<div class="footer hide console_footer" id="console_footer">
 			<div class="console-info">
 				<p id="memory_{x}" class="hide"></p><p id="lastupdate_{x}" class="hide"></p>
 			</div>
@@ -93,12 +101,12 @@ environment: local
 
 					<div class="control">
 						<label for="form_ip">IP address</label>
-						<input id="form_ip_{x}" type="text" />
+						<input id="form_ip_{x}" type="text" class="inline" />
 					</div>
 
 					<div class="control">
 						<label for="form_port">Port</label>
-						<input id="form_port_{x}" type="text" />
+						<input id="form_port_{x}" type="text" class="inline" />
 					</div>
 				</fieldset>
 
@@ -138,14 +146,14 @@ environment: local
 
 					<div class="control">
 						<label for="">Memory</label>
-						<input type="text"  id="form_memory_{x}"/> MB
+						<input type="text" class="inline" id="form_memory_{x}"/> MB
 					</div>
 				</fieldset>
 			</div>
 		</div><!-- settings -->
-		<div class="footer" id="settings_footer">
-			<button id="btn_save_{x}" class="btn j_save hide">save</button>
-			<button id="btn_cancel_{x}" class="btn j_cancel hide">cancel</button>
+		<div class="footer settings_footer" id="settings_footer">
+			<button id="btn_save_{x}" class="j_save hide">save</button>
+			<button id="btn_cancel_{x}" class="j_cancel hide">cancel</button>
 			<button id="btn_delete_{x}" class="delete hide" disabled>delete</button>
 		</div>
 
