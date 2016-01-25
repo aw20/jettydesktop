@@ -220,8 +220,7 @@ public class Main extends Application {
 				alert.setContentText( "Delete " + serverToBeDeleted + "?" );
 				DialogPane dp = alert.getDialogPane();
 
-				dp.getStylesheets().add(
-						getClass().getResource( "alert.css" ).toExternalForm() );
+				dp.getStylesheets().add( getClass().getResource( "alert.css" ).toExternalForm() );
 
 				dp.getStyleClass().remove( "alert" );
 
@@ -286,8 +285,7 @@ public class Main extends Application {
 
 									DialogPane dp = alert.getDialogPane();
 
-									dp.getStylesheets().add(
-											getClass().getResource( "alert.css" ).toExternalForm() );
+									dp.getStylesheets().add( getClass().getResource( "alert.css" ).toExternalForm() );
 
 									dp.getStyleClass().remove( "alert" );
 
@@ -348,8 +346,7 @@ public class Main extends Application {
 
 			uiController.getArrowImage().setRotate( 180.0 );
 			uiController.getServerInfoStackPaneMaster().setVisible( false );
-		}
-		else {
+		} else {
 			AnchorPane.setTopAnchor( uiController.getTabPaneMaster(), 47.0 );
 
 			uiController.getArrowImage().setRotate( 0.0 );
@@ -421,14 +418,12 @@ public class Main extends Application {
 				if ( server.getId().equals( serverController.getSelectedServerInstance() ) ) {
 					if ( server.getRunning().equals( "true" ) ) {
 						uiController.showSettingsButtonsOnRunning();
-					}
-					else {
+					} else {
 						uiController.showSettingsButtonsOnNotRunning();
 					}
 				}
 			}
-		}
-		else if ( newTab.getId().equals( "consoleTab" ) ) {
+		} else if ( newTab.getId().equals( "consoleTab" ) ) {
 
 			uiController.getConsoleStackPane().setVisible( true );
 
@@ -454,8 +449,7 @@ public class Main extends Application {
 				if ( server.getId().equals( serverController.getSelectedServerInstance() ) ) {
 					if ( server.getRunning().equals( "true" ) ) {
 						uiController.showConsoleButtonsOnRunning();
-					}
-					else {
+					} else {
 						uiController.showConsoleButtonsOnNotRunning();
 					}
 				}
@@ -482,8 +476,7 @@ public class Main extends Application {
 		// not new server
 		if ( serverController.getSelectedServerInstance() != null ) {
 			tempSettings = ( (Pane) scene.lookup( "#" + Globals.FXVariables.SETTINGSID + serverController.getSelectedServerInstance() ) );
-		}
-		else {
+		} else {
 			newServer = true;
 			tempSettings = ( (Pane) scene.lookup( "#" + Globals.FXVariables.SETTINGSEMPTYID ) );
 		}
@@ -546,8 +539,7 @@ public class Main extends Application {
 			if ( server.getId().equals( serverController.getSelectedServerInstance() ) ) {
 				if ( server.getRunning().equals( "true" ) ) {
 					uiController.showConsoleButtonsOnRunning();
-				}
-				else {
+				} else {
 					uiController.showConsoleButtonsOnNotRunning();
 				}
 			}
@@ -632,15 +624,13 @@ public class Main extends Application {
 
 			// set buttons to open directory chooser
 			btnGetFolder.setOnAction( event -> {
-				final DirectoryChooser directoryChooser =
-						new DirectoryChooser();
+				final DirectoryChooser directoryChooser = new DirectoryChooser();
 				if ( ( (TextField) tempPane.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText() != null ) {
 					if ( !( (TextField) tempPane.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText().isEmpty() ) {
 						directoryChooser.setInitialDirectory( new File( ( (TextField) tempPane.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText() ) );
 					}
 				}
-				final File selectedDirectory =
-						directoryChooser.showDialog( stage );
+				final File selectedDirectory = directoryChooser.showDialog( stage );
 				if ( selectedDirectory != null ) {
 					selectedDirectory.getAbsolutePath();
 					( (TextField) tempPane.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).setText( selectedDirectory.getAbsolutePath() );
@@ -648,15 +638,13 @@ public class Main extends Application {
 			} );
 
 			btnBrowse.setOnAction( event -> {
-				final DirectoryChooser directoryChooser =
-						new DirectoryChooser();
+				final DirectoryChooser directoryChooser = new DirectoryChooser();
 				if ( ( (TextField) tempPane.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText() != null ) {
 					if ( !( (TextField) tempPane.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText().isEmpty() ) {
 						directoryChooser.setInitialDirectory( new File( ( (TextField) tempPane.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText() ) );
 					}
 				}
-				final File selectedDirectory =
-						directoryChooser.showDialog( stage );
+				final File selectedDirectory = directoryChooser.showDialog( stage );
 				if ( selectedDirectory != null ) {
 					selectedDirectory.getAbsolutePath();
 					( (TextField) tempPane.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).setText( selectedDirectory.getAbsolutePath() );
@@ -815,8 +803,7 @@ public class Main extends Application {
 
 				if ( scm.getCurrentJVM() != null ) {
 					( (RadioButton) tempSettings.lookup( "#" + Globals.FXVariables.defaultJvmRadioBtn ) ).setSelected( true );
-				}
-				else {
+				} else {
 					( (RadioButton) tempSettings.lookup( "#" + Globals.FXVariables.customJvmRadioBtn ) ).setSelected( true );
 				}
 
@@ -834,15 +821,13 @@ public class Main extends Application {
 
 				// set buttons to open directory chooser
 				tempBtnGetFolder.setOnAction( event -> {
-					final DirectoryChooser directoryChooser =
-							new DirectoryChooser();
+					final DirectoryChooser directoryChooser = new DirectoryChooser();
 					if ( ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText() != null ) {
 						if ( !( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText().isEmpty() ) {
 							directoryChooser.setInitialDirectory( new File( ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText() ) );
 						}
 					}
-					final File selectedDirectory =
-							directoryChooser.showDialog( stage );
+					final File selectedDirectory = directoryChooser.showDialog( stage );
 					if ( selectedDirectory != null ) {
 						selectedDirectory.getAbsolutePath();
 						( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).setText( selectedDirectory.getAbsolutePath() );
@@ -850,15 +835,13 @@ public class Main extends Application {
 				} );
 
 				tempBtnBrowse.setOnAction( event -> {
-					final DirectoryChooser directoryChooser =
-							new DirectoryChooser();
+					final DirectoryChooser directoryChooser = new DirectoryChooser();
 					if ( ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText() != null ) {
 						if ( !( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText().isEmpty() ) {
 							directoryChooser.setInitialDirectory( new File( ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText() ) );
 						}
 					}
-					final File selectedDirectory =
-							directoryChooser.showDialog( stage );
+					final File selectedDirectory = directoryChooser.showDialog( stage );
 					if ( selectedDirectory != null ) {
 						selectedDirectory.getAbsolutePath();
 						( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).setText( selectedDirectory.getAbsolutePath() );
@@ -887,13 +870,13 @@ public class Main extends Application {
 		} );
 		TextFlow textFlow = null;
 
-		if ( serverController.getServerConfigListInstance() != null ) {
+		if ( !serverController.getServerConfigListInstance().isEmpty() ) {
 			textFlow = new TextFlow( new Text( title ), new Text( "\nView " ), hpl, new Text( " for more information" ), new Text( "\nClick an app to start" ) );
 			textFlow.getStyleClass().add( "splashScreenText" );
 			uiController.getSplashPane().add( textFlow, 1, 1 );
 		}
 
-		if ( serverController.getServerConfigListInstance() == null ) {
+		else {
 			textFlow = new TextFlow( new Text( title ), new Text( "\nView " ), hpl, new Text( " for more information" ), new Text( "\nAdd an app to start" ) );
 			textFlow.getStyleClass().add( "splashScreenText" );
 			uiController.getSplashPane().add( textFlow, 1, 1 );

@@ -42,8 +42,7 @@ public class ServerController {
 	public String getSelectedServerInstance() {
 		if ( selectedServer == null ) {
 			return null;
-		}
-		else {
+		} else {
 			return selectedServer;
 		}
 	}
@@ -88,7 +87,12 @@ public class ServerController {
 			for ( ServerConfigMap server : serverConfigList ) {
 				ids.add( Integer.parseInt( server.getId() ) );
 			}
-			Integer i = Collections.max( ids );
+			Integer i;
+			if ( ids.isEmpty() ) {
+				i = 0;
+			} else {
+				i = Collections.max( ids );
+			}
 			id = Integer.toString( i + 1 );
 			ServerConfigMap scm = new ServerConfigMap();
 			scm.setId( id );
@@ -101,15 +105,13 @@ public class ServerController {
 
 			if ( tempUri == "" ) {
 				scm.setDefaultWebUri( tempUri );
-			}
-			else {
+			} else {
 				scm.setDefaultWebUri( "/" );
 			}
 
 			if ( isCustomJvm ) {
 				scm.setCustomJVM( tempCustomJvm );
-			}
-			else {
+			} else {
 				scm.setCurrentJVM();
 			}
 
@@ -119,15 +121,13 @@ public class ServerController {
 
 			if ( tempMemory != null && !tempMemory.isEmpty() ) {
 				scm.setMemoryJVM( tempMemory );
-			}
-			else {
+			} else {
 				scm.setMemoryJVM( "64" );
 			}
 
 			// add to ServerConfigList
 			serverConfigList.add( scm );
-		}
-		else {
+		} else {
 			for ( ServerConfigMap server : serverConfigList ) {
 				if ( server.getId().equals( selectedServer ) ) {
 					id = server.getId();
@@ -142,15 +142,13 @@ public class ServerController {
 
 					if ( tempUri == "" ) {
 						server.setDefaultWebUri( tempUri );
-					}
-					else {
+					} else {
 						server.setDefaultWebUri( "/" );
 					}
 
 					if ( isCustomJvm ) {
 						server.setCustomJVM( tempCustomJvm );
-					}
-					else {
+					} else {
 						server.setCurrentJVM();
 					}
 
@@ -160,8 +158,7 @@ public class ServerController {
 
 					if ( tempMemory != null && !tempMemory.isEmpty() ) {
 						server.setMemoryJVM( tempMemory );
-					}
-					else {
+					} else {
 						server.setMemoryJVM( "64" );
 					}
 					break;

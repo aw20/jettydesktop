@@ -12,12 +12,20 @@
 	-fx-cursor: hand;
 }
 
-#serverInfo {
+#serverInfo { 
 	-fx-padding: 10px 10px 10px 10px;
 }
 
 #splashPane {
 	-fx-background-color: #ffffff;
+}
+
+#vboxAppListScrollPane {
+	-fx-background-color: #222d35;
+}
+
+#listViewAppList {
+	-fx-background-color: #222d35;
 }
 
 .scroll-pane {
