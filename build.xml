@@ -40,6 +40,11 @@
             </fileset>
         </copy>
 		<copy file="${src}/org/aw20/jettydesktop/rte/webdefault.xml" todir="${build}/org/aw20/jettydesktop/rte/"/>
+		<copy file="${src}/org/aw20/jettydesktop/controller/JettyDesktopUI.fxml" todir="${build}/org/aw20/jettydesktop/controller/"/>
+		<copy file="${src}/org/aw20/jettydesktop/controller/settings.fxml" todir="${build}/org/aw20/jettydesktop/controller/"/>
+		<copy file="${src}/org/aw20/jettydesktop/controller/application.css" todir="${build}/org/aw20/jettydesktop/controller/"/>
+		<copy file="${src}/org/aw20/jettydesktop/controller/alert.css" todir="${build}/org/aw20/jettydesktop/controller/"/>
+		<copy file="${src}/org/aw20/jettydesktop/controller/arrow.png" todir="${build}/org/aw20/jettydesktop/controller/"/>
 	</target>
 
 	<target name="jar" depends="clean,compile">
@@ -51,7 +56,7 @@
 			<zipgroupfileset dir="${jarpath}" includes="*.jar"/>
 
 			<manifest>
-				<attribute name="Main-Class" value="org.aw20.jettydesktop.controller.Start"/>
+				<attribute name="Main-Class" value="org.aw20.jettydesktop.controller.Main"/>
 			</manifest>
 		</jar>
 		

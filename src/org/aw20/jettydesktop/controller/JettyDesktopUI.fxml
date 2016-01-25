@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.layout.HBox?>
+
+<AnchorPane fx:id="mainPane" id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="655.0" prefWidth="889.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+	<children>
+		<SplitPane id="splitPane" fx:id="splitPane" dividerPositions="0.3" prefHeight="655.0" prefWidth="889.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+			<items>
+			<!-- left split pane -->
+				<!-- server list pane -->
+				<AnchorPane id="leftSplit" fx:id="leftSplit" maxWidth="225.0" minHeight="0.0" minWidth="225.0" prefHeight="160.0" prefWidth="225.0">
+			    	<children>
+				    	<ScrollPane fx:id="vboxAppListScrollPane" id="vboxAppListScrollPane" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+   							<content>
+	   				    		<ListView id="listViewAppList" fx:id="listViewAppList" editable="true" prefWidth="224.0" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+	   	                     	</ListView>
+   							</content>
+                     	</ScrollPane>
+			    		<Button id="btnAddWebApp" fx:id="btnAddWebApp" layoutX="-1.0" layoutY="593.0" mnemonicParsing="false" prefHeight="45.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+			   		</children>
+			    </AnchorPane>
+			    <!-- right split pane -->
+			    <AnchorPane id="rightSplit" minHeight="0.0" minWidth="0.0" prefHeight="653.0" prefWidth="630.0">
+			    	<children>     
+			      		<AnchorPane id="rightSplitAnchor" layoutX="152.0" layoutY="212.0" prefHeight="653.0" prefWidth="620.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+			       			<children>
+							    <!-- server info pane -->
+							    <AnchorPane id="serverInfoPane" fx:id="serverInfoPane" maxHeight="47.0" prefHeight="0.0" styleClass="content" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+							    	<children>
+							 			<Pane id="serverInfoStackPaneMaster" fx:id="serverInfoStackPaneMaster" maxHeight="47.0" prefHeight="0.0" prefWidth="620.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+							        		<children>
+								    			<StackPane id="serverInfoStackPane" fx:id="serverInfoStackPane" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+							        			</StackPane>
+							  		   		</children>
+							 		  	</Pane>
+								    </children>
+							 	</AnchorPane>
+						        <!-- footer pane -->
+						        <AnchorPane fx:id="footerAnchorPane" maxHeight="45.0" minHeight="45.0" prefHeight="45.0" prefWidth="618.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+						        	<children>
+						          		<Button fx:id="startBtn" mnemonicParsing="false" styleClass="controlBtn" text="start" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="140.0" AnchorPane.topAnchor="0.0" />
+						          		<Button fx:id="stopBtn" mnemonicParsing="false" styleClass="controlBtn" text="stop" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="140.0" AnchorPane.topAnchor="0.0" />
+						          		<Button fx:id="clearBtn" mnemonicParsing="false" styleClass="controlBtn" text="clear" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="70.0" AnchorPane.topAnchor="0.0" />
+						          		<Button fx:id="openBtn" mnemonicParsing="false" styleClass="controlBtn" text="open" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+						          		<Button fx:id="saveBtn" mnemonicParsing="false" styleClass="controlBtn" text="save" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+						          		<Button fx:id="deleteBtn" mnemonicParsing="false" styleClass="deleteBtn" text="delete" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="70.0" AnchorPane.topAnchor="0.0" />
+                              			<Pane fx:id="consoleInfo" prefHeight="60.0" prefWidth="408.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="210.0" />
+                              			<!--<TextFlow fx:id="tfLastUpdated" prefHeight="39.0" prefWidth="172.0" AnchorPane.bottomAnchor="18.0" AnchorPane.leftAnchor="14.0" />
+                              			<TextFlow fx:id="tfMemory" prefHeight="39.0" prefWidth="172.0" AnchorPane.bottomAnchor="18.0" AnchorPane.leftAnchor="255.0" /> -->
+						         	</children>
+						        </AnchorPane>
+						        <!-- tab pane -->
+						        <StackPane fx:id="tabPaneMaster" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+						        	<children>
+						        		<AnchorPane fx:id="splashAnchorPane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+										   <children>
+			                                    <GridPane id="splashPane" fx:id="splashPane" layoutX="185.0" layoutY="245.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+			                                      <columnConstraints>
+			                                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="199.0" minWidth="10.0" prefWidth="109.0" />
+			                                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="303.0" minWidth="10.0" prefWidth="303.0" />
+			                                          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+			                                      </columnConstraints>
+			                                      <rowConstraints>
+			                                        <RowConstraints maxHeight="252.0" minHeight="10.0" prefHeight="242.0" vgrow="SOMETIMES" />
+			                                        <RowConstraints maxHeight="208.0" minHeight="10.0" prefHeight="208.0" vgrow="SOMETIMES" />
+			                                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+			                                      </rowConstraints>
+			                                    </GridPane>
+										   </children>
+										</AnchorPane>
+						            	<TabPane fx:id="tabPane" layoutX="202.0" layoutY="48.0" prefHeight="605.0" prefWidth="620.0" tabClosingPolicy="UNAVAILABLE" visible="false" AnchorPane.bottomAnchor="60.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="48.0">
+						             		<tabs>
+						             			<!-- settings tab pane -->
+								              	<Tab fx:id="settingsTab" text="settings">
+								               		<content>
+								                		<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="508.0" prefWidth="618.0" xmlns:fx="http://javafx.com/fxml/1">
+								   	 		  				<children>
+								   	  		   					<StackPane fx:id="settingsStackPane" layoutX="210.0" layoutY="-11.0" prefHeight="529.0" prefWidth="618.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-11.0">
+								   	  		    					<children>
+									            					</children>
+								   	           					</StackPane>
+								                 			</children>
+								                		</AnchorPane>
+						               				</content>
+						              			</Tab>
+						              			<!-- console tab pane -->
+						             			<Tab fx:id="consoleTab" text="console">
+						               				<content>
+						                				<AnchorPane id="consoleAnchorPane" fx:id="consoleAnchorPane" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+						                 					<children>
+						                  						<StackPane id="consoleStackPane" fx:id="consoleStackPane" layoutX="223.0" layoutY="191.0" prefHeight="582.0" prefWidth="620.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+						                 					</children>
+						                				</AnchorPane>
+						               				</content>
+						              			</Tab>
+						        			</tabs>
+						      			</TabPane>
+						 			</children>
+								</StackPane>
+							</children>
+						</AnchorPane>
+						<!-- arrow image pane -->
+						<Pane fx:id="serverInfoImagePane" prefHeight="40.0" prefWidth="44.0" styleClass="content" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+							<children>
+								<ImageView fx:id="arrowImage" disable="false" fitHeight="40.0" fitWidth="44.0" layoutX="3.0" layoutY="2.0" pickOnBounds="true" preserveRatio="true">
+									<image>
+ 										<Image url="@arrow.png" />
+									</image>
+								</ImageView>
+							</children>
+						</Pane>
+					</children>
+				</AnchorPane>
+			</items>
+		</SplitPane>
+	</children>
+</AnchorPane>

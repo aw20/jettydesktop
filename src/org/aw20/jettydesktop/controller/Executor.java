@@ -37,11 +37,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
-import javafx.application.Platform;
-import javafx.scene.web.WebEngine;
+import javafx.scene.Scene;
+import javafx.scene.layout.StackPane;
 
 import org.aw20.jettydesktop.rte.JettyRunTime;
 import org.aw20.jettydesktop.ui.ServerConfigMap;
@@ -56,16 +57,19 @@ public class Executor extends Object {
 	 */
 
 	private Process process;
-	private AppFunctions appFunctions;
 	private boolean bRun = true;
 	private ioConsumer ioconsumers[];
 	private adminPortWatcher AdminPortWatcher = null;
 	private int adminPort;
 	private ServerConfigMap scm = null;
 
-	private DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime( FormatStyle.MEDIUM, FormatStyle.MEDIUM );
+	private StackPane sp;
+	private Scene scene;
 
-	private WebEngine webEngineSingleton = Start.getWebEngineInstance();
+	private UIController uiController = UIController.getInstance();
+
+	private DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime( FormatStyle.MEDIUM, FormatStyle.MEDIUM );
+	Date date = null;
 
 	private static Vector allInstances;
 
@@ -85,14 +89,16 @@ public class Executor extends Object {
 	}
 
 
-	public Executor( ServerConfigMap serverConfigMap, AppFunctions appFunctions ) throws IOException {
+	public Executor( ServerConfigMap serverConfigMap, StackPane _sp, Scene _scene ) throws IOException {
 		allInstances.add( this );
 
 		scm = serverConfigMap;
-		this.appFunctions = appFunctions;
+		sp = _sp;
+		scene = _scene;
 
 		// Check to see if this server is already running
 		if ( SocketUtil.isRemotePortAlive( serverConfigMap.getIP(), Integer.parseInt( serverConfigMap.getPort() ) ) ) {
+			uiController.updateConsole( scm.getId(), "Port #" + serverConfigMap.getPort() + " appears to be in use already.\n", sp );
 			throw new IOException( "Port#" + serverConfigMap.getPort() + " appears to be in use already" );
 		}
 
@@ -139,8 +145,6 @@ public class Executor extends Object {
 
 		ProcessBuilder pb = new ProcessBuilder( programArgs );
 
-		// what is the error stream below outputting?
-
 		// Start the process
 
 		process = pb.start();
@@ -176,7 +180,8 @@ public class Executor extends Object {
 			adminPort = -1;
 
 		} catch ( Exception e ) {
-			webEngineSingleton.executeScript( "document.getElementById('console_" + scm.getId() + "').innerHTML += '<pre>Using Free AdminPort=" + adminPort + "</pre>';" );
+			// TODO :RETURN USING FREE ADMIN PORT
+			uiController.updateConsole( scm.getId(), "Using Free Admin Port: " + adminPort + "\n", sp );
 			return;
 		}
 	}
@@ -212,13 +217,9 @@ public class Executor extends Object {
 						} catch ( InterruptedException ignored ) {}
 
 						final String l = line;
-						if ( appFunctions != null )
-							Platform.runLater( new Runnable() {
 
-								public void run() {
-									appFunctions.onMemory( l, scm.getId() );
-								}
-							} );
+						// UPDATE MEMORY IN RUN LATER
+						uiController.updateMemory( l, scm.getId(), scene );
 					}
 				} catch ( IOException e ) {
 					break;
@@ -257,14 +258,10 @@ public class Executor extends Object {
 				try {
 					while ( ( line = br.readLine() ) != null ) {
 						final String l = line;
-						if ( appFunctions != null )
-							Platform.runLater( new Runnable() {
-
-								public void run() {
-									appFunctions.setConsoleText( scm.getId(), l );
-									appFunctions.onLastUpdated( "Last Updated: " + LocalDateTime.now().format( formatter ).toString(), scm.getId() );
-								}
-							} );
+						// UPDATE CONSOLE
+						uiController.updateConsole( scm.getId(), l + "\n", sp );
+						// UPDATE LAST UPDATED IN RUN LATER
+						uiController.updateLastUpdated( "last updated: " + LocalDateTime.now().format( formatter ).toString(), scm.getId(), scene );
 					}
 				} catch ( IOException e ) {
 					break;

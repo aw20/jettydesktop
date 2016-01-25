@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<Pane id="settingsEmpty" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+  <children>
+     <GridPane id="gridPane">
+       <columnConstraints>
+         <ColumnConstraints hgrow="SOMETIMES" maxWidth="304.0" minWidth="10.0" prefWidth="143.0" />
+         <ColumnConstraints hgrow="SOMETIMES" maxWidth="537.0" minWidth="10.0" prefWidth="300.0" />
+         <ColumnConstraints hgrow="SOMETIMES" maxWidth="537.0" minWidth="10.0" prefWidth="175.0" />
+       </columnConstraints>
+       <rowConstraints>
+           <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+           <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+           <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+           <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+           <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+           <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+           <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+           <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+           <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+           <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+           <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+           <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+           <RowConstraints minHeight="10.0" prefHeight="40.0" vgrow="SOMETIMES" />
+       </rowConstraints>
+        <children>
+           <TextField id="txtName" maxWidth="130.0" minWidth="130.0" prefHeight="25.0" prefWidth="130.0" promptText="Webapp name" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+           <Label id="lblName" text="name" GridPane.rowIndex="2">
+              <padding>
+                 <Insets right="8.0" />
+              </padding>
+              <GridPane.margin>
+                 <Insets />
+              </GridPane.margin>
+           </Label>
+           <Label id="lblIp" text="ip address" GridPane.rowIndex="3">
+              <GridPane.margin>
+                 <Insets right="8.0" />
+              </GridPane.margin>
+              <padding>
+                 <Insets />
+              </padding>
+           </Label>
+           <TextField id="txtIp" maxWidth="130.0" minWidth="130.0" prefHeight="25.0" prefWidth="130.0" promptText="127.0.0.1" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+           <TextField id="txtPort" maxWidth="130.0" minWidth="130.0" prefHeight="25.0" prefWidth="130.0" promptText="8080" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+           <TextField id="txtWebFolder" maxWidth="200.0" minWidth="200.0" prefHeight="25.0" prefWidth="200.0" promptText="C:/path/to/webapp" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+           <TextField id="txtUri" maxWidth="130.0" minWidth="130.0" prefHeight="25.0" prefWidth="130.0" promptText="defaulturi" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+           <TextField id="txtCustomJvm" maxWidth="200.0" minWidth="200.0" prefHeight="25.0" prefWidth="200.0" promptText="C:/path/to/java" GridPane.columnIndex="1" GridPane.rowIndex="10">
+              <GridPane.margin>
+                 <Insets left="100.0" />
+              </GridPane.margin>
+           </TextField>
+           <TextField id="txtJvmArgs" maxWidth="200.0" minWidth="200.0" prefHeight="25.0" prefWidth="130.0" promptText="-d64 -server -Xms8m" GridPane.columnIndex="1" GridPane.rowIndex="11" />
+           <TextField id="txtMemory" maxWidth="130.0" minWidth="130.0" prefHeight="25.0" prefWidth="130.0" promptText="64" GridPane.columnIndex="1" GridPane.rowIndex="12" />
+           <Label id="lblPort" text="port" GridPane.rowIndex="4">
+              <padding>
+                 <Insets right="8.0" />
+              </padding>
+           </Label>
+           <Label id="lblFolder" text="web folder" GridPane.rowIndex="6">
+              <padding>
+                 <Insets right="8.0" />
+              </padding>
+           </Label>
+           <Label id="lblUri" text="default uri" GridPane.rowIndex="7">
+              <padding>
+                 <Insets right="8.0" />
+              </padding>
+           </Label>
+           <Label id="lblRuntime" text="runtime" GridPane.rowIndex="9">
+              <padding>
+                 <Insets right="8.0" />
+              </padding>
+           </Label>
+           <Label id="lblMemory" text="memory" GridPane.rowIndex="12">
+              <padding>
+                 <Insets right="8.0" />
+              </padding>
+           </Label>
+           <fx:define>
+	        <ToggleGroup fx:id="settingsRadioBtns"/>
+	       </fx:define>	
+           	<RadioButton id="radioBtnDefaultJvm" mnemonicParsing="false" toggleGroup="$settingsRadioBtns" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+           	<RadioButton id="radioBtnCustomJvm" mnemonicParsing="false" toggleGroup="$settingsRadioBtns" text="Custom JVM" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+           <Button fx:id="btnBrowseJvm" mnemonicParsing="false" text="browse" GridPane.columnIndex="1" GridPane.rowIndex="10">
+              <GridPane.margin>
+                 <Insets left="310.0" />
+              </GridPane.margin>
+           </Button>
+           <Button fx:id="btnGetFolder" mnemonicParsing="false" text="get folder" GridPane.columnIndex="1" GridPane.rowIndex="6">
+              <GridPane.margin>
+                 <Insets left="210.0" />
+              </GridPane.margin>
+           </Button>
+           <Label text="MB" GridPane.columnIndex="1" GridPane.rowIndex="12">
+              <GridPane.margin>
+                 <Insets left="140.0" />
+              </GridPane.margin>
+           </Label>
+           <Label text="server name" GridPane.rowIndex="1">
+              <GridPane.margin>
+                 <Insets left="20.0" />
+              </GridPane.margin>
+           </Label>
+           <Label text="web application" GridPane.rowIndex="5">
+              <GridPane.margin>
+                 <Insets left="20.0" />
+              </GridPane.margin>
+           </Label>
+           <Label text="java virtual machine" GridPane.rowIndex="8">
+              <GridPane.margin>
+                 <Insets left="20.0" />
+              </GridPane.margin>
+           </Label>
+           <Separator prefHeight="40.0" prefWidth="143.0" valignment="BOTTOM" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+           <Separator prefHeight="40.0" prefWidth="143.0" valignment="BOTTOM" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+           <Separator prefHeight="40.0" prefWidth="143.0" valignment="BOTTOM" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+           
+           <Separator prefHeight="40.0" prefWidth="100.0" valignment="BOTTOM" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+           <Separator prefHeight="40.0" prefWidth="100.0" valignment="BOTTOM" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+           <Separator prefHeight="40.0" prefWidth="100.0" valignment="BOTTOM" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+           <Label id="lblArgs" text="jvm arguments" GridPane.rowIndex="11">
+              <padding>
+                 <Insets right="8.0" />
+              </padding>
+           </Label>
+            <Label id="lblJvm" GridPane.columnIndex="1" GridPane.rowIndex="9">
+               <GridPane.margin>
+                  <Insets left="21.0" />
+               </GridPane.margin>
+            </Label>
+        </children>
+     </GridPane>
+    </children>
+</Pane>

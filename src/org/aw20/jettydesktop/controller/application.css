@@ -1,0 +1,288 @@
+/* JavaFX CSS - Leave this comment until you have at least create one rule which uses -fx-Property */
+
+.content{
+	-fx-background-color: #0076a8;
+}
+
+#serverInfoImagePane {
+	-fx-background-color: #006894;
+}
+
+#serverInfoImagePane:hover {
+	-fx-cursor: hand;
+}
+
+#serverInfo {
+	-fx-padding: 10px 10px 10px 10px;
+}
+
+#splashPane {
+	-fx-background-color: #ffffff;
+}
+
+.scroll-pane {
+	-fx-background: white;
+}
+
+.tab-pane {
+	-fx-tab-min-height: 35px;
+	-fx-tab-max-height: 35px;
+	-fx-tab-min-width: 72px;
+	-fx-tab-max-width: 72px;
+	-fx-border-width: 0 0 0 0;
+	-fx-border-style: solid;
+	-fx-border-color: #e6e6e6;
+	-fx-padding: 0 0 0 0;
+}
+
+.tab-pane .tab
+{
+    -fx-background-color: whitesmoke;    
+    -fx-border-radius: 0 0 0 0;
+  	-fx-background-radius: 0 0 0 0;
+  	-fx-padding: 0 0 0 0;
+  	-fx-background-insets: 0 0 0 0;
+  	-fx-border-width: 0;
+}
+
+.tab-pane .tab:selected
+{
+    -fx-background-color: white;
+}
+
+.tab .tab-label { 
+    -fx-alignment: CENTER;
+    -fx-text-fill: #828282;
+    -fx-font-size: 16px;
+}
+
+.tab:selected .tab-label { 
+    -fx-alignment: CENTER;
+    -fx-text-fill: #444444;
+}
+
+.settingsPane{
+	-fx-background-color: white;
+}
+
+#consoleStackPane {
+	-fx-background-color: white;
+	
+}
+
+#settingsStackPane {
+	-fx-background-color: white;
+}
+
+#splitPane {
+	-fx-box-border: transparent;
+}
+
+
+/* list of servers */
+#vboxAppList{
+	-fx-background-color: #222d35;
+	-fx-text-fill: gray;
+}
+
+#btnAddWebApp {
+	-fx-alignment: CENTER;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-background-color: #1c252c;
+    -fx-border-radius: 0 0 0 0;
+	-fx-background-radius: 0 0 0 0;
+}
+
+#btnAddWebApp:hover {
+	-fx-cursor: hand;
+}
+
+#btnAddWebApp:hover {
+	-fx-background-color: #1c252c;
+ 	-fx-text-fill: white;
+}
+
+.controlBtn, .deleteBtn {
+	-fx-background-color: transparent;
+  	-fx-border-color: transparent;
+  	-fx-border-style: none;
+  	-fx-border-width: 0;
+  	-fx-border-insets: 0;
+  	-fx-border-radius: 0 0 0 0;
+  	-fx-background-radius: 0 0 0 0;
+  	-fx-cursor: pointer;
+  	-fx-font-size: 16px;
+  	-fx-pref-width: 70px;
+}
+
+.controlBtn:disabled, .deleteBtn:disabled {
+  	-fx-background-color: transparent;
+  	-fx-color: #b2b2b2;
+}
+
+
+.controlBtn:hover, .deleteBtn:hover {
+	-fx-background-color: #cacaca;
+  	-fx-border-color: #cacaca;
+  	-fx-cursor: hand;
+}
+
+.controlBtn {
+	-fx-text-fill: #2381c1;
+}
+
+.deleteBtn {
+	-fx-text-fill: #d31e25;
+}
+
+#btnAddWebApp:disabled {
+	-fx-alignment: CENTER;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-background-color: #38393C;
+    -fx-border-radius: 0 0 0 0;
+	-fx-background-radius: 0 0 0 0;
+}
+
+#hboxServer {
+    -fx-background-color: #222d35;
+}
+
+#hboxServer:hover {
+    -fx-background-color: #1c252c;
+}
+
+.serverListHyperlink{
+	-fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-underline: false;
+    -fx-padding: 5 0.0 0.0 0.0;
+}
+
+.serverListHyperlink:hover, serverListHyperlink:pressed, .serverListHyperlink:focused{
+    -fx-border-color: transparent;
+	-fx-underline: false;
+}
+
+.githubHyperlink{
+	/*-fx-text-fill: #38393C;*/
+    -fx-underline: false;
+}
+
+.githubHyperlink:hover{    
+	-fx-border-color: transparent;
+}
+
+.githubHyperlink:pressed{
+	-fx-border-color: transparent;	    
+}
+
+.githubHyperlink:focused{
+	-fx-border-color: transparent;
+}
+
+.splashScreenText{
+	-fx-text-alignment: center;
+}
+
+.browseBtn {
+	-fx-pref-width: 70px;
+	-fx-background-color: transparent;
+  	-fx-pref-height: 30px;
+  	-fx-pref-width: 75px;
+  	-fx-text-fill: #0076a8;
+  	-fx-background-insets: 0;
+  	-fx-padding: 0 0.8em;
+  	-fx-border-width: 1px;
+  	-fx-border-style: solid;
+  	-fx-border-color: #c8c8c8;
+}
+
+.browseBtn:hover {
+  	-fx-text-fill: white;
+  	-fx-border-color: #0076a8;
+	-fx-background-color: #0076a8;
+	-fx-cursor: hand;
+}
+
+
+.circle {
+	-fx-padding: 0 50 0 0;
+}
+
+#vboxAppListScrollPane > .stack-pane{
+	-fx-border-color: #222d35;
+}
+
+.list-cell{
+    -fx-background-color: #222d35;
+    -fx-text-fill: white;
+    -fx-border-color: transparent;
+    -fx-underline: false;
+    -fx-cursor: default;
+    /*-fx-min-height: 32px;
+    -fx-max-height: 32px;*/
+}
+
+.list-cell:filled:selected:focused, .list-cell:filled:hover {
+    -fx-background-color: #1c252c;
+    -fx-text-fill: rgba(255, 255, 255, 0.9);
+    -fx-border-color: transparent;
+    -fx-underline: false;
+    -fx-cursor: hand;
+}
+
+.current{
+	-fx-background-color: #1c252c;
+  	-fx-text-fill: rgba(255, 255, 255, 0.9);
+}
+
+.split-pane-divider {
+	-fx-cursor: pointed;
+	-fx-border-color: transparent;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0, 1 0 1 0;	
+    -fx-border-width: 0px;
+    -fx-pref-width: 0px;
+}
+
+.vertical-grabber {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-shape: " ";
+}
+
+#leftSplit {
+	-fx-background-color: #222d35;
+}
+
+#mainPane {
+	-fx-background-color: #FFFFFF;
+	-fx-border-width: 0px;
+}
+
+/*TEXT FIELD */
+.text-field{
+  -fx-pref-height: 30px;
+  -fx-pref-width: 130px;
+  -fx-padding: 0 0.8em;
+  -fx-background-insets: 0;
+  -fx-border-width: 1px;
+  -fx-border-style: solid;
+  -fx-border-color: #c8c8c8;
+  
+}
+
+.grid {
+	-fx-background-color: #ff0066;
+}
+
+
+
+/*.hbox  > .button {  -fx-text-fill: black;  } */
+/*The selector pattern .hbox > .button styles Button nodes that are descendants of an HBox. The greater-than symbol between the two selectors lets the system know which nodes to style.*/

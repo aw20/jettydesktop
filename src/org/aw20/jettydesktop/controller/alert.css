@@ -1,0 +1,37 @@
+/* ALERTS */
+.exitDialog {
+    -fx-background-color: #ff0066;
+    -fx-text-fill: #f9d900;
+    /*-fx-background-color: whitesmoke;*/
+}
+
+.dialog-pane {
+    -fx-background-color: white;
+}
+
+.dialog-pane .label {
+    -fx-text-fill: black;
+    -fx-font-size: 1.2em;
+}
+
+.dialog-pane:header .header-panel {
+    -fx-background-color: white;
+    -fx-border-width: 0.0 0.0 1 0.0;
+    -fx-border-color: #cccccc;
+}
+
+.dialog-pane:header .header-panel .label {
+    -fx-font-size: 1.5em;
+}
+
+.dialog-pane .button {
+	-fx-pref-width: 70px;
+	-fx-background-color: transparent;
+  	-fx-pref-height: 30px;
+  	-fx-pref-width: 75px;
+  	-fx-text-fill: #0076a8;
+  	-fx-background-insets: 0;
+  	-fx-padding: 0 0.8em;
+  	-fx-border-width: 0px;
+  	-fx-cursor: hand;
+}
