@@ -103,9 +103,6 @@ public class Main extends Application {
 			primaryStage.getIcons().add( new Image( "/org/aw20/jettydesktop/view/logo.png" ) );
 			primaryStage.show();
 
-			// TODO: Scenic view show
-			// ScenicView.show( scene );
-
 			// event handlers
 
 			/**
