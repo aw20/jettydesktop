@@ -14,6 +14,8 @@ public class Globals {
 	public class StyleClasses {
 
 		public final static String CURRENT = "current";
+		public final static String SERVERINFO = "serverInfo";
+		public final static String CONSOLEINFO = "consoleInfo";
 	}
 
 
@@ -54,6 +56,14 @@ public class Globals {
 
 		public final static String memoryText = "memory";
 		public final static String lastUpdatedText = "lastUpdated";
+
+		public final static String idSelector = "#";
+	}
+
+	public static class StyleVariables {
+
+		public final static Double polygonPaneWidth = 40.0;
+		public final static Double hyperlinkWidth = 185.0;
 	}
 
 }

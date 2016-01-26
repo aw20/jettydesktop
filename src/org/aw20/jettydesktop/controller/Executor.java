@@ -37,7 +37,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
@@ -49,6 +48,7 @@ import org.aw20.jettydesktop.ui.ServerConfigMap;
 import org.aw20.util.SocketUtil;
 
 
+@SuppressWarnings( "rawtypes" )
 public class Executor extends Object {
 
 	/**
@@ -61,15 +61,12 @@ public class Executor extends Object {
 	private ioConsumer ioconsumers[];
 	private adminPortWatcher AdminPortWatcher = null;
 	private int adminPort;
-	private ServerConfigMap scm = null;
+	private ServerConfigMap currentServerConfigMap = null;
 
-	private StackPane sp;
+	private StackPane currentStackPaneConsole;
 	private Scene scene;
 
-	private UIController uiController = UIController.getInstance();
-
 	private DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime( FormatStyle.MEDIUM, FormatStyle.MEDIUM );
-	Date date = null;
 
 	private static Vector allInstances;
 
@@ -89,27 +86,28 @@ public class Executor extends Object {
 	}
 
 
-	public Executor( ServerConfigMap serverConfigMap, StackPane _sp, Scene _scene ) throws IOException {
+	@SuppressWarnings( "unchecked" )
+	public Executor( ServerConfigMap _serverConfigMap, StackPane _currentStackPaneConsole, Scene _scene, UIController _uiController ) throws IOException {
 		allInstances.add( this );
 
-		scm = serverConfigMap;
-		sp = _sp;
+		currentServerConfigMap = _serverConfigMap;
+		currentStackPaneConsole = _currentStackPaneConsole;
 		scene = _scene;
 
 		// Check to see if this server is already running
-		if ( SocketUtil.isRemotePortAlive( serverConfigMap.getIP(), Integer.parseInt( serverConfigMap.getPort() ) ) ) {
-			uiController.updateConsole( scm.getId(), "Port #" + serverConfigMap.getPort() + " appears to be in use already.\n", sp );
-			throw new IOException( "Port#" + serverConfigMap.getPort() + " appears to be in use already" );
+		if ( SocketUtil.isRemotePortAlive( currentServerConfigMap.getIP(), Integer.parseInt( currentServerConfigMap.getPort() ) ) ) {
+			_uiController.updateConsole( currentServerConfigMap.getId(), "Port #" + currentServerConfigMap.getPort() + " appears to be in use already.\n", currentStackPaneConsole );
+			throw new IOException( "Port#" + currentServerConfigMap.getPort() + " appears to be in use already" );
 		}
 
-		findFreePort();
+		findFreePort( _uiController );
 
 		// Start up the server
 		String USR_HOME = System.getProperty( "user.dir" ) + File.separator;
 
 		String JDK_HOME;
-		if ( serverConfigMap.getCurrentJVM() == null )
-			JDK_HOME = serverConfigMap.getCustomJVM() + File.separator + "bin" + File.separator;
+		if ( currentServerConfigMap.getCurrentJVM() == null )
+			JDK_HOME = currentServerConfigMap.getCustomJVM() + File.separator + "bin" + File.separator;
 		else
 			JDK_HOME = System.getProperty( "java.home" ) + File.separator + "bin" + File.separator;
 
@@ -124,22 +122,22 @@ public class Executor extends Object {
 		programArgs.add( JDK_HOME );
 		// programArgs.add( null );
 
-		if ( serverConfigMap.getMemoryJVM() != null )
-			programArgs.add( "-Xmx" + serverConfigMap.getMemoryJVM() + "m" );
+		if ( currentServerConfigMap.getMemoryJVM() != null )
+			programArgs.add( "-Xmx" + currentServerConfigMap.getMemoryJVM() + "m" );
 
-		if ( serverConfigMap.getDefaultJVMArgs() != null )
-			programArgs.add( serverConfigMap.getDefaultJVMArgs() );
+		if ( currentServerConfigMap.getDefaultJVMArgs() != null )
+			programArgs.add( currentServerConfigMap.getDefaultJVMArgs() );
 
 		programArgs.add( "-classpath" );
 		programArgs.add( getClasspath( USR_HOME ) );
 
 		programArgs.add( JettyRunTime.class.getName() );
 
-		if ( serverConfigMap.getIP().length() > 0 )
-			programArgs.add( serverConfigMap.getIP() );
+		if ( currentServerConfigMap.getIP().length() > 0 )
+			programArgs.add( currentServerConfigMap.getIP() );
 
-		programArgs.add( serverConfigMap.getPort() );
-		programArgs.add( serverConfigMap.getWebFolder() );
+		programArgs.add( currentServerConfigMap.getPort() );
+		programArgs.add( currentServerConfigMap.getWebFolder() );
 		programArgs.add( String.valueOf( adminPort ) );
 
 
@@ -150,14 +148,14 @@ public class Executor extends Object {
 		process = pb.start();
 		// this is where the JNI error occurs
 		ioconsumers = new ioConsumer[3];
-		ioconsumers[0] = new ioConsumer( process.getErrorStream() );
-		ioconsumers[1] = new ioConsumer( process.getInputStream() );
+		ioconsumers[0] = new ioConsumer( process.getErrorStream(), _uiController );
+		ioconsumers[1] = new ioConsumer( process.getInputStream(), _uiController );
 		ioconsumers[2] = new ioConsumer( process.getOutputStream() );
 
 
 		if ( adminPort > 0 ) {
 			try {
-				AdminPortWatcher = new adminPortWatcher();
+				AdminPortWatcher = new adminPortWatcher( _uiController );
 			} catch ( IOException ioe ) {
 				AdminPortWatcher = null;
 			}
@@ -165,7 +163,7 @@ public class Executor extends Object {
 	}
 
 
-	private void findFreePort() {
+	private void findFreePort( UIController _uiController ) {
 		try {
 			adminPort = 34000;
 
@@ -181,7 +179,7 @@ public class Executor extends Object {
 
 		} catch ( Exception e ) {
 			// TODO :RETURN USING FREE ADMIN PORT
-			uiController.updateConsole( scm.getId(), "Using Free Admin Port: " + adminPort + "\n", sp );
+			_uiController.updateConsole( currentServerConfigMap.getId(), "Using Free Admin Port: " + adminPort + "\n", currentStackPaneConsole );
 			return;
 		}
 	}
@@ -192,8 +190,11 @@ public class Executor extends Object {
 		BufferedReader br;
 		Socket s;
 
+		UIController uiController;
 
-		public adminPortWatcher() throws IOException {
+
+		public adminPortWatcher( UIController _uiController ) throws IOException {
+			uiController = _uiController;
 			s = new Socket();
 			s.connect( new InetSocketAddress( "127.0.0.1", adminPort ), 1000 );
 			br = new BufferedReader( new InputStreamReader( s.getInputStream() ) );
@@ -218,8 +219,8 @@ public class Executor extends Object {
 
 						final String l = line;
 
-						// UPDATE MEMORY IN RUN LATER
-						uiController.updateMemory( l, scm.getId(), scene );
+						// update memory
+						uiController.updateMemory( l, currentServerConfigMap.getId(), scene );
 					}
 				} catch ( IOException e ) {
 					break;
@@ -238,9 +239,11 @@ public class Executor extends Object {
 	class ioConsumer extends Thread {
 
 		BufferedReader br;
+		UIController uiController;
 
 
-		public ioConsumer( InputStream io ) {
+		public ioConsumer( InputStream io, UIController _uiController ) {
+			uiController = _uiController;
 			br = new BufferedReader( new InputStreamReader( io ) );
 			start();
 		}
@@ -258,10 +261,10 @@ public class Executor extends Object {
 				try {
 					while ( ( line = br.readLine() ) != null ) {
 						final String l = line;
-						// UPDATE CONSOLE
-						uiController.updateConsole( scm.getId(), l + "\n", sp );
-						// UPDATE LAST UPDATED IN RUN LATER
-						uiController.updateLastUpdated( "last updated: " + LocalDateTime.now().format( formatter ).toString(), scm.getId(), scene );
+						// update console
+						uiController.updateConsole( currentServerConfigMap.getId(), l + "\n", currentStackPaneConsole );
+						// update last updated text
+						uiController.updateLastUpdated( "last updated: " + LocalDateTime.now().format( formatter ).toString(), currentServerConfigMap.getId(), scene );
 					}
 				} catch ( IOException e ) {
 					break;
@@ -314,6 +317,11 @@ public class Executor extends Object {
 
 	public void setbRun( boolean bRun ) {
 		this.bRun = bRun;
+	}
+
+
+	public ServerConfigMap getCurrentServerConfigMap() {
+		return currentServerConfigMap;
 	}
 
 }

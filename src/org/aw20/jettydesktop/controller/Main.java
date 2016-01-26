@@ -1,8 +1,6 @@
 package org.aw20.jettydesktop.controller;
 
 
-import java.awt.Desktop;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
@@ -17,16 +15,14 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
@@ -34,7 +30,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -42,7 +37,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -54,15 +48,18 @@ public class Main extends Application {
 
 	private final String title = "Jetty Desktop v2.1.1";
 	private final String currentJvm = System.getProperty( "java.vm.name" ) + " " + System.getProperty( "java.version" ) + " " + System.getProperty( "java.vm.version" );
+	private final Font fontWebFolder = Font.font( "Arial", FontWeight.NORMAL, 13 );
+	private final Font fontNameUrl = Font.font( "Arial", FontWeight.BOLD, 15 );
+
+	private final String viewDir = "/org/aw20/jettydesktop/view/";
 
 	private UIController uiController;
 	private ServerController serverController;
+	private ServerSetup serverSetup;
 
-	Stage stage;
-	static Scene scene;
-	Pane tempSettingsPane;
-
-	FXMLLoader settingsLoader = null;
+	private Stage stage;
+	private Scene scene;
+	private FXMLLoader settingsLoader = null;
 
 
 	/**
@@ -72,11 +69,14 @@ public class Main extends Application {
 	public void start( Stage primaryStage ) {
 		try {
 			stage = primaryStage;
-			FXMLLoader loader = new FXMLLoader( getClass().getResource( "/org/aw20/jettydesktop/view/JettyDesktopUI.fxml" ) );
-			settingsLoader = new FXMLLoader( getClass().getResource( "/org/aw20/jettydesktop/view/settings.fxml" ) );
 
-			uiController = new UIController( loader, primaryStage );
+			FXMLLoader loader = new FXMLLoader( getClass().getResource( viewDir + "JettyDesktopUI.fxml" ) );
+			settingsLoader = new FXMLLoader( getClass().getResource( viewDir + "settings.fxml" ) );
+
+			uiController = UIController.getInstance();
 			serverController = ServerController.getInstance();
+
+			serverSetup = new ServerSetup();
 
 			loader.setController( uiController );
 
@@ -85,22 +85,23 @@ public class Main extends Application {
 
 			// initialise
 			Map<String, Pane> panes = new HashMap<String, Pane>();
+
 			uiController.initialise();
 
-			setUpSpalashScreen();
-			setUpEmptySettings();
-			setUpSettings();
-			setUpServerList();
-			setUpServerInfo();
-			addSettingsToStackPane( panes );
-			setUpConsoleInfo();
+			serverSetup.setUpSpalashScreen( this, serverController, uiController, title );
+			serverSetup.setUpEmptySettings( settingsLoader, currentJvm, stage, uiController );
+			serverSetup.setUpSettings( serverController, uiController );
+			serverSetup.setUpServerList( uiController, serverController, scene );
+			serverSetup.setUpServerInfo( serverController, uiController, fontWebFolder, fontNameUrl );
+			serverSetup.addSettingsToStackPane( panes, serverController, uiController, settingsLoader, currentJvm, stage, this );
+			serverSetup.setUpConsoleInfo( serverController, uiController );
 
-			scene.getStylesheets().add( getClass().getResource( "/org/aw20/jettydesktop/view/application.css" ).toExternalForm() );
-			scene.getStylesheets().add( getClass().getResource( "/org/aw20/jettydesktop/view/alert.css" ).toExternalForm() );
+			scene.getStylesheets().add( getClass().getResource( viewDir + "application.css" ).toExternalForm() );
+			scene.getStylesheets().add( getClass().getResource( viewDir + "alert.css" ).toExternalForm() );
 			primaryStage.setScene( scene );
 			primaryStage.setTitle( title );
 			primaryStage.setResizable( true );
-			primaryStage.getIcons().add( new Image( "/org/aw20/jettydesktop/view/logo.png" ) );
+			primaryStage.getIcons().add( new Image( viewDir + "logo.png" ) );
 			primaryStage.show();
 
 			// event handlers
@@ -199,17 +200,7 @@ public class Main extends Application {
 				try {
 					saveBtnClick();
 				} catch ( Exception e1 ) {
-					Alert alert = new Alert( AlertType.ERROR );
-					alert.setTitle( "Error" );
-					alert.setHeaderText( null );
-					alert.setContentText( "An error has occurred while saving a web app." );
-
-					DialogPane dp = alert.getDialogPane();
-
-					dp.getStylesheets().add( getClass().getResource( "/org/aw20/jettydesktop/view/alert.css" ).toExternalForm() );
-
-					dp.getStyleClass().remove( "alert" );
-
+					Alert alert = createNewAlert( AlertType.ERROR, "Error", "An error has occurred while saving a web app", null );
 					alert.showAndWait();
 				}
 			} );
@@ -226,21 +217,11 @@ public class Main extends Application {
 						serverToBeDeleted = server.getName();
 					}
 				}
-				Alert alert = new Alert( AlertType.CONFIRMATION );
-				alert.setTitle( "" );
-				alert.setHeaderText( "Are you sure?" );
-				alert.setContentText( "Delete " + serverToBeDeleted + "?" );
-				DialogPane dp = alert.getDialogPane();
 
-				dp.getStylesheets().add( getClass().getResource( "/org/aw20/jettydesktop/view/alert.css" ).toExternalForm() );
-
-				dp.getStyleClass().remove( "alert" );
-
-				Optional<ButtonType> result = alert.showAndWait();
+				Optional<ButtonType> result = createNewAlert( AlertType.CONFIRMATION, "", "Delete " + serverToBeDeleted + "?", "Are you sure?" ).showAndWait();
 
 				if ( result.get() == ButtonType.OK ) {
 					e.consume();
-					alert.close();
 					serverController.setDeleted();
 					uiController.updateServerOnDelete();
 
@@ -260,10 +241,10 @@ public class Main extends Application {
 					}
 
 					// hide buttons
-					uiController.showNoButtons();
+					ButtonActions buttonActions = new ButtonActions();
+					buttonActions.showNoButtons( uiController );
 				} else {
 					e.consume();
-					alert.close();
 				}
 
 
@@ -290,27 +271,16 @@ public class Main extends Application {
 
 								// if servers are running call js to run dialog
 								if ( runningServers > 0 ) {
-									Alert alert = new Alert( AlertType.CONFIRMATION );
-									alert.setTitle( "" );
-									alert.setHeaderText( "Are you sure?" );
-									alert.setContentText( "Stop all apps (" + runningServers + ") running." );
+									Optional<ButtonType> result = createNewAlert( AlertType.CONFIRMATION, "", "Stop all apps (" + runningServers + ") running.", "Are you sure?" ).showAndWait();
 
-									DialogPane dp = alert.getDialogPane();
-
-									dp.getStylesheets().add( getClass().getResource( "alert.css" ).toExternalForm() );
-
-									dp.getStyleClass().remove( "alert" );
-
-									Optional<ButtonType> result = alert.showAndWait();
 									// if servers have started exit app - show confirm, hard delete servers, exit platform
 									if ( result.get() == ButtonType.OK ) {
 										stopServersOnExit();
 										serverController.hardDeleteServersOnExit();
 										Platform.exit();
 									} else {
-										// do nothing?
+										// do nothing and close dialog
 										t.consume();
-										alert.close();
 									}
 								}
 
@@ -325,18 +295,9 @@ public class Main extends Application {
 				}
 			} );
 		} catch ( Exception e ) {
-			Alert alert = new Alert( AlertType.ERROR );
-			alert.setTitle( "Error" );
-			alert.setHeaderText( null );
-			alert.setContentText( "An error has occurred while starting Jetty Desktop." );
-
-			DialogPane dp = alert.getDialogPane();
-
-			dp.getStylesheets().add( getClass().getResource( "/org/aw20/jettydesktop/view/alert.css" ).toExternalForm() );
-
-			dp.getStyleClass().remove( "alert" );
-
-			alert.showAndWait();
+			// Alert alert = createNewAlert( AlertType.CONFIRMATION, "", "An error has occurred while starting Jetty Desktop", null );
+			// alert.showAndWait();
+			e.printStackTrace();
 		}
 	}
 
@@ -381,7 +342,7 @@ public class Main extends Application {
 
 			uiController.getServerInfoStackPaneMaster().setVisible( true );
 
-			Pane serverInfoPane = (Pane) scene.lookup( "#" + Globals.FXVariables.SERVERINFOID + serverController.getSelectedServerInstance() );
+			Pane serverInfoPane = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SERVERINFOID + serverController.getSelectedServerInstance() );
 			serverInfoPane.setVisible( true );
 			serverInfoPane.toFront();
 
@@ -408,7 +369,8 @@ public class Main extends Application {
 		uiController.getServerInfoImagePane().setVisible( false );
 		uiController.getServerInfoPane().setVisible( false );
 
-		uiController.showSettingsButtonsOnNotRunning();
+		ButtonActions buttonActions = new ButtonActions();
+		buttonActions.showButtonsOnNewWebApp( uiController );
 
 		// remove "current" from others
 		List<HBox> listOfHboxes = uiController.getListViewAppList().getItems();
@@ -419,7 +381,7 @@ public class Main extends Application {
 
 		serverController.setSelectedServer( null );
 
-		Pane p = (Pane) scene.lookup( "#" + Globals.FXVariables.SETTINGSID + "Empty" );
+		Pane p = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSID + "Empty" );
 		p.toFront();
 		p.setVisible( true );
 	}
@@ -428,8 +390,9 @@ public class Main extends Application {
 	private void tabPaneSelectionChange( Tab newTab ) {
 		uiController.setSelectedTabInstance( newTab );
 		String ss = serverController.getSelectedServerInstance();
+		ButtonActions buttonActions = new ButtonActions();
 		if ( newTab.getId().equals( "settingsTab" ) ) {
-			Pane pSettings = (Pane) scene.lookup( "#" + Globals.FXVariables.SETTINGSID + ss );
+			Pane pSettings = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSID + ss );
 			pSettings.setVisible( true );
 			pSettings.toFront();
 
@@ -438,9 +401,9 @@ public class Main extends Application {
 			for ( ServerConfigMap server : serverController.getServerConfigListInstance() ) {
 				if ( server.getId().equals( serverController.getSelectedServerInstance() ) ) {
 					if ( server.getRunning().equals( "true" ) ) {
-						uiController.showSettingsButtonsOnRunning();
+						buttonActions.showSettingsButtonsOnRunning( uiController );
 					} else {
-						uiController.showSettingsButtonsOnNotRunning();
+						buttonActions.showSettingsButtonsOnNotRunning( uiController );
 					}
 				}
 			}
@@ -448,7 +411,7 @@ public class Main extends Application {
 
 			uiController.getConsoleStackPane().setVisible( true );
 
-			Iterator itConsole = uiController.getConsoleStackPane().getChildren().iterator();
+			Iterator<Node> itConsole = uiController.getConsoleStackPane().getChildren().iterator();
 			while ( itConsole.hasNext() ) {
 				uiController.getSplashPane().setVisible( false );
 				uiController.getSplashAnchorPane().setVisible( false );
@@ -469,9 +432,9 @@ public class Main extends Application {
 			for ( ServerConfigMap server : serverController.getServerConfigListInstance() ) {
 				if ( server.getId().equals( serverController.getSelectedServerInstance() ) ) {
 					if ( server.getRunning().equals( "true" ) ) {
-						uiController.showConsoleButtonsOnRunning();
+						buttonActions.showConsoleButtonsOnRunning( uiController );
 					} else {
-						uiController.showConsoleButtonsOnNotRunning();
+						buttonActions.showConsoleButtonsOnNotRunning( uiController );
 					}
 				}
 			}
@@ -480,6 +443,7 @@ public class Main extends Application {
 
 
 	private void stopServersOnExit() {
+		@SuppressWarnings( "rawtypes" )
 		Vector v = Executor.getAllInstances();
 		for ( Object executor : v ) {
 			( (Executor) executor ).exit();
@@ -496,21 +460,21 @@ public class Main extends Application {
 		Pane tempSettings;
 		// not new server
 		if ( serverController.getSelectedServerInstance() != null ) {
-			tempSettings = ( (Pane) scene.lookup( "#" + Globals.FXVariables.SETTINGSID + serverController.getSelectedServerInstance() ) );
+			tempSettings = ( (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSID + serverController.getSelectedServerInstance() ) );
 		} else {
 			newServer = true;
-			tempSettings = ( (Pane) scene.lookup( "#" + Globals.FXVariables.SETTINGSEMPTYID ) );
+			tempSettings = ( (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSEMPTYID ) );
 		}
 
-		String tempName = ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.nameTextBox ) ).getText();
-		String tempIp = ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.ipTextBox ) ).getText();
-		String tempPort = ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.portTextBox ) ).getText();
-		String tempWebFolder = ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText();
-		String tempUri = ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.uriTextBox ) ).getText();
-		String tempCustomJvm = ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText();
-		String tempJvmArgs = ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.jvmArgsTextBox ) ).getText();
-		String tempMemory = ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.memoryTextBox ) ).getText();
-		boolean isCustomJvm = ( (RadioButton) tempSettings.lookup( "#" + Globals.FXVariables.customJvmRadioBtn ) ).selectedProperty().get();
+		String tempName = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.nameTextBox ) ).getText();
+		String tempIp = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.ipTextBox ) ).getText();
+		String tempPort = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.portTextBox ) ).getText();
+		String tempWebFolder = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.webFolderTextBox ) ).getText();
+		String tempUri = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.uriTextBox ) ).getText();
+		String tempCustomJvm = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.customJvmTextBox ) ).getText();
+		String tempJvmArgs = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.jvmArgsTextBox ) ).getText();
+		String tempMemory = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.memoryTextBox ) ).getText();
+		boolean isCustomJvm = ( (RadioButton) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.customJvmRadioBtn ) ).selectedProperty().get();
 
 		String savedServerId = serverController.saveServer( newServer, tempName, tempIp, tempPort, tempWebFolder, tempUri, tempCustomJvm, isCustomJvm, tempJvmArgs, tempMemory );
 
@@ -518,22 +482,22 @@ public class Main extends Application {
 			// add info to server info pane
 			Text text1 = new Text( '\n' + tempWebFolder );
 			text1.setFill( Color.WHITE );
-			text1.setFont( Font.font( "Arial", FontWeight.NORMAL, 13 ) );
+			text1.setFont( fontWebFolder );
 			text1.setId( Globals.FXVariables.INFOWEBFOLDERID + savedServerId );
 			Text text2 = new Text( tempName + " - " );
 			text2.setFill( Color.WHITE );
-			text2.setFont( Font.font( "Arial", FontWeight.BOLD, 15 ) );
+			text2.setFont( fontNameUrl );
 			text2.setId( Globals.FXVariables.INFONAMEID + savedServerId );
 			Text text3 = new Text( tempIp + ":" + tempPort );
 			text3.setFill( Color.WHITE );
-			text3.setFont( Font.font( "Arial", FontWeight.BOLD, 15 ) );
+			text3.setFont( fontNameUrl );
 			text3.setId( Globals.FXVariables.INFOURLID + savedServerId );
 			TextFlow tf = new TextFlow( text2, text3, text1 );
-			tf.getStyleClass().add( "serverInfo" );
+			tf.getStyleClass().add( Globals.StyleClasses.SERVERINFO );
 			tf.setId( Globals.FXVariables.INFOTEXTFLOWID + savedServerId );
 			tf.setPadding( new Insets( 5.0 ) );
 			Pane newPane = new Pane();
-			newPane.getStyleClass().add( "serverInfo" );
+			newPane.getStyleClass().add( Globals.StyleClasses.SERVERINFO );
 			newPane.getChildren().add( tf );
 			newPane.setVisible( true );
 			newPane.setId( Globals.FXVariables.SERVERINFOID + savedServerId );
@@ -541,15 +505,41 @@ public class Main extends Application {
 			uiController.getServerInfoStackPane().getChildren().add( newPane );
 
 			serverController.setSelectedServer( savedServerId );
+
+			// add info to console info pane
+			Text t = new Text();
+			t.setId( Globals.FXVariables.lastUpdatedText + savedServerId );
+			TextFlow tfLastUpdated = new TextFlow( t );
+			tfLastUpdated.getStyleClass().add( Globals.StyleClasses.CONSOLEINFO );
+			tfLastUpdated.setLayoutX( 20 );
+			tfLastUpdated.setLayoutY( 18 );
+			tfLastUpdated.setVisible( false );
+			tfLastUpdated.setId( Globals.FXVariables.lastUpdatedTextFlow + savedServerId );
+
+			uiController.getConsoleInfo().getChildren().add( tfLastUpdated );
+
+			// add info to console info pane
+			Text t1 = new Text();
+			t1.setId( Globals.FXVariables.memoryText + savedServerId );
+			TextFlow tfMemory = new TextFlow( t1 );
+			tfMemory.getStyleClass().add( Globals.StyleClasses.CONSOLEINFO );
+			tfMemory.setLayoutX( 220 );
+			tfMemory.setLayoutY( 18 );
+			tfMemory.setVisible( false );
+			tfMemory.setId( Globals.FXVariables.memoryTextFlow + savedServerId );
+
+			uiController.getConsoleInfo().getChildren().add( tfMemory );
 		}
 
 		uiController.updateSettings( savedServerId, newServer, scene, tempSettings, tempName, tempIp, tempPort, tempWebFolder, tempUri, tempCustomJvm, isCustomJvm, tempJvmArgs, tempMemory );
 		tempSettings.setVisible( false );
-		ScrollPane s = ( (ScrollPane) scene.lookup( "#" + Globals.FXVariables.SCROLLPANEID + savedServerId ) );
+		ScrollPane s = ( (ScrollPane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SCROLLPANEID + savedServerId ) );
 		s.setVisible( true );
 		s.toFront();
 
-		uiController.showSettingsButtonsOnNotRunning();
+		ButtonActions buttonActions = new ButtonActions();
+
+		buttonActions.showSettingsButtonsOnNotRunning( uiController );
 		uiController.getTabPane().setVisible( true );
 
 		// set console tab
@@ -559,9 +549,9 @@ public class Main extends Application {
 		for ( ServerConfigMap server : serverController.getServerConfigListInstance() ) {
 			if ( server.getId().equals( serverController.getSelectedServerInstance() ) ) {
 				if ( server.getRunning().equals( "true" ) ) {
-					uiController.showConsoleButtonsOnRunning();
+					buttonActions.showConsoleButtonsOnRunning( uiController );
 				} else {
-					uiController.showConsoleButtonsOnNotRunning();
+					buttonActions.showConsoleButtonsOnNotRunning( uiController );
 				}
 			}
 		}
@@ -574,11 +564,11 @@ public class Main extends Application {
 		if ( newServer ) {
 			// change settingsEmpty id to new id
 
-			Pane newSettings = (Pane) scene.lookup( "#" + Globals.FXVariables.SETTINGSEMPTYID );
+			Pane newSettings = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSEMPTYID );
 			newSettings.setId( Globals.FXVariables.SETTINGSID + savedServerId );
 			uiController.getSettingsStackPane().getChildren().add( newSettings );
 			tempSettings.setVisible( false ); // add new empty settings
-			setUpEmptySettings();
+			serverSetup.setUpEmptySettings( settingsLoader, currentJvm, stage, uiController );
 		}
 
 	}
@@ -606,319 +596,24 @@ public class Main extends Application {
 			}
 
 			URI uri = java.net.URI.create( "http://" + host + ":" + port + defaultUri );
-			goToWebpage( uri );
+			ServerActions serverActions = new ServerActions();
+			serverActions.goToWebpage( uri, this );
 		}
 	}
 
 
-	private void setUpEmptySettings() throws IOException {
-		// TODO: THIS IS NOT RECOMMENDED - http://stackoverflow.com/questions/21424843/exception-has-occuredroot-value-already-specified-in-javafx-when-loading-fxml-p
-		settingsLoader.setRoot( null ); // set to null to reinitialise
-		tempSettingsPane = settingsLoader.load();
+	public Alert createNewAlert( AlertType type, String title, String content, String header ) {
+		Alert alert = new Alert( type );
+		alert.setTitle( title );
+		alert.setHeaderText( header );
+		alert.setContentText( content );
 
-		Pane tempPane = tempSettingsPane;
-		tempPane.getStyleClass().add( "settingsPane" );
-		tempPane.setVisible( false );
-		tempPane.toFront();
+		DialogPane dp = alert.getDialogPane();
 
-		GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblName" ) ), HPos.RIGHT );
-		GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblIp" ) ), HPos.RIGHT );
-		GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblPort" ) ), HPos.RIGHT );
-		GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblFolder" ) ), HPos.RIGHT );
-		GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblUri" ) ), HPos.RIGHT );
-		GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblArgs" ) ), HPos.RIGHT );
-		GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblRuntime" ) ), HPos.RIGHT );
-		GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblMemory" ) ), HPos.RIGHT );
+		dp.getStylesheets().add( getClass().getResource( viewDir + "alert.css" ).toExternalForm() );
 
-		Button btnGetFolder = (Button) tempPane.lookup( "#" + Globals.FXVariables.BTNGETFOLDERID );
-		btnGetFolder.getStyleClass().add( "browseBtn" );
-		Button btnBrowse = (Button) tempPane.lookup( "#" + Globals.FXVariables.BTNBROWSEID );
-		btnBrowse.getStyleClass().add( "browseBtn" );
-		btnBrowse.setMinSize( Button.USE_PREF_SIZE, Button.USE_PREF_SIZE );
+		dp.getStyleClass().remove( "alert" );
 
-		( (RadioButton) tempPane.lookup( "#" + Globals.FXVariables.defaultJvmRadioBtn ) ).setSelected( true );
-
-		( (Label) tempPane.lookup( "#" + Globals.FXVariables.jvmLabel ) ).setText( currentJvm );
-		( (Label) tempPane.lookup( "#" + Globals.FXVariables.jvmLabel ) ).setMinSize( Label.USE_PREF_SIZE, Label.USE_PREF_SIZE );
-
-
-		// set buttons to open directory chooser
-		btnGetFolder.setOnAction( event -> {
-			final DirectoryChooser directoryChooser = new DirectoryChooser();
-			if ( ( (TextField) tempPane.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText() != null ) {
-				if ( !( (TextField) tempPane.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText().isEmpty() ) {
-					directoryChooser.setInitialDirectory( new File( ( (TextField) tempPane.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText() ) );
-				}
-			}
-			final File selectedDirectory = directoryChooser.showDialog( stage );
-			if ( selectedDirectory != null ) {
-				selectedDirectory.getAbsolutePath();
-				( (TextField) tempPane.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).setText( selectedDirectory.getAbsolutePath() );
-			}
-		} );
-
-		btnBrowse.setOnAction( event -> {
-			final DirectoryChooser directoryChooser = new DirectoryChooser();
-			if ( ( (TextField) tempPane.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText() != null ) {
-				if ( !( (TextField) tempPane.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText().isEmpty() ) {
-					directoryChooser.setInitialDirectory( new File( ( (TextField) tempPane.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText() ) );
-				}
-			}
-			final File selectedDirectory = directoryChooser.showDialog( stage );
-			if ( selectedDirectory != null ) {
-				selectedDirectory.getAbsolutePath();
-				( (TextField) tempPane.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).setText( selectedDirectory.getAbsolutePath() );
-			}
-		} );
-
-		uiController.getTabPaneMaster().getChildren().add( tempPane );
-	}
-
-
-	private void setUpSettings() {
-		// load settings into server config map
-		serverController.loadSettings();
-		for ( ServerConfigMap scm : serverController.getServerConfigListInstance() ) {
-			// add ids to list
-			uiController.getServerConfigIdList().add( scm.getId() );
-
-			// add console for each server
-			TextFlow newTextFlow = new TextFlow();
-			newTextFlow.setId( Globals.FXVariables.CONSOLEID + scm.getId() );
-			newTextFlow.setVisible( true );
-			ScrollPane scrollPane = new ScrollPane( newTextFlow );
-			scrollPane.setId( Globals.FXVariables.SCROLLPANEID + scm.getId() );
-			uiController.getConsoleStackPane().getChildren().add( scrollPane );
-		}
-	}
-
-
-	private void setUpServerInfo() {
-		// set server info hidden initially
-		AnchorPane.setTopAnchor( uiController.getTabPaneMaster(), 0.0 );
-
-		uiController.getArrowImage().setRotate( 180.0 );
-		uiController.getServerInfoStackPaneMaster().setVisible( false );
-
-		if ( serverController.getSelectedServerInstance() == null ) {
-			uiController.getServerInfoImagePane().setVisible( false );
-		}
-
-		for ( ServerConfigMap scm : serverController.getServerConfigListInstance() ) {
-			// add info to server info pane
-			Text text1 = new Text( '\n' + scm.getWebFolder() );
-			text1.setFill( Color.WHITE );
-			text1.setFont( Font.font( "Arial", FontWeight.NORMAL, 13 ) );
-			text1.setId( Globals.FXVariables.INFOWEBFOLDERID + scm.getId() );
-			Text text2 = new Text( scm.getName() + " - " );
-			text2.setFill( Color.WHITE );
-			text2.setFont( Font.font( "Arial", FontWeight.BOLD, 15 ) );
-			text2.setId( Globals.FXVariables.INFONAMEID + scm.getId() );
-			Text text3 = new Text( scm.getIP() + ":" + scm.getPort() );
-			text3.setFill( Color.WHITE );
-			text3.setFont( Font.font( "Arial", FontWeight.BOLD, 15 ) );
-			text3.setId( Globals.FXVariables.INFOURLID + scm.getId() );
-			TextFlow tf = new TextFlow( text2, text3, text1 );
-			tf.getStyleClass().add( "serverInfo" );
-			tf.setId( Globals.FXVariables.INFOTEXTFLOWID + scm.getId() );
-			tf.setPadding( new Insets( 5.0 ) );
-			Pane newPane = new Pane();
-			newPane.getStyleClass().add( "serverInfo" );
-			newPane.getChildren().add( tf );
-			newPane.setVisible( true );
-			newPane.setId( Globals.FXVariables.SERVERINFOID + scm.getId() );
-
-			uiController.getServerInfoStackPane().getChildren().add( newPane );
-		}
-
-	}
-
-
-	private void setUpConsoleInfo() {
-		// set server info hidden initially
-
-		for ( ServerConfigMap scm : serverController.getServerConfigListInstance() ) {
-			// add info to console info pane
-			Text t = new Text();
-			t.setId( Globals.FXVariables.lastUpdatedText + scm.getId() );
-			TextFlow tfLastUpdated = new TextFlow( t );
-			tfLastUpdated.getStyleClass().add( "consoleInfo" );
-			tfLastUpdated.setLayoutX( 20 );
-			tfLastUpdated.setLayoutY( 18 );
-			tfLastUpdated.setVisible( false );
-			tfLastUpdated.setId( Globals.FXVariables.lastUpdatedTextFlow + scm.getId() );
-
-			uiController.getConsoleInfo().getChildren().add( tfLastUpdated );
-
-			// add info to console info pane
-			Text t1 = new Text();
-			t1.setId( Globals.FXVariables.memoryText + scm.getId() );
-			TextFlow tfMemory = new TextFlow( t1 );
-			tfMemory.getStyleClass().add( "consoleInfo" );
-			tfMemory.setLayoutX( 220 );
-			tfMemory.setLayoutY( 18 );
-			tfMemory.setVisible( false );
-			tfMemory.setId( Globals.FXVariables.memoryTextFlow + scm.getId() );
-
-			uiController.getConsoleInfo().getChildren().add( tfMemory );
-		}
-
-	}
-
-
-	private void setUpServerList() {
-		// load server list
-		uiController.getListViewAppList().setPadding( new Insets( 0.0 ) );
-
-		// set action for on click server
-		for ( ServerConfigMap scm : serverController.getServerConfigListInstance() ) {
-			uiController.addHBoxToList( scm, scene, false );
-		}
-
-		for ( Map.Entry<String, AnchorPane> h : uiController.serversForList.entrySet() ) {
-			AnchorPane hbox = h.getValue();
-			uiController.getListViewAppList().getItems().add( (HBox) hbox.getChildren().get( 0 ) );
-		}
-
-		uiController.refreshServerList();
-
-	}
-
-
-	private void addSettingsToStackPane( Map<String, Pane> panes ) throws IOException {
-		for ( ServerConfigMap scm : serverController.getServerConfigListInstance() ) {
-			// add to settings stack pane
-
-			// TODO: THIS IS NOT RECOMMENDED - http://stackoverflow.com/questions/21424843/exception-has-occuredroot-value-already-specified-in-javafx-when-loading-fxml-p
-			settingsLoader.setRoot( null ); // set to null to reinitialise
-			Pane tempSettings = settingsLoader.load();
-			tempSettings.setId( Globals.FXVariables.SETTINGSID + scm.getId() );
-
-			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblName" ) ), HPos.RIGHT );
-			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblIp" ) ), HPos.RIGHT );
-			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblPort" ) ), HPos.RIGHT );
-			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblFolder" ) ), HPos.RIGHT );
-			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblUri" ) ), HPos.RIGHT );
-			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblArgs" ) ), HPos.RIGHT );
-			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblRuntime" ) ), HPos.RIGHT );
-			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblMemory" ) ), HPos.RIGHT );
-
-			( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.nameTextBox ) ).setText( scm.getName() );
-			( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.ipTextBox ) ).setText( scm.getIP() );
-			( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.portTextBox ) ).setText( scm.getPort() );
-			( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).setText( scm.getWebFolder() );
-			( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.uriTextBox ) ).setText( scm.getDefaultWebUri() );
-			( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).setText( scm.getCustomJVM() );
-			( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.jvmArgsTextBox ) ).setText( scm.getDefaultJVMArgs() );
-			( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.memoryTextBox ) ).setText( scm.getMemoryJVM() );
-			( (Label) tempSettings.lookup( "#" + Globals.FXVariables.jvmLabel ) ).setText( currentJvm );
-			( (Label) tempSettings.lookup( "#" + Globals.FXVariables.jvmLabel ) ).setMinSize( Label.USE_PREF_SIZE, Label.USE_PREF_SIZE );
-
-
-			if ( scm.getCurrentJVM() != null ) {
-				( (RadioButton) tempSettings.lookup( "#" + Globals.FXVariables.defaultJvmRadioBtn ) ).setSelected( true );
-			} else {
-				( (RadioButton) tempSettings.lookup( "#" + Globals.FXVariables.customJvmRadioBtn ) ).setSelected( true );
-			}
-
-			tempSettings.getStyleClass().add( "settingsPane" );
-
-			Button tempBtnGetFolder = (Button) tempSettings.lookup( "#" + Globals.FXVariables.BTNGETFOLDERID );
-			tempBtnGetFolder.setId( Globals.FXVariables.BTNGETFOLDERID + scm.getId() );
-			tempBtnGetFolder.getStyleClass().add( "browseBtn" );
-
-			Button tempBtnBrowse = (Button) tempSettings.lookup( "#" + Globals.FXVariables.BTNBROWSEID );
-			tempBtnBrowse.setId( Globals.FXVariables.BTNBROWSEID + scm.getId() );
-			tempBtnBrowse.getStyleClass().add( "browseBtn" );
-			tempBtnBrowse.setMinSize( Button.USE_PREF_SIZE, Button.USE_PREF_SIZE );
-
-
-			// set buttons to open directory chooser
-			tempBtnGetFolder.setOnAction( event -> {
-				final DirectoryChooser directoryChooser = new DirectoryChooser();
-				if ( ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText() != null ) {
-					if ( !( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText().isEmpty() ) {
-						directoryChooser.setInitialDirectory( new File( ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText() ) );
-					}
-				}
-				final File selectedDirectory = directoryChooser.showDialog( stage );
-				if ( selectedDirectory != null ) {
-					selectedDirectory.getAbsolutePath();
-					( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).setText( selectedDirectory.getAbsolutePath() );
-				}
-			} );
-
-			tempBtnBrowse.setOnAction( event -> {
-				final DirectoryChooser directoryChooser = new DirectoryChooser();
-				if ( ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText() != null ) {
-					if ( !( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText().isEmpty() ) {
-						directoryChooser.setInitialDirectory( new File( ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText() ) );
-					}
-				}
-				final File selectedDirectory = directoryChooser.showDialog( stage );
-				if ( selectedDirectory != null ) {
-					selectedDirectory.getAbsolutePath();
-					( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).setText( selectedDirectory.getAbsolutePath() );
-				}
-			} );
-
-			tempSettings.setVisible( true );
-			panes.put( scm.getId(), tempSettings );
-
-
-		}
-		uiController.getSettingsStackPane().getChildren().addAll( panes.values() );
-	}
-
-
-	private void setUpSpalashScreen() {
-		// set up both screens:
-
-		Hyperlink hpl = new Hyperlink( "Jetty on Github" );
-		hpl.setOnAction( event -> {
-			goToWebpage( java.net.URI.create( "https://github.com/aw20/jettydesktop" ) );
-		} );
-		TextFlow textFlow = null;
-
-		if ( !serverController.getServerConfigListInstance().isEmpty() ) {
-			textFlow = new TextFlow( new Text( title ), new Text( "\nView " ), hpl, new Text( " for more information" ), new Text( "\nClick an app to start" ) );
-			textFlow.getStyleClass().add( "splashScreenText" );
-			uiController.getSplashPane().add( textFlow, 1, 1 );
-		}
-		else {
-			// List<String> its = new ArrayList<>();
-			// its.get( 3 );
-			textFlow = new TextFlow( new Text( title ), new Text( "\nView " ), hpl, new Text( " for more information" ), new Text( "\nAdd an app to start" ) );
-			textFlow.getStyleClass().add( "splashScreenText" );
-			uiController.getSplashPane().add( textFlow, 1, 1 );
-		}
-	}
-
-
-	private void goToWebpage( URI page ) {
-		if ( Desktop.isDesktopSupported() ) {
-			Desktop desktop = Desktop.getDesktop();
-			try {
-				desktop.browse( page );
-			} catch ( IOException e ) {
-				Alert alert = new Alert( AlertType.ERROR );
-				alert.setTitle( "Error" );
-				alert.setHeaderText( null );
-				alert.setContentText( "An error has occurred while navigating to a web page" );
-
-				DialogPane dp = alert.getDialogPane();
-
-				dp.getStylesheets().add( getClass().getResource( "/org/aw20/jettydesktop/view/alert.css" ).toExternalForm() );
-
-				dp.getStyleClass().remove( "alert" );
-
-				alert.showAndWait();
-			}
-		} else {
-			Runtime runtime = Runtime.getRuntime();
-			try {
-				runtime.exec( "xdg-open " + page );
-			} catch ( IOException e ) {}
-		}
+		return alert;
 	}
 }

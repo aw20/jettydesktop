@@ -17,7 +17,7 @@ public class ServerController {
 
 	private String selectedServer = null;
 
-	private static List<ServerConfigMap> serverConfigList = null;
+	private List<ServerConfigMap> serverConfigList = null;
 
 	// create Singleton instance
 	private static ServerController instance = null;
@@ -45,6 +45,16 @@ public class ServerController {
 		} else {
 			return selectedServer;
 		}
+	}
+
+
+	public ServerConfigMap get( String id ) {
+		for ( ServerConfigMap server : getServerConfigListInstance() ) {
+			if ( server.getId().equals( id ) ) {
+				return server;
+			}
+		}
+		return null;
 	}
 
 
