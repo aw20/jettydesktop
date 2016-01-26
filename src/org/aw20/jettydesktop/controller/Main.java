@@ -72,8 +72,8 @@ public class Main extends Application {
 	public void start( Stage primaryStage ) {
 		try {
 			stage = primaryStage;
-			FXMLLoader loader = new FXMLLoader( getClass().getResource( "JettyDesktopUI.fxml" ) );
-			settingsLoader = new FXMLLoader( getClass().getResource( "settings.fxml" ) );
+			FXMLLoader loader = new FXMLLoader( getClass().getResource( "/org/aw20/jettydesktop/view/JettyDesktopUI.fxml" ) );
+			settingsLoader = new FXMLLoader( getClass().getResource( "/org/aw20/jettydesktop/view/settings.fxml" ) );
 
 			uiController = new UIController( loader, primaryStage );
 			serverController = ServerController.getInstance();
@@ -95,8 +95,8 @@ public class Main extends Application {
 			addSettingsToStackPane( panes );
 			setUpConsoleInfo();
 
-			scene.getStylesheets().add( getClass().getResource( "application.css" ).toExternalForm() );
-			scene.getStylesheets().add( getClass().getResource( "alert.css" ).toExternalForm() );
+			scene.getStylesheets().add( getClass().getResource( "/org/aw20/jettydesktop/view/application.css" ).toExternalForm() );
+			scene.getStylesheets().add( getClass().getResource( "/org/aw20/jettydesktop/view/alert.css" ).toExternalForm() );
 			primaryStage.setScene( scene );
 			primaryStage.setTitle( title );
 			primaryStage.setResizable( true );
@@ -196,7 +196,22 @@ public class Main extends Application {
 			 * Method to handle click on save
 			 */
 			uiController.getSaveBtn().setOnAction( ( ActionEvent e ) -> {
-				saveBtnClick();
+				try {
+					saveBtnClick();
+				} catch ( Exception e1 ) {
+					Alert alert = new Alert( AlertType.ERROR );
+					alert.setTitle( "Error" );
+					alert.setHeaderText( null );
+					alert.setContentText( "An error has occurred while saving a web app." );
+
+					DialogPane dp = alert.getDialogPane();
+
+					dp.getStylesheets().add( getClass().getResource( "/org/aw20/jettydesktop/view/alert.css" ).toExternalForm() );
+
+					dp.getStyleClass().remove( "alert" );
+
+					alert.showAndWait();
+				}
 			} );
 
 
@@ -217,7 +232,7 @@ public class Main extends Application {
 				alert.setContentText( "Delete " + serverToBeDeleted + "?" );
 				DialogPane dp = alert.getDialogPane();
 
-				dp.getStylesheets().add( getClass().getResource( "alert.css" ).toExternalForm() );
+				dp.getStylesheets().add( getClass().getResource( "/org/aw20/jettydesktop/view/alert.css" ).toExternalForm() );
 
 				dp.getStyleClass().remove( "alert" );
 
@@ -309,10 +324,19 @@ public class Main extends Application {
 					} );
 				}
 			} );
-
-
 		} catch ( Exception e ) {
-			e.printStackTrace();
+			Alert alert = new Alert( AlertType.ERROR );
+			alert.setTitle( "Error" );
+			alert.setHeaderText( null );
+			alert.setContentText( "An error has occurred while starting Jetty Desktop." );
+
+			DialogPane dp = alert.getDialogPane();
+
+			dp.getStylesheets().add( getClass().getResource( "/org/aw20/jettydesktop/view/alert.css" ).toExternalForm() );
+
+			dp.getStyleClass().remove( "alert" );
+
+			alert.showAndWait();
 		}
 	}
 
@@ -467,7 +491,7 @@ public class Main extends Application {
 	}
 
 
-	private void saveBtnClick() {
+	private void saveBtnClick() throws IOException {
 		boolean newServer = false;
 		Pane tempSettings;
 		// not new server
@@ -587,72 +611,67 @@ public class Main extends Application {
 	}
 
 
-	private void setUpEmptySettings() {
-		try {
-			// TODO: THIS IS NOT RECOMMENDED - http://stackoverflow.com/questions/21424843/exception-has-occuredroot-value-already-specified-in-javafx-when-loading-fxml-p
-			settingsLoader.setRoot( null ); // set to null to reinitialise
-			tempSettingsPane = settingsLoader.load();
+	private void setUpEmptySettings() throws IOException {
+		// TODO: THIS IS NOT RECOMMENDED - http://stackoverflow.com/questions/21424843/exception-has-occuredroot-value-already-specified-in-javafx-when-loading-fxml-p
+		settingsLoader.setRoot( null ); // set to null to reinitialise
+		tempSettingsPane = settingsLoader.load();
 
-			Pane tempPane = tempSettingsPane;
-			tempPane.getStyleClass().add( "settingsPane" );
-			tempPane.setVisible( false );
-			tempPane.toFront();
+		Pane tempPane = tempSettingsPane;
+		tempPane.getStyleClass().add( "settingsPane" );
+		tempPane.setVisible( false );
+		tempPane.toFront();
 
-			GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblName" ) ), HPos.RIGHT );
-			GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblIp" ) ), HPos.RIGHT );
-			GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblPort" ) ), HPos.RIGHT );
-			GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblFolder" ) ), HPos.RIGHT );
-			GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblUri" ) ), HPos.RIGHT );
-			GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblArgs" ) ), HPos.RIGHT );
-			GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblRuntime" ) ), HPos.RIGHT );
-			GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblMemory" ) ), HPos.RIGHT );
+		GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblName" ) ), HPos.RIGHT );
+		GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblIp" ) ), HPos.RIGHT );
+		GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblPort" ) ), HPos.RIGHT );
+		GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblFolder" ) ), HPos.RIGHT );
+		GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblUri" ) ), HPos.RIGHT );
+		GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblArgs" ) ), HPos.RIGHT );
+		GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblRuntime" ) ), HPos.RIGHT );
+		GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblMemory" ) ), HPos.RIGHT );
 
-			Button btnGetFolder = (Button) tempPane.lookup( "#" + Globals.FXVariables.BTNGETFOLDERID );
-			btnGetFolder.getStyleClass().add( "browseBtn" );
-			Button btnBrowse = (Button) tempPane.lookup( "#" + Globals.FXVariables.BTNBROWSEID );
-			btnBrowse.getStyleClass().add( "browseBtn" );
-			btnBrowse.setMinSize( Button.USE_PREF_SIZE, Button.USE_PREF_SIZE );
+		Button btnGetFolder = (Button) tempPane.lookup( "#" + Globals.FXVariables.BTNGETFOLDERID );
+		btnGetFolder.getStyleClass().add( "browseBtn" );
+		Button btnBrowse = (Button) tempPane.lookup( "#" + Globals.FXVariables.BTNBROWSEID );
+		btnBrowse.getStyleClass().add( "browseBtn" );
+		btnBrowse.setMinSize( Button.USE_PREF_SIZE, Button.USE_PREF_SIZE );
 
-			( (RadioButton) tempPane.lookup( "#" + Globals.FXVariables.defaultJvmRadioBtn ) ).setSelected( true );
+		( (RadioButton) tempPane.lookup( "#" + Globals.FXVariables.defaultJvmRadioBtn ) ).setSelected( true );
 
-			( (Label) tempPane.lookup( "#" + Globals.FXVariables.jvmLabel ) ).setText( currentJvm );
-			( (Label) tempPane.lookup( "#" + Globals.FXVariables.jvmLabel ) ).setMinSize( Label.USE_PREF_SIZE, Label.USE_PREF_SIZE );
+		( (Label) tempPane.lookup( "#" + Globals.FXVariables.jvmLabel ) ).setText( currentJvm );
+		( (Label) tempPane.lookup( "#" + Globals.FXVariables.jvmLabel ) ).setMinSize( Label.USE_PREF_SIZE, Label.USE_PREF_SIZE );
 
 
-			// set buttons to open directory chooser
-			btnGetFolder.setOnAction( event -> {
-				final DirectoryChooser directoryChooser = new DirectoryChooser();
-				if ( ( (TextField) tempPane.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText() != null ) {
-					if ( !( (TextField) tempPane.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText().isEmpty() ) {
-						directoryChooser.setInitialDirectory( new File( ( (TextField) tempPane.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText() ) );
-					}
+		// set buttons to open directory chooser
+		btnGetFolder.setOnAction( event -> {
+			final DirectoryChooser directoryChooser = new DirectoryChooser();
+			if ( ( (TextField) tempPane.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText() != null ) {
+				if ( !( (TextField) tempPane.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText().isEmpty() ) {
+					directoryChooser.setInitialDirectory( new File( ( (TextField) tempPane.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText() ) );
 				}
-				final File selectedDirectory = directoryChooser.showDialog( stage );
-				if ( selectedDirectory != null ) {
-					selectedDirectory.getAbsolutePath();
-					( (TextField) tempPane.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).setText( selectedDirectory.getAbsolutePath() );
-				}
-			} );
+			}
+			final File selectedDirectory = directoryChooser.showDialog( stage );
+			if ( selectedDirectory != null ) {
+				selectedDirectory.getAbsolutePath();
+				( (TextField) tempPane.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).setText( selectedDirectory.getAbsolutePath() );
+			}
+		} );
 
-			btnBrowse.setOnAction( event -> {
-				final DirectoryChooser directoryChooser = new DirectoryChooser();
-				if ( ( (TextField) tempPane.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText() != null ) {
-					if ( !( (TextField) tempPane.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText().isEmpty() ) {
-						directoryChooser.setInitialDirectory( new File( ( (TextField) tempPane.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText() ) );
-					}
+		btnBrowse.setOnAction( event -> {
+			final DirectoryChooser directoryChooser = new DirectoryChooser();
+			if ( ( (TextField) tempPane.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText() != null ) {
+				if ( !( (TextField) tempPane.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText().isEmpty() ) {
+					directoryChooser.setInitialDirectory( new File( ( (TextField) tempPane.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText() ) );
 				}
-				final File selectedDirectory = directoryChooser.showDialog( stage );
-				if ( selectedDirectory != null ) {
-					selectedDirectory.getAbsolutePath();
-					( (TextField) tempPane.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).setText( selectedDirectory.getAbsolutePath() );
-				}
-			} );
+			}
+			final File selectedDirectory = directoryChooser.showDialog( stage );
+			if ( selectedDirectory != null ) {
+				selectedDirectory.getAbsolutePath();
+				( (TextField) tempPane.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).setText( selectedDirectory.getAbsolutePath() );
+			}
+		} );
 
-			uiController.getTabPaneMaster().getChildren().add( tempPane );
-
-		} catch ( Exception e ) {
-			e.printStackTrace();
-		}
+		uiController.getTabPaneMaster().getChildren().add( tempPane );
 	}
 
 
@@ -766,95 +785,89 @@ public class Main extends Application {
 	}
 
 
-	private void addSettingsToStackPane( Map<String, Pane> panes ) {
-		// set up settings
-		try {
-			for ( ServerConfigMap scm : serverController.getServerConfigListInstance() ) {
-				// add to settings stack pane
+	private void addSettingsToStackPane( Map<String, Pane> panes ) throws IOException {
+		for ( ServerConfigMap scm : serverController.getServerConfigListInstance() ) {
+			// add to settings stack pane
 
-				// TODO: THIS IS NOT RECOMMENDED - http://stackoverflow.com/questions/21424843/exception-has-occuredroot-value-already-specified-in-javafx-when-loading-fxml-p
-				settingsLoader.setRoot( null ); // set to null to reinitialise
-				Pane tempSettings = settingsLoader.load();
-				tempSettings.setId( Globals.FXVariables.SETTINGSID + scm.getId() );
+			// TODO: THIS IS NOT RECOMMENDED - http://stackoverflow.com/questions/21424843/exception-has-occuredroot-value-already-specified-in-javafx-when-loading-fxml-p
+			settingsLoader.setRoot( null ); // set to null to reinitialise
+			Pane tempSettings = settingsLoader.load();
+			tempSettings.setId( Globals.FXVariables.SETTINGSID + scm.getId() );
 
-				GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblName" ) ), HPos.RIGHT );
-				GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblIp" ) ), HPos.RIGHT );
-				GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblPort" ) ), HPos.RIGHT );
-				GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblFolder" ) ), HPos.RIGHT );
-				GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblUri" ) ), HPos.RIGHT );
-				GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblArgs" ) ), HPos.RIGHT );
-				GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblRuntime" ) ), HPos.RIGHT );
-				GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblMemory" ) ), HPos.RIGHT );
+			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblName" ) ), HPos.RIGHT );
+			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblIp" ) ), HPos.RIGHT );
+			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblPort" ) ), HPos.RIGHT );
+			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblFolder" ) ), HPos.RIGHT );
+			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblUri" ) ), HPos.RIGHT );
+			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblArgs" ) ), HPos.RIGHT );
+			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblRuntime" ) ), HPos.RIGHT );
+			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblMemory" ) ), HPos.RIGHT );
 
-				( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.nameTextBox ) ).setText( scm.getName() );
-				( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.ipTextBox ) ).setText( scm.getIP() );
-				( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.portTextBox ) ).setText( scm.getPort() );
-				( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).setText( scm.getWebFolder() );
-				( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.uriTextBox ) ).setText( scm.getDefaultWebUri() );
-				( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).setText( scm.getCustomJVM() );
-				( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.jvmArgsTextBox ) ).setText( scm.getDefaultJVMArgs() );
-				( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.memoryTextBox ) ).setText( scm.getMemoryJVM() );
-				( (Label) tempSettings.lookup( "#" + Globals.FXVariables.jvmLabel ) ).setText( currentJvm );
-				( (Label) tempSettings.lookup( "#" + Globals.FXVariables.jvmLabel ) ).setMinSize( Label.USE_PREF_SIZE, Label.USE_PREF_SIZE );
+			( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.nameTextBox ) ).setText( scm.getName() );
+			( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.ipTextBox ) ).setText( scm.getIP() );
+			( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.portTextBox ) ).setText( scm.getPort() );
+			( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).setText( scm.getWebFolder() );
+			( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.uriTextBox ) ).setText( scm.getDefaultWebUri() );
+			( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).setText( scm.getCustomJVM() );
+			( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.jvmArgsTextBox ) ).setText( scm.getDefaultJVMArgs() );
+			( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.memoryTextBox ) ).setText( scm.getMemoryJVM() );
+			( (Label) tempSettings.lookup( "#" + Globals.FXVariables.jvmLabel ) ).setText( currentJvm );
+			( (Label) tempSettings.lookup( "#" + Globals.FXVariables.jvmLabel ) ).setMinSize( Label.USE_PREF_SIZE, Label.USE_PREF_SIZE );
 
 
-				if ( scm.getCurrentJVM() != null ) {
-					( (RadioButton) tempSettings.lookup( "#" + Globals.FXVariables.defaultJvmRadioBtn ) ).setSelected( true );
-				} else {
-					( (RadioButton) tempSettings.lookup( "#" + Globals.FXVariables.customJvmRadioBtn ) ).setSelected( true );
-				}
-
-				tempSettings.getStyleClass().add( "settingsPane" );
-
-				Button tempBtnGetFolder = (Button) tempSettings.lookup( "#" + Globals.FXVariables.BTNGETFOLDERID );
-				tempBtnGetFolder.setId( Globals.FXVariables.BTNGETFOLDERID + scm.getId() );
-				tempBtnGetFolder.getStyleClass().add( "browseBtn" );
-
-				Button tempBtnBrowse = (Button) tempSettings.lookup( "#" + Globals.FXVariables.BTNBROWSEID );
-				tempBtnBrowse.setId( Globals.FXVariables.BTNBROWSEID + scm.getId() );
-				tempBtnBrowse.getStyleClass().add( "browseBtn" );
-				tempBtnBrowse.setMinSize( Button.USE_PREF_SIZE, Button.USE_PREF_SIZE );
-
-
-				// set buttons to open directory chooser
-				tempBtnGetFolder.setOnAction( event -> {
-					final DirectoryChooser directoryChooser = new DirectoryChooser();
-					if ( ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText() != null ) {
-						if ( !( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText().isEmpty() ) {
-							directoryChooser.setInitialDirectory( new File( ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText() ) );
-						}
-					}
-					final File selectedDirectory = directoryChooser.showDialog( stage );
-					if ( selectedDirectory != null ) {
-						selectedDirectory.getAbsolutePath();
-						( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).setText( selectedDirectory.getAbsolutePath() );
-					}
-				} );
-
-				tempBtnBrowse.setOnAction( event -> {
-					final DirectoryChooser directoryChooser = new DirectoryChooser();
-					if ( ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText() != null ) {
-						if ( !( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText().isEmpty() ) {
-							directoryChooser.setInitialDirectory( new File( ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText() ) );
-						}
-					}
-					final File selectedDirectory = directoryChooser.showDialog( stage );
-					if ( selectedDirectory != null ) {
-						selectedDirectory.getAbsolutePath();
-						( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).setText( selectedDirectory.getAbsolutePath() );
-					}
-				} );
-
-				tempSettings.setVisible( true );
-				panes.put( scm.getId(), tempSettings );
-
-
+			if ( scm.getCurrentJVM() != null ) {
+				( (RadioButton) tempSettings.lookup( "#" + Globals.FXVariables.defaultJvmRadioBtn ) ).setSelected( true );
+			} else {
+				( (RadioButton) tempSettings.lookup( "#" + Globals.FXVariables.customJvmRadioBtn ) ).setSelected( true );
 			}
-			uiController.getSettingsStackPane().getChildren().addAll( panes.values() );
 
-		} catch ( Exception e ) {
-			e.printStackTrace();
+			tempSettings.getStyleClass().add( "settingsPane" );
+
+			Button tempBtnGetFolder = (Button) tempSettings.lookup( "#" + Globals.FXVariables.BTNGETFOLDERID );
+			tempBtnGetFolder.setId( Globals.FXVariables.BTNGETFOLDERID + scm.getId() );
+			tempBtnGetFolder.getStyleClass().add( "browseBtn" );
+
+			Button tempBtnBrowse = (Button) tempSettings.lookup( "#" + Globals.FXVariables.BTNBROWSEID );
+			tempBtnBrowse.setId( Globals.FXVariables.BTNBROWSEID + scm.getId() );
+			tempBtnBrowse.getStyleClass().add( "browseBtn" );
+			tempBtnBrowse.setMinSize( Button.USE_PREF_SIZE, Button.USE_PREF_SIZE );
+
+
+			// set buttons to open directory chooser
+			tempBtnGetFolder.setOnAction( event -> {
+				final DirectoryChooser directoryChooser = new DirectoryChooser();
+				if ( ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText() != null ) {
+					if ( !( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText().isEmpty() ) {
+						directoryChooser.setInitialDirectory( new File( ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).getText() ) );
+					}
+				}
+				final File selectedDirectory = directoryChooser.showDialog( stage );
+				if ( selectedDirectory != null ) {
+					selectedDirectory.getAbsolutePath();
+					( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.webFolderTextBox ) ).setText( selectedDirectory.getAbsolutePath() );
+				}
+			} );
+
+			tempBtnBrowse.setOnAction( event -> {
+				final DirectoryChooser directoryChooser = new DirectoryChooser();
+				if ( ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText() != null ) {
+					if ( !( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText().isEmpty() ) {
+						directoryChooser.setInitialDirectory( new File( ( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).getText() ) );
+					}
+				}
+				final File selectedDirectory = directoryChooser.showDialog( stage );
+				if ( selectedDirectory != null ) {
+					selectedDirectory.getAbsolutePath();
+					( (TextField) tempSettings.lookup( "#" + Globals.FXVariables.customJvmTextBox ) ).setText( selectedDirectory.getAbsolutePath() );
+				}
+			} );
+
+			tempSettings.setVisible( true );
+			panes.put( scm.getId(), tempSettings );
+
+
 		}
+		uiController.getSettingsStackPane().getChildren().addAll( panes.values() );
 	}
 
 
@@ -872,8 +885,9 @@ public class Main extends Application {
 			textFlow.getStyleClass().add( "splashScreenText" );
 			uiController.getSplashPane().add( textFlow, 1, 1 );
 		}
-
 		else {
+			// List<String> its = new ArrayList<>();
+			// its.get( 3 );
 			textFlow = new TextFlow( new Text( title ), new Text( "\nView " ), hpl, new Text( " for more information" ), new Text( "\nAdd an app to start" ) );
 			textFlow.getStyleClass().add( "splashScreenText" );
 			uiController.getSplashPane().add( textFlow, 1, 1 );
@@ -887,7 +901,18 @@ public class Main extends Application {
 			try {
 				desktop.browse( page );
 			} catch ( IOException e ) {
-				// do nothing
+				Alert alert = new Alert( AlertType.ERROR );
+				alert.setTitle( "Error" );
+				alert.setHeaderText( null );
+				alert.setContentText( "An error has occurred while navigating to a web page" );
+
+				DialogPane dp = alert.getDialogPane();
+
+				dp.getStylesheets().add( getClass().getResource( "/org/aw20/jettydesktop/view/alert.css" ).toExternalForm() );
+
+				dp.getStyleClass().remove( "alert" );
+
+				alert.showAndWait();
 			}
 		} else {
 			Runtime runtime = Runtime.getRuntime();

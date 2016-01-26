@@ -622,7 +622,17 @@ public class UIController {
 		FillTransition ft = new FillTransition( Duration.millis( 4000 ), p, Color.GREEN, Color.RED );
 		ft.play();
 
-		startServer( selectedServer, scene );
+		final String ss = selectedServer;
+		Thread t1 = new Thread( new Runnable() {
+
+			public void run()
+			{
+				startServer( ss, scene );
+			}
+		} );
+		t1.start();
+
+
 		for ( ServerConfigMap server : serverController.getServerConfigListInstance() ) {
 			if ( server.getId().equals( selectedServer ) ) {
 				server.setRunning( "true" );
@@ -631,6 +641,8 @@ public class UIController {
 
 		Tab tab = getTabPane().getTabs().get( 1 );
 		getTabPane().getSelectionModel().select( tab );
+		setSelectedTabInstance( tab );
+
 		( (ScrollPane) scene.lookup( "#" + Globals.FXVariables.SCROLLPANEID + selectedServer ) ).setVisible( true );
 		showConsoleButtonsOnRunning();
 		// update server info
@@ -645,6 +657,12 @@ public class UIController {
 		if ( selectedServer == null ) {
 			selectedServer = id;
 		}
+
+		if ( getSelectedTabInstance() == null ) {
+			Tab tab = getTabPane().getTabs().get( 1 );
+			setSelectedTabInstance( tab );
+		}
+
 		Polygon p = ( (Polygon) scene.lookup( "#" + Globals.FXVariables.POLYGONID + selectedServer ) );
 
 		p.getPoints().setAll(
@@ -780,8 +798,6 @@ public class UIController {
 
 		// set app to "current"
 		hbox.getStyleClass().add( Globals.StyleClasses.CURRENT );
-
-		// TODO: current doesn't span whole height of list item
 	}
 
 
