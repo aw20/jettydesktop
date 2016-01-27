@@ -149,9 +149,6 @@ public class UIController {
 	// create Singleton instance
 	private static UIController instance = null;
 
-	private String backgroundColourDarkerGrey = "-fx-background-color: #1c252c;";
-	private String backgroundColourLighterGrey = "-fx-background-color: #222d35;";
-
 
 	private UIController( FXMLLoader _loader, Stage _stage ) {
 		serverController = ServerController.getInstance();
@@ -199,19 +196,24 @@ public class UIController {
 
 	public void updateConsole( String id, String line, StackPane sp ) {
 		Platform.runLater( ( ) -> {
+			// target correct console pane
 			TextFlow consoleTextFlow = (TextFlow) sp.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.CONSOLEID + id );
 			Text t = new Text( line );
 
 			t.setFont( Font.font( "Lucida Sans Typewriter" ) );
-			consoleTextFlow.getChildren().add( t ); // adds to pane, not textflow
+			// insert text
+			consoleTextFlow.getChildren().add( t );
 			consoleTextFlow.setVisible( true );
 			consoleTextFlow.toFront();
-
+			// scroll pane to the bottom
 			( (ScrollPane) sp.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SCROLLPANEID + id ) ).setVvalue( 1.0 );
 		} );
 	}
 
 
+	/*
+	 * updates icon in server list
+	 */
 	public void updateRunningIcon( boolean running, String serverId ) {
 		final String selectedServer = serverId;
 
@@ -254,6 +256,7 @@ public class UIController {
 	}
 
 
+	// show correct text flows with last updated and memory info
 	private void showCurrentConsoleInfo() {
 		// show correct textflows with last updated and memory
 		Iterator<Node> itConsoleInfo = getConsoleInfo().getChildren().iterator();
@@ -270,6 +273,7 @@ public class UIController {
 	}
 
 
+	// settings tab should stay open if it's open when a user click on a new server, as should the console tab
 	private void showCurrentTab() {
 		if ( getSelectedTabInstance() != null && getSelectedTabInstance().getId().contains( "settings" ) ) {
 			Iterator<Node> itSettings = getSettingsStackPane().getChildren().iterator();
@@ -278,13 +282,13 @@ public class UIController {
 				getSplashPane().toBack();
 				getSplashAnchorPane().setVisible( false );
 				getSplashAnchorPane().toBack();
+				// bring correct settings pane to the front
 				Pane settingsPane = (Pane) itSettings.next();
 				if ( settingsPane.getId().equals( Globals.FXVariables.SETTINGSID + serverController.getSelectedServerInstance() ) ) {
-
 					Platform.runLater( ( ) -> {
-						Pane sp1 = settingsPane;
-						sp1.setVisible( true );
-						sp1.toFront();
+						Pane tempSettingsPane = settingsPane;
+						tempSettingsPane.setVisible( true );
+						tempSettingsPane.toFront();
 					} );
 				}
 			}
@@ -298,13 +302,13 @@ public class UIController {
 				getSplashPane().toBack();
 				getSplashAnchorPane().setVisible( false );
 				getSplashAnchorPane().toBack();
+				// bring correct console pane to the front
 				ScrollPane consoleScrollPane = (ScrollPane) itConsole.next();
 				if ( consoleScrollPane.getId().equals( Globals.FXVariables.SCROLLPANEID + serverController.getSelectedServerInstance() ) ) {
-
 					Platform.runLater( ( ) -> {
-						ScrollPane sp1 = consoleScrollPane;
-						sp1.setVisible( true );
-						sp1.toFront();
+						ScrollPane tempScrollPane = consoleScrollPane;
+						tempScrollPane.setVisible( true );
+						tempScrollPane.toFront();
 					} );
 
 				}
@@ -318,21 +322,21 @@ public class UIController {
 		if ( selectedServer == null ) {
 			selectedServer = serverController.getSelectedServerInstance();
 		}
-
+		// target the correct play polygon
 		Polygon p = ( (Polygon) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.POLYGONID + selectedServer ) );
-
+		// transform it to a square
 		p.getPoints().setAll(
 				0d, 0d, // (x, y)
 				0d, 12d,
 				12d, 12d,
 				12d, 0d
 				);
-
+		// colour transition from green to red
 		FillTransition ft = new FillTransition( Duration.millis( 4000 ), p, Color.GREEN, Color.RED );
 		ft.play();
 
 		final String ss = selectedServer;
-
+		// on separate thread due to UI not updating until Executor process finished.
 		Thread t1 = new Thread( new Runnable() {
 
 			public void run()
@@ -344,6 +348,7 @@ public class UIController {
 
 		ServerWrapper.getInstance().setRunning( selectedServer, true );
 
+		// open the console tab and correct console pane
 		Tab tab = getTabPane().getTabs().get( 1 );
 		getTabPane().getSelectionModel().select( tab );
 		setSelectedTabInstance( tab );
@@ -368,15 +373,15 @@ public class UIController {
 			Tab tab = getTabPane().getTabs().get( 1 );
 			setSelectedTabInstance( tab );
 		}
-
+		// target stop polygon
 		Polygon p = ( (Polygon) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.POLYGONID + selectedServer ) );
-
+		// transform into a play polygon
 		p.getPoints().setAll(
 				0d, 0d, // (x, y)
 				12d, 6d,
 				0d, 12d
 				);
-
+		// colour transition red to green
 		FillTransition ft = new FillTransition( Duration.millis( 2000 ), p, Color.RED, Color.GREEN );
 		ft.play();
 
@@ -385,7 +390,7 @@ public class UIController {
 		ServerWrapper.getInstance().setRunning( selectedServer, false );
 
 		ButtonActions buttonActions = new ButtonActions();
-
+		// enable and disable correct buttons depending on which tab is selected
 		if ( getSelectedTabInstance().getId().contains( "console" ) ) {
 			buttonActions.showConsoleButtonsOnNotRunning( this );
 		}
@@ -446,6 +451,7 @@ public class UIController {
 				}
 			}
 				else {
+					// show correct console
 					settings.setVisible( false );
 					settings.toBack();
 					textFlowContent.setVisible( true );
@@ -456,10 +462,10 @@ public class UIController {
 		// get list cell of hbox
 		// apply css to it on selection
 		if ( hbox.getStyleClass().contains( Globals.StyleClasses.CURRENT ) ) {
-			hbox.getParent().setStyle( backgroundColourDarkerGrey );
+			hbox.getParent().setStyle( Globals.StyleVariables.backgroundColourDarkerGrey );
 		}
 		else {
-			hbox.getParent().setStyle( backgroundColourLighterGrey );
+			hbox.getParent().setStyle( Globals.StyleVariables.backgroundColourLighterGrey );
 		}
 	}
 
@@ -480,7 +486,7 @@ public class UIController {
 
 			String id = settings.getId().replace( Globals.FXVariables.SETTINGSID, "" );
 
-			// update hyperlink in vboxAppList
+			// update hyperlink in listViewAppList with name
 			( (Hyperlink) scene.lookup( Globals.FXVariables.idSelector + id ) ).setText( tempName );
 
 			// update info in server info pane
@@ -494,6 +500,7 @@ public class UIController {
 
 			ServerConfigMap scm = ServerWrapper.getInstance().getServer( serverController.getSelectedServerInstance() );
 
+			// get new server list item
 			HBox hbox = serverSetup.addHBoxToList( this, scm, scene, true );
 
 			// add console for server
@@ -504,7 +511,6 @@ public class UIController {
 			scrollPane.setId( Globals.FXVariables.SCROLLPANEID + savedServerId );
 			getConsoleStackPane().getChildren().add( scrollPane );
 			scrollPane.setVisible( true );
-
 
 			getListViewAppList().getItems().add( hbox );
 		}
@@ -547,6 +553,9 @@ public class UIController {
 	}
 
 
+	/*
+	 * get all server names and order alphabetically
+	 */
 	public void refreshServerList() {
 		// get all names
 		List<String> names = new ArrayList<String>();
@@ -618,7 +627,7 @@ public class UIController {
 		List<HBox> listOfHboxes = listViewAppList.getItems();
 		for ( HBox item : listOfHboxes ) {
 			item.getStyleClass().remove( Globals.StyleClasses.CURRENT );
-			item.getParent().setStyle( backgroundColourLighterGrey );
+			item.getParent().setStyle( Globals.StyleVariables.backgroundColourLighterGrey );
 		}
 
 		// set app to "current"

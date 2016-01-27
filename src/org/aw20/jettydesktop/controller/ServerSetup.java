@@ -2,6 +2,7 @@ package org.aw20.jettydesktop.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import javafx.fxml.FXMLLoader;
@@ -47,6 +48,7 @@ public class ServerSetup {
 		ButtonActions buttonActions = new ButtonActions();
 		buttonActions.showNoButtons( uiController );
 
+		// set initial size of server list
 		uiController.getVboxAppListScrollPane().setFitToWidth( true );
 		uiController.getVboxAppListScrollPane().setFitToHeight( true );
 
@@ -58,11 +60,11 @@ public class ServerSetup {
 
 		String id = ServerWrapper.getInstance().getIdOfServer( scm );
 
-		// RUNNING CIRCLE
+		// running circle
 		Circle c = new Circle( 5.0f, Color.GREY );
 		c.setId( Globals.FXVariables.RUNNINGID + id );
 
-		// POLYGON
+		// play/stop polygon
 		Polygon p = new Polygon();
 
 		p.getPoints().setAll(
@@ -76,6 +78,7 @@ public class ServerSetup {
 
 		p.setVisible( false );
 
+		// initialises at 0, 0
 		p.setTranslateY( 10.0 );
 		p.setTranslateX( 12.0 );
 
@@ -100,8 +103,7 @@ public class ServerSetup {
 		polygonPane.setMinWidth( Globals.StyleVariables.polygonPaneWidth );
 		polygonPane.setMaxWidth( Globals.StyleVariables.polygonPaneWidth );
 
-
-		// HYPERLINK
+		// hyperlink - server name
 		Hyperlink h = new Hyperlink( scm.getName(), c );
 
 		h.setPadding( new Insets( 0, 0, 0, 10 ) );
@@ -119,7 +121,6 @@ public class ServerSetup {
 		hbox.setMinWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 18 );
 		hbox.setId( Globals.FXVariables.HBOXID + id );
 
-
 		AnchorPane a = new AnchorPane();
 		a.getChildren().add( hbox );
 
@@ -128,6 +129,7 @@ public class ServerSetup {
 
 		uiController.getServersForListInstance().put( id, a );
 
+		// server list on hover actions
 		polygonPane.setOnMouseEntered( event -> {
 			p.setVisible( true );
 		} );
@@ -144,6 +146,7 @@ public class ServerSetup {
 			p.setVisible( false );
 		} );
 
+		// server list on click action
 		h.setOnAction( event -> {
 			uiController.handleListViewOnClick( hbox, scene, h, scm );
 		} );
@@ -160,7 +163,7 @@ public class ServerSetup {
 		tempPane.getStyleClass().add( "settingsPane" );
 		tempPane.setVisible( false );
 		tempPane.toFront();
-
+		// align labels to right of grid column
 		GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblName" ) ), HPos.RIGHT );
 		GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblIp" ) ), HPos.RIGHT );
 		GridPane.setHalignment( ( (Label) tempPane.lookup( "#lblPort" ) ), HPos.RIGHT );
@@ -210,7 +213,7 @@ public class ServerSetup {
 				( (TextField) tempPane.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.customJvmTextBox ) ).setText( selectedDirectory.getAbsolutePath() );
 			}
 		} );
-
+		// add empty settings for on click "add web app" button
 		uiController.getTabPaneMaster().getChildren().add( tempPane );
 	}
 
@@ -322,14 +325,15 @@ public class ServerSetup {
 			AnchorPane hbox = h.getValue();
 			uiController.getListViewAppList().getItems().add( (HBox) hbox.getChildren().get( 0 ) );
 		}
-
+		// re order server list
 		uiController.refreshServerList();
 
 	}
 
 
-	public void addSettingsToStackPane( Map<String, Pane> panes, ServerController serverController, UIController uiController,
+	public void addSettingsToStackPane( ServerController serverController, UIController uiController,
 			FXMLLoader settingsLoader, String currentJvm, Stage stage, Main main ) throws IOException {
+		Map<String, Pane> panes = new HashMap<String, Pane>();
 		for ( ServerConfigMap scm : ServerWrapper.getInstance().getListOfServerConfigMap() ) {
 			// add to settings stack pane
 			String id = ServerWrapper.getInstance().getIdOfServer( scm );
@@ -338,7 +342,7 @@ public class ServerSetup {
 			settingsLoader.setRoot( null ); // set to null to reinitialise
 			Pane tempSettings = settingsLoader.load();
 			tempSettings.setId( Globals.FXVariables.SETTINGSID + id );
-
+			// align labels to right of grid column
 			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblName" ) ), HPos.RIGHT );
 			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblIp" ) ), HPos.RIGHT );
 			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblPort" ) ), HPos.RIGHT );
@@ -431,12 +435,13 @@ public class ServerSetup {
 			serverActions.goToWebpage( java.net.URI.create( "https://github.com/aw20/jettydesktop" ), main );
 		} );
 		TextFlow textFlow = null;
-
+		// if there are no webapps - instruct to add one
 		if ( !ServerWrapper.getInstance().getListOfServerConfigMap().isEmpty() ) {
 			textFlow = new TextFlow( new Text( title ), new Text( "\nView " ), hpl, new Text( " for more information" ), new Text( "\nClick an app to start" ) );
 			textFlow.getStyleClass().add( "splashScreenText" );
 			uiController.getSplashPane().add( textFlow, 1, 1 );
 		}
+		// if there are webapps - instruct to click one
 		else {
 			textFlow = new TextFlow( new Text( title ), new Text( "\nView " ), hpl, new Text( " for more information" ), new Text( "\nAdd an app to start" ) );
 			textFlow.getStyleClass().add( "splashScreenText" );

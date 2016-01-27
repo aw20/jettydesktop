@@ -30,7 +30,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.time.LocalDateTime;
@@ -153,8 +152,6 @@ public class Executor extends Object {
 		ioconsumers = new ioConsumer[3];
 		ioconsumers[0] = new ioConsumer( process.getErrorStream(), _uiController, currentServer );
 		ioconsumers[1] = new ioConsumer( process.getInputStream(), _uiController, currentServer );
-		ioconsumers[2] = new ioConsumer( process.getOutputStream() );
-
 
 		if ( adminPort > 0 ) {
 			try {
@@ -181,7 +178,6 @@ public class Executor extends Object {
 			adminPort = -1;
 
 		} catch ( Exception e ) {
-			// TODO :RETURN USING FREE ADMIN PORT
 			_uiController.updateConsole( _currentServer, "Using Free Admin Port: " + adminPort + "\n", currentStackPaneConsole );
 			return;
 		}
@@ -223,7 +219,6 @@ public class Executor extends Object {
 						} catch ( InterruptedException ignored ) {}
 
 						final String l = line;
-
 						// update memory
 						uiController.updateMemory( l, currentServer, scene );
 					}
@@ -253,11 +248,6 @@ public class Executor extends Object {
 			currentServer = _currentServer;
 			br = new BufferedReader( new InputStreamReader( io ) );
 			start();
-		}
-
-
-		public ioConsumer( OutputStream outputStream ) {
-			// TODO Auto-generated constructor stub
 		}
 
 
@@ -296,7 +286,6 @@ public class Executor extends Object {
 			setbRun( false );
 			ioconsumers[0].interrupt();
 			ioconsumers[1].interrupt();
-			ioconsumers[2].interrupt();
 		}
 
 		if ( AdminPortWatcher != null )

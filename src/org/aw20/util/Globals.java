@@ -64,6 +64,8 @@ public class Globals {
 
 		public final static Double polygonPaneWidth = 40.0;
 		public final static Double hyperlinkWidth = 185.0;
+		public final static String backgroundColourDarkerGrey = "-fx-background-color: #1c252c;";
+		public final static String backgroundColourLighterGrey = "-fx-background-color: #222d35;";
 	}
 
 }

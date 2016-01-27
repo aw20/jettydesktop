@@ -111,6 +111,9 @@ public class ServerWrapper {
 	}
 
 
+	/*
+	 * produces ID for new server
+	 */
 	public String getNewId() {
 		Iterator it = serverConfigObject.entrySet().iterator();
 		List<Integer> ids = new ArrayList<Integer>();
@@ -144,7 +147,7 @@ public class ServerWrapper {
 	}
 
 
-	public Integer getRunningServers() {
+	public Integer getNumberOfRunningServers() {
 		Integer count = 0;
 		Iterator it = serverRunningObject.entrySet().iterator();
 

@@ -7,10 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.aw20.jettydesktop.ui.ServerConfigMap;
 import org.aw20.jettydesktop.ui.ServerWrapper;
@@ -19,16 +16,18 @@ import org.aw20.jettydesktop.ui.ServerWrapper;
 public class ServerController {
 
 	private String selectedServer = null;
-
 	private List<ServerConfigMap> serverConfigList;
-
-	// create Singleton instance
 	private static ServerController instance = null;
 
 
+	// create Singleton instance
 	public static ServerController getInstance() {
 		if ( instance == null ) {
-			instance = new ServerController();
+			synchronized ( ServerController.class ) {
+				if ( instance == null ) {
+					instance = new ServerController();
+				}
+			}
 		}
 		return instance;
 	}
@@ -54,19 +53,12 @@ public class ServerController {
 		for ( String itemToBeDeleted : listToBeDeleted ) {
 			ServerWrapper.getInstance().getServerConfigObject().remove( itemToBeDeleted );
 		}
-		List<ServerConfigMap> serverConfigList = new ArrayList<ServerConfigMap>();
-
-		Iterator it = ServerWrapper.getInstance().getServerConfigObject().entrySet().iterator();
-
-		while ( it.hasNext() ) {
-			Map.Entry<String, ServerConfigMap> item = (Entry<String, ServerConfigMap>) it.next();
-			serverConfigList.add( item.getValue() );
-		}
 
 		saveSettings();
 	}
 
 
+	// sets soft delete in ServerWrapper
 	public void setDeleted() {
 
 		ServerWrapper.getInstance().setDeleted( getSelectedServerInstance(), true );
@@ -78,6 +70,7 @@ public class ServerController {
 	public String saveServer( boolean newServer, String tempName, String tempIp, String tempPort, String tempWebFolder, String tempUri, String tempCustomJvm, boolean isCustomJvm, String tempJvmArgs, String tempMemory ) {
 		String id = null;
 		if ( newServer ) {
+			// get new id
 			id = ServerWrapper.getInstance().getNewId();
 			ServerConfigMap scm = new ServerConfigMap();
 
@@ -85,7 +78,6 @@ public class ServerController {
 			scm.setName( tempName );
 			scm.setPort( tempPort );
 			scm.setWebFolder( tempWebFolder );
-
 
 			if ( tempUri == "" ) {
 				scm.setDefaultWebUri( tempUri );
@@ -108,7 +100,7 @@ public class ServerController {
 			} else {
 				scm.setMemoryJVM( "64" );
 			}
-
+			// add server id, server, running = false and deleted = false to ServerWrapper
 			ServerWrapper.getInstance().setDeleted( id, false );
 			ServerWrapper.getInstance().setRunning( id, false );
 			ServerWrapper.getInstance().setServer( id, scm );
@@ -122,6 +114,7 @@ public class ServerController {
 			server.setName( tempName );
 			server.setPort( tempPort );
 			server.setWebFolder( tempWebFolder );
+			// set running = false and deleted = false in ServerWrapper - should already be false
 			ServerWrapper.getInstance().setDeleted( id, false );
 			ServerWrapper.getInstance().setRunning( id, false );
 
@@ -150,7 +143,7 @@ public class ServerController {
 			ServerWrapper.getInstance().setServer( id, server );
 		}
 		saveSettings();
-		// loadSettings();
+
 		return id;
 	}
 
@@ -175,6 +168,7 @@ public class ServerController {
 			FileInputStream in = new FileInputStream( new File( "jettydesktop.settings" ) );
 			ois = new ObjectInputStream( in );
 			serverConfigList = (java.util.List<org.aw20.jettydesktop.ui.ServerConfigMap>) ois.readObject();
+			// remove settings from previous implementations
 			for ( ServerConfigMap server : serverConfigList ) {
 				server.remove( "DELETED" );
 				server.remove( "RUNNING" );

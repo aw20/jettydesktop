@@ -3,10 +3,8 @@ package org.aw20.jettydesktop.controller;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Vector;
 
@@ -84,9 +82,7 @@ public class Main extends Application {
 			AnchorPane root = loader.load();
 			scene = new Scene( root, 889, 655 );
 
-			// initialise
-			Map<String, Pane> panes = new HashMap<String, Pane>();
-
+			// set up JavaFX variables and window
 			uiController.initialise();
 
 			serverSetup.setUpSpalashScreen( this, serverController, uiController, title );
@@ -94,11 +90,12 @@ public class Main extends Application {
 			serverSetup.setUpSettings( serverController, uiController );
 			serverSetup.setUpServerList( uiController, serverController, scene );
 			serverSetup.setUpServerInfo( serverController, uiController, fontWebFolder, fontNameUrl );
-			serverSetup.addSettingsToStackPane( panes, serverController, uiController, settingsLoader, currentJvm, stage, this );
+			serverSetup.addSettingsToStackPane( serverController, uiController, settingsLoader, currentJvm, stage, this );
 			serverSetup.setUpConsoleInfo( serverController, uiController );
 
 			scene.getStylesheets().add( getClass().getResource( viewDir + "application.css" ).toExternalForm() );
 			scene.getStylesheets().add( getClass().getResource( viewDir + "alert.css" ).toExternalForm() );
+
 			primaryStage.setScene( scene );
 			primaryStage.setTitle( title );
 			primaryStage.setResizable( true );
@@ -194,9 +191,8 @@ public class Main extends Application {
 				try {
 					saveBtnClick();
 				} catch ( Exception e1 ) {
-					// Alert alert = createNewAlert( AlertType.ERROR, "Error", "An error has occurred while saving a web app", null );
-					// alert.showAndWait();
-					e1.printStackTrace();
+					Alert alert = createNewAlert( AlertType.ERROR, "Error", "An error has occurred while saving a web app", null );
+					alert.showAndWait();
 				}
 			} );
 
@@ -209,11 +205,14 @@ public class Main extends Application {
 
 				Optional<ButtonType> result = createNewAlert( AlertType.CONFIRMATION, "", "Delete " + serverToBeDeleted + "?", "Are you sure?" ).showAndWait();
 
+				// OK button clicked
 				if ( result.get() == ButtonType.OK ) {
 					e.consume();
+					// delete server console/settings panes
 					serverController.setDeleted();
 					uiController.updateServerOnDelete();
 
+					// show splash screen
 					uiController.getSplashPane().setVisible( true );
 					uiController.getSplashPane().toFront();
 					uiController.getSplashAnchorPane().setVisible( true );
@@ -226,12 +225,14 @@ public class Main extends Application {
 					List<HBox> listOfHboxes = uiController.getListViewAppList().getItems();
 					for ( HBox item : listOfHboxes ) {
 						item.getStyleClass().remove( Globals.StyleClasses.CURRENT );
-						item.getParent().setStyle( "-fx-background-color: #222d35;" );
+						item.getParent().setStyle( Globals.StyleVariables.backgroundColourLighterGrey );
 					}
 
 					// hide buttons
 					ButtonActions buttonActions = new ButtonActions();
 					buttonActions.showNoButtons( uiController );
+
+					// Cancel button clicked
 				} else {
 					e.consume();
 				}
@@ -243,7 +244,7 @@ public class Main extends Application {
 			Platform.runLater( new Runnable() {
 
 				public void run() {
-
+					// window close requested
 					stage.setOnCloseRequest( new EventHandler<WindowEvent>() {
 
 						public void handle( WindowEvent t ) {
@@ -256,7 +257,7 @@ public class Main extends Application {
 								// if there are servers
 							} else {
 								// else count the running servers
-								int runningServers = ServerWrapper.getInstance().getRunningServers();
+								int runningServers = ServerWrapper.getInstance().getNumberOfRunningServers();
 
 								// if servers are running call js to run dialog
 								if ( runningServers > 0 ) {
@@ -284,9 +285,8 @@ public class Main extends Application {
 				}
 			} );
 		} catch ( Exception e ) {
-			// Alert alert = createNewAlert( AlertType.CONFIRMATION, "", "An error has occurred while starting Jetty Desktop", null );
-			// alert.showAndWait();
-			e.printStackTrace();
+			Alert alert = createNewAlert( AlertType.CONFIRMATION, "", "An error has occurred while starting Jetty Desktop", null );
+			alert.showAndWait();
 		}
 	}
 
@@ -300,6 +300,7 @@ public class Main extends Application {
 		if ( AnchorPane.getTopAnchor( uiController.getTabPaneMaster() ) != 0.0 ) {
 			AnchorPane.setTopAnchor( uiController.getTabPaneMaster(), 0.0 );
 
+			// hide server info in blue pane
 			uiController.getServerInfoImagePane().setPrefHeight( 40.0 );
 			uiController.getServerInfoImagePane().setMinHeight( 40.0 );
 			uiController.getServerInfoImagePane().setMaxHeight( 40.0 );
@@ -308,7 +309,7 @@ public class Main extends Application {
 			uiController.getServerInfoStackPaneMaster().setVisible( false );
 		} else {
 			AnchorPane.setTopAnchor( uiController.getTabPaneMaster(), 47.0 );
-
+			// show server info in blue pane
 			uiController.getArrowImage().setRotate( 0.0 );
 			uiController.getServerInfoPane().setMaxHeight( 47.0 );
 			uiController.getServerInfoPane().setMinHeight( 47.0 );
@@ -350,15 +351,16 @@ public class Main extends Application {
 		ButtonActions buttonActions = new ButtonActions();
 		buttonActions.showButtonsOnNewWebApp( uiController );
 
-		// remove "current" from others
+		// remove "current" class from others
 		List<HBox> listOfHboxes = uiController.getListViewAppList().getItems();
 		for ( HBox item : listOfHboxes ) {
 			item.getStyleClass().remove( Globals.StyleClasses.CURRENT );
-			item.getParent().setStyle( "-fx-background-color: #222d35;" );
+			item.getParent().setStyle( Globals.StyleVariables.backgroundColourLighterGrey );
 		}
 
 		serverController.setSelectedServer( null );
 
+		// show empty settings pane
 		Pane p = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSID + "Empty" );
 		p.toFront();
 		p.setVisible( true );
@@ -370,13 +372,12 @@ public class Main extends Application {
 		String ss = serverController.getSelectedServerInstance();
 		ButtonActions buttonActions = new ButtonActions();
 		if ( newTab.getId().equals( "settingsTab" ) ) {
+			// open settings tab and correct pane
 			Pane pSettings = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSID + ss );
 			pSettings.setVisible( true );
 			pSettings.toFront();
 
-
 			// disable buttons if server running
-
 			if ( ServerWrapper.getInstance().getRunning( serverController.getSelectedServerInstance() ) ) {
 				buttonActions.showSettingsButtonsOnRunning( uiController );
 			} else {
@@ -384,7 +385,7 @@ public class Main extends Application {
 			}
 
 		} else if ( newTab.getId().equals( "consoleTab" ) ) {
-
+			// open console tab and correct pane
 			uiController.getConsoleStackPane().setVisible( true );
 
 			Iterator<Node> itConsole = uiController.getConsoleStackPane().getChildren().iterator();
@@ -404,7 +405,7 @@ public class Main extends Application {
 					}
 				} );
 			}
-
+			// show and disable correct buttons on console showing
 			if ( ServerWrapper.getInstance().getRunning( serverController.getSelectedServerInstance() ) ) {
 				buttonActions.showConsoleButtonsOnRunning( uiController );
 			} else {
@@ -415,6 +416,9 @@ public class Main extends Application {
 	}
 
 
+	/*
+	 * Method to stop all servers running on application close
+	 */
 	private void stopServersOnExit() {
 		@SuppressWarnings( "rawtypes" )
 		Vector v = Executor.getAllInstances();
@@ -435,6 +439,7 @@ public class Main extends Application {
 			tempSettings = ( (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSEMPTYID ) );
 		}
 
+		// get all user input fields
 		String tempName = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.nameTextBox ) ).getText();
 		String tempIp = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.ipTextBox ) ).getText();
 		String tempPort = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.portTextBox ) ).getText();
@@ -449,10 +454,12 @@ public class Main extends Application {
 
 		if ( newServer ) {
 			// add info to server info pane
+			// smaller text for web folder
 			Text text1 = new Text( '\n' + tempWebFolder );
 			text1.setFill( Color.WHITE );
 			text1.setFont( fontWebFolder );
 			text1.setId( Globals.FXVariables.INFOWEBFOLDERID + savedServerId );
+			// larger text for name and url
 			Text text2 = new Text( tempName + " - " );
 			text2.setFill( Color.WHITE );
 			text2.setFont( fontNameUrl );
@@ -471,6 +478,7 @@ public class Main extends Application {
 			newPane.setVisible( true );
 			newPane.setId( Globals.FXVariables.SERVERINFOID + savedServerId );
 
+			// add server info pane to stack pane
 			uiController.getServerInfoStackPane().getChildren().add( newPane );
 
 			serverController.setSelectedServer( savedServerId );
@@ -487,7 +495,7 @@ public class Main extends Application {
 
 			uiController.getConsoleInfo().getChildren().add( tfLastUpdated );
 
-			// add info to console info pane
+			// add last updated and memory used info to console info pane
 			Text t1 = new Text();
 			t1.setId( Globals.FXVariables.memoryText + savedServerId );
 			TextFlow tfMemory = new TextFlow( t1 );
@@ -500,46 +508,50 @@ public class Main extends Application {
 			uiController.getConsoleInfo().getChildren().add( tfMemory );
 		}
 
+		// update settings on user updated fields
 		uiController.updateSettings( savedServerId, newServer, scene, tempSettings, tempName, tempIp, tempPort, tempWebFolder, tempUri, tempCustomJvm, isCustomJvm, tempJvmArgs, tempMemory );
+		// close settings and open console
 		tempSettings.setVisible( false );
 		ScrollPane s = ( (ScrollPane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SCROLLPANEID + savedServerId ) );
 		s.setVisible( true );
 		s.toFront();
 
 		ButtonActions buttonActions = new ButtonActions();
-
 		buttonActions.showSettingsButtonsOnNotRunning( uiController );
+
 		uiController.getTabPane().setVisible( true );
 
 		// set console tab
 		Tab tab = uiController.getTabPane().getTabs().get( 1 );
 		uiController.getTabPane().getSelectionModel().select( tab );
 
-
+		// show correct console buttons
 		if ( ServerWrapper.getInstance().getRunning( serverController.getSelectedServerInstance() ) ) {
 			buttonActions.showConsoleButtonsOnRunning( uiController );
 		} else {
 			buttonActions.showConsoleButtonsOnNotRunning( uiController );
 		}
-
+		// re display server info pane
 		uiController.getServerInfoImagePane().setVisible( true );
 		uiController.getServerInfoPane().setVisible( true );
 		uiController.showCurrentServerInfoPane();
 
-
 		if ( newServer ) {
 			// change settingsEmpty id to new id
-
 			Pane newSettings = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSEMPTYID );
 			newSettings.setId( Globals.FXVariables.SETTINGSID + savedServerId );
 			uiController.getSettingsStackPane().getChildren().add( newSettings );
-			tempSettings.setVisible( false ); // add new empty settings
+			tempSettings.setVisible( false );
+			// add new empty settings
 			serverSetup.setUpEmptySettings( settingsLoader, currentJvm, stage, uiController );
 		}
 
 	}
 
 
+	/*
+	 * button to open current web app - enabled when webapp is running
+	 */
 	private void openBtnClick() {
 		String selectedServer = serverController.getSelectedServerInstance();
 		String webFolder = "";
@@ -565,6 +577,9 @@ public class Main extends Application {
 	}
 
 
+	/*
+	 * create alerts for exceptions, deleting and closing the application
+	 */
 	public Alert createNewAlert( AlertType type, String title, String content, String header ) {
 		Alert alert = new Alert( type );
 		alert.setTitle( title );
