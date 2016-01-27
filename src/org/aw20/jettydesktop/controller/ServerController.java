@@ -7,28 +7,23 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.aw20.jettydesktop.ui.ServerConfigMap;
+import org.aw20.jettydesktop.ui.ServerWrapper;
 
 
 public class ServerController {
 
 	private String selectedServer = null;
 
-	private List<ServerConfigMap> serverConfigList = null;
+	private List<ServerConfigMap> serverConfigList;
 
 	// create Singleton instance
 	private static ServerController instance = null;
-
-
-	public List<ServerConfigMap> getServerConfigListInstance() {
-		if ( serverConfigList == null ) {
-			serverConfigList = new ArrayList<ServerConfigMap>();
-		}
-		return serverConfigList;
-	}
 
 
 	public static ServerController getInstance() {
@@ -48,43 +43,33 @@ public class ServerController {
 	}
 
 
-	public ServerConfigMap get( String id ) {
-		for ( ServerConfigMap server : getServerConfigListInstance() ) {
-			if ( server.getId().equals( id ) ) {
-				return server;
-			}
-		}
-		return null;
-	}
-
-
 	public void setSelectedServer( String server ) {
 		selectedServer = server;
 	}
 
 
-	public List<ServerConfigMap> getServerConfigList() {
-		return serverConfigList;
-	}
-
-
 	public void hardDeleteServersOnExit() {
-		for ( int i = serverConfigList.size() - 1; i >= 0; --i ) {
-			if ( serverConfigList.get( i ).getDeleted() == "true" ) {
-				serverConfigList.remove( i );
-			}
+
+		List<String> listToBeDeleted = ServerWrapper.getInstance().getAllDeleted();
+		for ( String itemToBeDeleted : listToBeDeleted ) {
+			ServerWrapper.getInstance().getServerConfigObject().remove( itemToBeDeleted );
 		}
+		List<ServerConfigMap> serverConfigList = new ArrayList<ServerConfigMap>();
+
+		Iterator it = ServerWrapper.getInstance().getServerConfigObject().entrySet().iterator();
+
+		while ( it.hasNext() ) {
+			Map.Entry<String, ServerConfigMap> item = (Entry<String, ServerConfigMap>) it.next();
+			serverConfigList.add( item.getValue() );
+		}
+
 		saveSettings();
 	}
 
 
 	public void setDeleted() {
-		for ( ServerConfigMap server : getServerConfigListInstance() ) {
-			if ( server.getId().equals( getSelectedServerInstance() ) ) {
-				server.setDeleted( "true" );
-				break;
-			}
-		}
+
+		ServerWrapper.getInstance().setDeleted( getSelectedServerInstance(), true );
 
 		saveSettings();
 	}
@@ -93,25 +78,14 @@ public class ServerController {
 	public String saveServer( boolean newServer, String tempName, String tempIp, String tempPort, String tempWebFolder, String tempUri, String tempCustomJvm, boolean isCustomJvm, String tempJvmArgs, String tempMemory ) {
 		String id = null;
 		if ( newServer ) {
-			List<Integer> ids = new ArrayList<>();
-			for ( ServerConfigMap server : serverConfigList ) {
-				ids.add( Integer.parseInt( server.getId() ) );
-			}
-			Integer i;
-			if ( ids.isEmpty() ) {
-				i = 0;
-			} else {
-				i = Collections.max( ids );
-			}
-			id = Integer.toString( i + 1 );
+			id = ServerWrapper.getInstance().getNewId();
 			ServerConfigMap scm = new ServerConfigMap();
-			scm.setId( id );
+
 			scm.setIP( tempIp );
 			scm.setName( tempName );
 			scm.setPort( tempPort );
 			scm.setWebFolder( tempWebFolder );
-			scm.setDeleted( "false" );
-			scm.setRunning( "false" );
+
 
 			if ( tempUri == "" ) {
 				scm.setDefaultWebUri( tempUri );
@@ -135,49 +109,48 @@ public class ServerController {
 				scm.setMemoryJVM( "64" );
 			}
 
-			// add to ServerConfigList
-			serverConfigList.add( scm );
+			ServerWrapper.getInstance().setDeleted( id, false );
+			ServerWrapper.getInstance().setRunning( id, false );
+			ServerWrapper.getInstance().setServer( id, scm );
+
 		} else {
-			for ( ServerConfigMap server : serverConfigList ) {
-				if ( server.getId().equals( selectedServer ) ) {
-					id = server.getId();
-					server.setId( selectedServer );
-					server.setIP( tempIp );
-					server.setName( tempName );
-					server.setPort( tempPort );
-					server.setWebFolder( tempWebFolder );
-					server.setDeleted( "false" );
-					server.setRunning( "false" );
+			id = selectedServer;
+			ServerConfigMap server = ServerWrapper.getInstance().getServerConfigObject().get( id );
 
+			// overwrite existing data
+			server.setIP( tempIp );
+			server.setName( tempName );
+			server.setPort( tempPort );
+			server.setWebFolder( tempWebFolder );
+			ServerWrapper.getInstance().setDeleted( id, false );
+			ServerWrapper.getInstance().setRunning( id, false );
 
-					if ( tempUri == "" ) {
-						server.setDefaultWebUri( tempUri );
-					} else {
-						server.setDefaultWebUri( "/" );
-					}
-
-					if ( isCustomJvm ) {
-						server.setCustomJVM( tempCustomJvm );
-					} else {
-						server.setCurrentJVM();
-					}
-
-					if ( tempJvmArgs != "" ) {
-						server.setDefaultJVMArgs( tempJvmArgs );
-					}
-
-					if ( tempMemory != null && !tempMemory.isEmpty() ) {
-						server.setMemoryJVM( tempMemory );
-					} else {
-						server.setMemoryJVM( "64" );
-					}
-					break;
-				}
+			if ( tempUri == "" ) {
+				server.setDefaultWebUri( tempUri );
+			} else {
+				server.setDefaultWebUri( "/" );
 			}
+
+			if ( isCustomJvm ) {
+				server.setCustomJVM( tempCustomJvm );
+			} else {
+				server.setCurrentJVM();
+			}
+
+			if ( tempJvmArgs != "" ) {
+				server.setDefaultJVMArgs( tempJvmArgs );
+			}
+
+			if ( tempMemory != null && !tempMemory.isEmpty() ) {
+				server.setMemoryJVM( tempMemory );
+			} else {
+				server.setMemoryJVM( "64" );
+			}
+
+			ServerWrapper.getInstance().setServer( id, server );
 		}
 		saveSettings();
-		serverConfigList = null;
-		loadSettings();
+		// loadSettings();
 		return id;
 	}
 
@@ -187,7 +160,7 @@ public class ServerController {
 		try {
 			FileOutputStream out = new FileOutputStream( new File( "jettydesktop.settings" ) );
 			OS = new ObjectOutputStream( out );
-			OS.writeObject( serverConfigList );
+			OS.writeObject( ServerWrapper.getInstance().getListOfServerConfigMap() );
 			out.flush();
 			out.close();
 		} catch ( IOException e ) {}
@@ -201,18 +174,17 @@ public class ServerController {
 		try {
 			FileInputStream in = new FileInputStream( new File( "jettydesktop.settings" ) );
 			ois = new ObjectInputStream( in );
-			setServerConfigList( (java.util.List<org.aw20.jettydesktop.ui.ServerConfigMap>) ois.readObject() );
+			serverConfigList = (java.util.List<org.aw20.jettydesktop.ui.ServerConfigMap>) ois.readObject();
+			for ( ServerConfigMap server : serverConfigList ) {
+				server.remove( "DELETED" );
+				server.remove( "RUNNING" );
+				server.remove( "SERVER_ID" );
+			}
 			in.close();
 
 		} catch ( Exception e ) {
-			setServerConfigList( new ArrayList<org.aw20.jettydesktop.ui.ServerConfigMap>() );
+			serverConfigList = new ArrayList<org.aw20.jettydesktop.ui.ServerConfigMap>();
 		}
+		ServerWrapper.getInstance().loadSettingsIntoServerConfig( serverConfigList );
 	}
-
-
-	public void setServerConfigList( List<ServerConfigMap> serverConfigList ) {
-		this.serverConfigList = serverConfigList;
-	}
-
-
 }

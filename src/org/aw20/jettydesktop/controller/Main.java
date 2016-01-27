@@ -41,6 +41,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
 import org.aw20.jettydesktop.ui.ServerConfigMap;
+import org.aw20.jettydesktop.ui.ServerWrapper;
 import org.aw20.util.Globals;
 
 
@@ -120,15 +121,8 @@ public class Main extends Application {
 						String serverId = hbox.getId().replace( "hbox", "" );
 
 						Hyperlink h = (Hyperlink) hbox.getChildren().get( 0 );
-						ServerConfigMap scm = null;
-
-						for ( ServerConfigMap server : serverController.getServerConfigListInstance() ) {
-							if ( server.getId().equals( serverId ) ) {
-								serverController.setSelectedServer( server.getId() );
-								scm = server;
-								break;
-							}
-						}
+						ServerConfigMap scm = ServerWrapper.getInstance().getServer( serverId );
+						serverController.setSelectedServer( serverId );
 
 						uiController.handleListViewOnClick( hbox, scene, h, scm );
 					}
@@ -200,8 +194,9 @@ public class Main extends Application {
 				try {
 					saveBtnClick();
 				} catch ( Exception e1 ) {
-					Alert alert = createNewAlert( AlertType.ERROR, "Error", "An error has occurred while saving a web app", null );
-					alert.showAndWait();
+					// Alert alert = createNewAlert( AlertType.ERROR, "Error", "An error has occurred while saving a web app", null );
+					// alert.showAndWait();
+					e1.printStackTrace();
 				}
 			} );
 
@@ -210,13 +205,7 @@ public class Main extends Application {
 			 * Method to handle click on delete
 			 */
 			uiController.getDeleteBtn().setOnAction( ( ActionEvent e ) -> {
-
-				String serverToBeDeleted = null;
-				for ( ServerConfigMap server : serverController.getServerConfigListInstance() ) {
-					if ( server.getId().equals( serverController.getSelectedServerInstance() ) ) {
-						serverToBeDeleted = server.getName();
-					}
-				}
+				String serverToBeDeleted = ServerWrapper.getInstance().getServer( serverController.getSelectedServerInstance() ).getName();
 
 				Optional<ButtonType> result = createNewAlert( AlertType.CONFIRMATION, "", "Delete " + serverToBeDeleted + "?", "Are you sure?" ).showAndWait();
 
@@ -260,14 +249,14 @@ public class Main extends Application {
 						public void handle( WindowEvent t ) {
 
 							// if there are no server
-							if ( serverController.getServerConfigListInstance() == null ) {
+							if ( ServerWrapper.getInstance().getListOfServerConfigMap() == null ) {
 								// appFunctions.deleteServers();
 								Platform.exit();
 
 								// if there are servers
 							} else {
 								// else count the running servers
-								int runningServers = getRunningApps();
+								int runningServers = ServerWrapper.getInstance().getRunningServers();
 
 								// if servers are running call js to run dialog
 								if ( runningServers > 0 ) {
@@ -304,17 +293,6 @@ public class Main extends Application {
 
 	public static void main( String[] args ) {
 		launch( args );
-	}
-
-
-	private int getRunningApps() {
-		int running = 0;
-		for ( ServerConfigMap server : serverController.getServerConfigListInstance() ) {
-			if ( server.getRunning().equals( "true" ) ) {
-				running++;
-			}
-		}
-		return running;
 	}
 
 
@@ -398,15 +376,13 @@ public class Main extends Application {
 
 
 			// disable buttons if server running
-			for ( ServerConfigMap server : serverController.getServerConfigListInstance() ) {
-				if ( server.getId().equals( serverController.getSelectedServerInstance() ) ) {
-					if ( server.getRunning().equals( "true" ) ) {
-						buttonActions.showSettingsButtonsOnRunning( uiController );
-					} else {
-						buttonActions.showSettingsButtonsOnNotRunning( uiController );
-					}
-				}
+
+			if ( ServerWrapper.getInstance().getRunning( serverController.getSelectedServerInstance() ) ) {
+				buttonActions.showSettingsButtonsOnRunning( uiController );
+			} else {
+				buttonActions.showSettingsButtonsOnNotRunning( uiController );
 			}
+
 		} else if ( newTab.getId().equals( "consoleTab" ) ) {
 
 			uiController.getConsoleStackPane().setVisible( true );
@@ -429,15 +405,12 @@ public class Main extends Application {
 				} );
 			}
 
-			for ( ServerConfigMap server : serverController.getServerConfigListInstance() ) {
-				if ( server.getId().equals( serverController.getSelectedServerInstance() ) ) {
-					if ( server.getRunning().equals( "true" ) ) {
-						buttonActions.showConsoleButtonsOnRunning( uiController );
-					} else {
-						buttonActions.showConsoleButtonsOnNotRunning( uiController );
-					}
-				}
+			if ( ServerWrapper.getInstance().getRunning( serverController.getSelectedServerInstance() ) ) {
+				buttonActions.showConsoleButtonsOnRunning( uiController );
+			} else {
+				buttonActions.showConsoleButtonsOnNotRunning( uiController );
 			}
+
 		}
 	}
 
@@ -447,10 +420,6 @@ public class Main extends Application {
 		Vector v = Executor.getAllInstances();
 		for ( Object executor : v ) {
 			( (Executor) executor ).exit();
-		}
-
-		for ( ServerConfigMap server : serverController.getServerConfigListInstance() ) {
-			server.setRunning( "false" );
 		}
 	}
 
@@ -546,14 +515,11 @@ public class Main extends Application {
 		Tab tab = uiController.getTabPane().getTabs().get( 1 );
 		uiController.getTabPane().getSelectionModel().select( tab );
 
-		for ( ServerConfigMap server : serverController.getServerConfigListInstance() ) {
-			if ( server.getId().equals( serverController.getSelectedServerInstance() ) ) {
-				if ( server.getRunning().equals( "true" ) ) {
-					buttonActions.showConsoleButtonsOnRunning( uiController );
-				} else {
-					buttonActions.showConsoleButtonsOnNotRunning( uiController );
-				}
-			}
+
+		if ( ServerWrapper.getInstance().getRunning( serverController.getSelectedServerInstance() ) ) {
+			buttonActions.showConsoleButtonsOnRunning( uiController );
+		} else {
+			buttonActions.showConsoleButtonsOnNotRunning( uiController );
 		}
 
 		uiController.getServerInfoImagePane().setVisible( true );
@@ -580,15 +546,12 @@ public class Main extends Application {
 		String host = "";
 		String port = "";
 		String defaultUri = "";
-		for ( ServerConfigMap server : serverController.getServerConfigListInstance() ) {
-			if ( server.getId().equals( selectedServer ) ) {
-				webFolder = server.getWebFolder();
-				host = server.getIP();
-				port = server.getPort();
-				defaultUri = server.getDefaultWebUri();
-				break;
-			}
-		}
+		ServerConfigMap scm = ServerWrapper.getInstance().getServerConfigObject().get( selectedServer );
+
+		webFolder = scm.getWebFolder();
+		host = scm.getIP();
+		port = scm.getPort();
+		defaultUri = scm.getDefaultWebUri();
 
 		if ( !webFolder.isEmpty() && !webFolder.equals( "" ) ) {
 			if ( host.isEmpty() ) {

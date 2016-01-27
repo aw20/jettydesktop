@@ -45,6 +45,7 @@ import javafx.scene.layout.StackPane;
 
 import org.aw20.jettydesktop.rte.JettyRunTime;
 import org.aw20.jettydesktop.ui.ServerConfigMap;
+import org.aw20.jettydesktop.ui.ServerWrapper;
 import org.aw20.util.SocketUtil;
 
 
@@ -61,7 +62,8 @@ public class Executor extends Object {
 	private ioConsumer ioconsumers[];
 	private adminPortWatcher AdminPortWatcher = null;
 	private int adminPort;
-	private ServerConfigMap currentServerConfigMap = null;
+	private String currentServer = null;
+	ServerConfigMap currentServerConfigMap = null;
 
 	private StackPane currentStackPaneConsole;
 	private Scene scene;
@@ -87,20 +89,21 @@ public class Executor extends Object {
 
 
 	@SuppressWarnings( "unchecked" )
-	public Executor( ServerConfigMap _serverConfigMap, StackPane _currentStackPaneConsole, Scene _scene, UIController _uiController ) throws IOException {
+	public Executor( String _currentServer, StackPane _currentStackPaneConsole, Scene _scene, UIController _uiController ) throws IOException {
 		allInstances.add( this );
 
-		currentServerConfigMap = _serverConfigMap;
+		currentServer = _currentServer;
 		currentStackPaneConsole = _currentStackPaneConsole;
 		scene = _scene;
+		currentServerConfigMap = ServerWrapper.getInstance().getServerConfigObject().get( currentServer );
 
 		// Check to see if this server is already running
 		if ( SocketUtil.isRemotePortAlive( currentServerConfigMap.getIP(), Integer.parseInt( currentServerConfigMap.getPort() ) ) ) {
-			_uiController.updateConsole( currentServerConfigMap.getId(), "Port #" + currentServerConfigMap.getPort() + " appears to be in use already.\n", currentStackPaneConsole );
+			_uiController.updateConsole( currentServer, "Port #" + currentServerConfigMap.getPort() + " appears to be in use already.\n", currentStackPaneConsole );
 			throw new IOException( "Port#" + currentServerConfigMap.getPort() + " appears to be in use already" );
 		}
 
-		findFreePort( _uiController );
+		findFreePort( _uiController, currentServer );
 
 		// Start up the server
 		String USR_HOME = System.getProperty( "user.dir" ) + File.separator;
@@ -148,14 +151,14 @@ public class Executor extends Object {
 		process = pb.start();
 		// this is where the JNI error occurs
 		ioconsumers = new ioConsumer[3];
-		ioconsumers[0] = new ioConsumer( process.getErrorStream(), _uiController );
-		ioconsumers[1] = new ioConsumer( process.getInputStream(), _uiController );
+		ioconsumers[0] = new ioConsumer( process.getErrorStream(), _uiController, currentServer );
+		ioconsumers[1] = new ioConsumer( process.getInputStream(), _uiController, currentServer );
 		ioconsumers[2] = new ioConsumer( process.getOutputStream() );
 
 
 		if ( adminPort > 0 ) {
 			try {
-				AdminPortWatcher = new adminPortWatcher( _uiController );
+				AdminPortWatcher = new adminPortWatcher( _uiController, currentServer );
 			} catch ( IOException ioe ) {
 				AdminPortWatcher = null;
 			}
@@ -163,7 +166,7 @@ public class Executor extends Object {
 	}
 
 
-	private void findFreePort( UIController _uiController ) {
+	private void findFreePort( UIController _uiController, String _currentServer ) {
 		try {
 			adminPort = 34000;
 
@@ -179,7 +182,7 @@ public class Executor extends Object {
 
 		} catch ( Exception e ) {
 			// TODO :RETURN USING FREE ADMIN PORT
-			_uiController.updateConsole( currentServerConfigMap.getId(), "Using Free Admin Port: " + adminPort + "\n", currentStackPaneConsole );
+			_uiController.updateConsole( _currentServer, "Using Free Admin Port: " + adminPort + "\n", currentStackPaneConsole );
 			return;
 		}
 	}
@@ -191,10 +194,12 @@ public class Executor extends Object {
 		Socket s;
 
 		UIController uiController;
+		String currentServer;
 
 
-		public adminPortWatcher( UIController _uiController ) throws IOException {
+		public adminPortWatcher( UIController _uiController, String _currentServer ) throws IOException {
 			uiController = _uiController;
+			currentServer = _currentServer;
 			s = new Socket();
 			s.connect( new InetSocketAddress( "127.0.0.1", adminPort ), 1000 );
 			br = new BufferedReader( new InputStreamReader( s.getInputStream() ) );
@@ -220,7 +225,7 @@ public class Executor extends Object {
 						final String l = line;
 
 						// update memory
-						uiController.updateMemory( l, currentServerConfigMap.getId(), scene );
+						uiController.updateMemory( l, currentServer, scene );
 					}
 				} catch ( IOException e ) {
 					break;
@@ -240,10 +245,12 @@ public class Executor extends Object {
 
 		BufferedReader br;
 		UIController uiController;
+		String currentServer;
 
 
-		public ioConsumer( InputStream io, UIController _uiController ) {
+		public ioConsumer( InputStream io, UIController _uiController, String _currentServer ) {
 			uiController = _uiController;
+			currentServer = _currentServer;
 			br = new BufferedReader( new InputStreamReader( io ) );
 			start();
 		}
@@ -262,9 +269,9 @@ public class Executor extends Object {
 					while ( ( line = br.readLine() ) != null ) {
 						final String l = line;
 						// update console
-						uiController.updateConsole( currentServerConfigMap.getId(), l + "\n", currentStackPaneConsole );
+						uiController.updateConsole( getCurrentServer(), l + "\n", currentStackPaneConsole );
 						// update last updated text
-						uiController.updateLastUpdated( "last updated: " + LocalDateTime.now().format( formatter ).toString(), currentServerConfigMap.getId(), scene );
+						uiController.updateLastUpdated( "last updated: " + LocalDateTime.now().format( formatter ).toString(), currentServer, scene );
 					}
 				} catch ( IOException e ) {
 					break;
@@ -320,8 +327,8 @@ public class Executor extends Object {
 	}
 
 
-	public ServerConfigMap getCurrentServerConfigMap() {
-		return currentServerConfigMap;
+	public String getCurrentServer() {
+		return currentServer;
 	}
 
 }

@@ -30,6 +30,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
 import org.aw20.jettydesktop.ui.ServerConfigMap;
+import org.aw20.jettydesktop.ui.ServerWrapper;
 import org.aw20.util.Globals;
 
 
@@ -55,9 +56,11 @@ public class ServerSetup {
 
 	public HBox addHBoxToList( UIController uiController, ServerConfigMap scm, Scene scene, boolean newServer ) {
 
+		String id = ServerWrapper.getInstance().getIdOfServer( scm );
+
 		// RUNNING CIRCLE
 		Circle c = new Circle( 5.0f, Color.GREY );
-		c.setId( Globals.FXVariables.RUNNINGID + scm.getId() );
+		c.setId( Globals.FXVariables.RUNNINGID + id );
 
 		// POLYGON
 		Polygon p = new Polygon();
@@ -68,7 +71,7 @@ public class ServerSetup {
 				0d, 12d
 				);
 
-		p.setId( "polygon" + scm.getId() );
+		p.setId( "polygon" + id );
 		p.setFill( Color.GREEN );
 
 		p.setVisible( false );
@@ -78,11 +81,11 @@ public class ServerSetup {
 
 		// play/stop button click
 		p.setOnMouseClicked( event -> {
-			if ( scm.getRunning().equals( "true" ) ) {
-				uiController.stopBtnClick( scm.getId(), scene );
+			if ( ServerWrapper.getInstance().getRunning( id ) ) {
+				uiController.stopBtnClick( id, scene );
 			}
 				else {
-					uiController.startBtnClick( scm.getId(), scene );
+					uiController.startBtnClick( id, scene );
 					uiController.setSelectedTabInstance( uiController.getTabPane().getTabs().get( 1 ) );
 					if ( !uiController.getServerInfoImagePane().isVisible() ) {
 						uiController.getServerInfoPane().setVisible( true );
@@ -102,7 +105,7 @@ public class ServerSetup {
 		Hyperlink h = new Hyperlink( scm.getName(), c );
 
 		h.setPadding( new Insets( 0, 0, 0, 10 ) );
-		h.setId( scm.getId() );
+		h.setId( id );
 		h.getStyleClass().add( "serverListHyperlink" );
 		h.setPrefWidth( Globals.StyleVariables.hyperlinkWidth - 18 );
 		h.setMinWidth( Globals.StyleVariables.hyperlinkWidth - 18 );
@@ -114,7 +117,7 @@ public class ServerSetup {
 		hbox.setPrefWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 18 );
 		hbox.setMaxWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 18 );
 		hbox.setMinWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 18 );
-		hbox.setId( Globals.FXVariables.HBOXID + scm.getId() );
+		hbox.setId( Globals.FXVariables.HBOXID + id );
 
 
 		AnchorPane a = new AnchorPane();
@@ -123,7 +126,7 @@ public class ServerSetup {
 		AnchorPane.setLeftAnchor( hbox, 0.0 );
 		AnchorPane.setRightAnchor( hbox, 0.0 );
 
-		uiController.getServersForListInstance().put( scm.getId(), a );
+		uiController.getServersForListInstance().put( id, a );
 
 		polygonPane.setOnMouseEntered( event -> {
 			p.setVisible( true );
@@ -215,16 +218,17 @@ public class ServerSetup {
 	public void setUpSettings( ServerController serverController, UIController uiController ) {
 		// load settings into server config map
 		serverController.loadSettings();
-		for ( ServerConfigMap scm : serverController.getServerConfigListInstance() ) {
+		for ( ServerConfigMap scm : ServerWrapper.getInstance().getListOfServerConfigMap() ) {
 			// add ids to list
-			uiController.getServerConfigIdList().add( scm.getId() );
+			String id = ServerWrapper.getInstance().getIdOfServer( scm );
+			uiController.getServerConfigIdList().add( id );
 
 			// add console for each server
 			TextFlow newTextFlow = new TextFlow();
-			newTextFlow.setId( Globals.FXVariables.CONSOLEID + scm.getId() );
+			newTextFlow.setId( Globals.FXVariables.CONSOLEID + id );
 			newTextFlow.setVisible( true );
 			ScrollPane scrollPane = new ScrollPane( newTextFlow );
-			scrollPane.setId( Globals.FXVariables.SCROLLPANEID + scm.getId() );
+			scrollPane.setId( Globals.FXVariables.SCROLLPANEID + id );
 			uiController.getConsoleStackPane().getChildren().add( scrollPane );
 		}
 	}
@@ -241,29 +245,31 @@ public class ServerSetup {
 			uiController.getServerInfoImagePane().setVisible( false );
 		}
 
-		for ( ServerConfigMap scm : serverController.getServerConfigListInstance() ) {
+		for ( ServerConfigMap scm : ServerWrapper.getInstance().getListOfServerConfigMap() ) {
+			String id = ServerWrapper.getInstance().getIdOfServer( scm );
+
 			// add info to server info pane
 			Text text1 = new Text( '\n' + scm.getWebFolder() );
 			text1.setFill( Color.WHITE );
 			text1.setFont( fontWebFolder );
-			text1.setId( Globals.FXVariables.INFOWEBFOLDERID + scm.getId() );
+			text1.setId( Globals.FXVariables.INFOWEBFOLDERID + id );
 			Text text2 = new Text( scm.getName() + " - " );
 			text2.setFill( Color.WHITE );
 			text2.setFont( fontNameUrl );
-			text2.setId( Globals.FXVariables.INFONAMEID + scm.getId() );
+			text2.setId( Globals.FXVariables.INFONAMEID + id );
 			Text text3 = new Text( scm.getIP() + ":" + scm.getPort() );
 			text3.setFill( Color.WHITE );
 			text3.setFont( fontNameUrl );
-			text3.setId( Globals.FXVariables.INFOURLID + scm.getId() );
+			text3.setId( Globals.FXVariables.INFOURLID + id );
 			TextFlow tf = new TextFlow( text2, text3, text1 );
 			tf.getStyleClass().add( Globals.StyleClasses.SERVERINFO );
-			tf.setId( Globals.FXVariables.INFOTEXTFLOWID + scm.getId() );
+			tf.setId( Globals.FXVariables.INFOTEXTFLOWID + id );
 			tf.setPadding( new Insets( 5.0 ) );
 			Pane newPane = new Pane();
 			newPane.getStyleClass().add( Globals.StyleClasses.SERVERINFO );
 			newPane.getChildren().add( tf );
 			newPane.setVisible( true );
-			newPane.setId( Globals.FXVariables.SERVERINFOID + scm.getId() );
+			newPane.setId( Globals.FXVariables.SERVERINFOID + id );
 
 			uiController.getServerInfoStackPane().getChildren().add( newPane );
 		}
@@ -273,29 +279,29 @@ public class ServerSetup {
 
 	public void setUpConsoleInfo( ServerController serverController, UIController uiController ) {
 		// set server info hidden initially
-
-		for ( ServerConfigMap scm : serverController.getServerConfigListInstance() ) {
+		for ( ServerConfigMap scm : ServerWrapper.getInstance().getListOfServerConfigMap() ) {
+			String id = ServerWrapper.getInstance().getIdOfServer( scm );
 			// add info to console info pane
 			Text t = new Text();
-			t.setId( Globals.FXVariables.lastUpdatedText + scm.getId() );
+			t.setId( Globals.FXVariables.lastUpdatedText + id );
 			TextFlow tfLastUpdated = new TextFlow( t );
 			tfLastUpdated.getStyleClass().add( Globals.StyleClasses.CONSOLEINFO );
 			tfLastUpdated.setLayoutX( 20 );
 			tfLastUpdated.setLayoutY( 18 );
 			tfLastUpdated.setVisible( false );
-			tfLastUpdated.setId( Globals.FXVariables.lastUpdatedTextFlow + scm.getId() );
+			tfLastUpdated.setId( Globals.FXVariables.lastUpdatedTextFlow + id );
 
 			uiController.getConsoleInfo().getChildren().add( tfLastUpdated );
 
 			// add info to console info pane
 			Text t1 = new Text();
-			t1.setId( Globals.FXVariables.memoryText + scm.getId() );
+			t1.setId( Globals.FXVariables.memoryText + id );
 			TextFlow tfMemory = new TextFlow( t1 );
 			tfMemory.getStyleClass().add( Globals.StyleClasses.CONSOLEINFO );
 			tfMemory.setLayoutX( 220 );
 			tfMemory.setLayoutY( 18 );
 			tfMemory.setVisible( false );
-			tfMemory.setId( Globals.FXVariables.memoryTextFlow + scm.getId() );
+			tfMemory.setId( Globals.FXVariables.memoryTextFlow + id );
 
 			uiController.getConsoleInfo().getChildren().add( tfMemory );
 		}
@@ -308,7 +314,7 @@ public class ServerSetup {
 		uiController.getListViewAppList().setPadding( new Insets( 0.0 ) );
 
 		// set action for on click server
-		for ( ServerConfigMap scm : serverController.getServerConfigListInstance() ) {
+		for ( ServerConfigMap scm : ServerWrapper.getInstance().getListOfServerConfigMap() ) {
 			addHBoxToList( uiController, scm, scene, false );
 		}
 
@@ -324,13 +330,14 @@ public class ServerSetup {
 
 	public void addSettingsToStackPane( Map<String, Pane> panes, ServerController serverController, UIController uiController,
 			FXMLLoader settingsLoader, String currentJvm, Stage stage, Main main ) throws IOException {
-		for ( ServerConfigMap scm : serverController.getServerConfigListInstance() ) {
+		for ( ServerConfigMap scm : ServerWrapper.getInstance().getListOfServerConfigMap() ) {
 			// add to settings stack pane
+			String id = ServerWrapper.getInstance().getIdOfServer( scm );
 
 			// TODO: THIS IS NOT RECOMMENDED - http://stackoverflow.com/questions/21424843/exception-has-occuredroot-value-already-specified-in-javafx-when-loading-fxml-p
 			settingsLoader.setRoot( null ); // set to null to reinitialise
 			Pane tempSettings = settingsLoader.load();
-			tempSettings.setId( Globals.FXVariables.SETTINGSID + scm.getId() );
+			tempSettings.setId( Globals.FXVariables.SETTINGSID + id );
 
 			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblName" ) ), HPos.RIGHT );
 			GridPane.setHalignment( ( (Label) tempSettings.lookup( "#lblIp" ) ), HPos.RIGHT );
@@ -362,11 +369,11 @@ public class ServerSetup {
 			tempSettings.getStyleClass().add( "settingsPane" );
 
 			Button tempBtnGetFolder = (Button) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.BTNGETFOLDERID );
-			tempBtnGetFolder.setId( Globals.FXVariables.BTNGETFOLDERID + scm.getId() );
+			tempBtnGetFolder.setId( Globals.FXVariables.BTNGETFOLDERID + id );
 			tempBtnGetFolder.getStyleClass().add( "browseBtn" );
 
 			Button tempBtnBrowse = (Button) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.BTNBROWSEID );
-			tempBtnBrowse.setId( Globals.FXVariables.BTNBROWSEID + scm.getId() );
+			tempBtnBrowse.setId( Globals.FXVariables.BTNBROWSEID + id );
 			tempBtnBrowse.getStyleClass().add( "browseBtn" );
 			tempBtnBrowse.setMinSize( Button.USE_PREF_SIZE, Button.USE_PREF_SIZE );
 
@@ -407,7 +414,7 @@ public class ServerSetup {
 			} );
 
 			tempSettings.setVisible( true );
-			panes.put( scm.getId(), tempSettings );
+			panes.put( id, tempSettings );
 
 
 		}
@@ -425,7 +432,7 @@ public class ServerSetup {
 		} );
 		TextFlow textFlow = null;
 
-		if ( !serverController.getServerConfigListInstance().isEmpty() ) {
+		if ( !ServerWrapper.getInstance().getListOfServerConfigMap().isEmpty() ) {
 			textFlow = new TextFlow( new Text( title ), new Text( "\nView " ), hpl, new Text( " for more information" ), new Text( "\nClick an app to start" ) );
 			textFlow.getStyleClass().add( "splashScreenText" );
 			uiController.getSplashPane().add( textFlow, 1, 1 );

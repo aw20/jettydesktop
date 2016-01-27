@@ -34,7 +34,6 @@ public class ServerConfigMap extends HashMap<String, String> implements Serializ
 		return new ServerConfigMap() {
 
 			{
-				setId( "" );
 				setName( "" );
 				setIP( "127.0.0.1" );
 				setPort( "80" );
@@ -53,16 +52,6 @@ public class ServerConfigMap extends HashMap<String, String> implements Serializ
 
 	public String getName() {
 		return get( "SERVER_NAME" );
-	}
-
-
-	public void setDeleted( String del ) {
-		put( "DELETED", del );
-	}
-
-
-	public String getDeleted() {
-		return get( "DELETED" );
 	}
 
 
@@ -148,28 +137,27 @@ public class ServerConfigMap extends HashMap<String, String> implements Serializ
 	}
 
 
-	public void setId( String args ) {
-		put( "SERVER_ID", args );
-	}
-
-
-	public String getId() {
-		return get( "SERVER_ID" );
-	}
-
-
-	public String getRunning() {
-		return get( "RUNNING" );
-	}
-
-
-	public void setRunning( String args ) {
-		put( "RUNNING", args );
-	}
-
-
 	public String toJson() {
 		Gson gson = new Gson();
 		return ( gson.toJson( this ) );
+	}
+
+
+	@Override
+	public boolean equals( Object other ) {
+		if ( !( other instanceof ServerConfigMap ) ) {
+			return false;
+		}
+
+		ServerConfigMap that = (ServerConfigMap) other;
+
+		return this.getName().equals( that.getName() )
+				&& this.getDefaultWebUri().equals( that.getDefaultWebUri() )
+				&& this.getDefaultJVMArgs().equals( that.getDefaultJVMArgs() )
+				&& this.getMemoryJVM().equals( that.getMemoryJVM() )
+				&& this.getCurrentJVM().equals( that.getCurrentJVM() )
+				&& this.getWebFolder().equals( that.getWebFolder() )
+				&& this.getPort().equals( that.getPort() )
+				&& this.getIP().equals( that.getIP() );
 	}
 }

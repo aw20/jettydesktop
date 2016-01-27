@@ -42,6 +42,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import org.aw20.jettydesktop.ui.ServerConfigMap;
+import org.aw20.jettydesktop.ui.ServerWrapper;
 import org.aw20.util.Globals;
 import org.aw20.util.StringUtil;
 
@@ -331,22 +332,17 @@ public class UIController {
 		ft.play();
 
 		final String ss = selectedServer;
-		final ServerConfigMap selectedServerConfigMap = serverController.get( ss );
+
 		Thread t1 = new Thread( new Runnable() {
 
 			public void run()
 			{
-				serverActions.startServer( executor, instance, serverController, selectedServerConfigMap, ss, scene );
+				serverActions.startServer( executor, instance, serverController, ss, scene );
 			}
 		} );
 		t1.start();
 
-
-		for ( ServerConfigMap server : serverController.getServerConfigListInstance() ) {
-			if ( server.getId().equals( selectedServer ) ) {
-				server.setRunning( "true" );
-			}
-		}
+		ServerWrapper.getInstance().setRunning( selectedServer, true );
 
 		Tab tab = getTabPane().getTabs().get( 1 );
 		getTabPane().getSelectionModel().select( tab );
@@ -384,13 +380,9 @@ public class UIController {
 		FillTransition ft = new FillTransition( Duration.millis( 2000 ), p, Color.RED, Color.GREEN );
 		ft.play();
 
-		serverActions.stopServer( this, serverController, executor, serverController.get( selectedServer ) );
+		serverActions.stopServer( this, serverController, executor, selectedServer );
 
-		for ( ServerConfigMap server : serverController.getServerConfigListInstance() ) {
-			if ( server.getId().equals( selectedServer ) ) {
-				server.setRunning( "false" );
-			}
-		}
+		ServerWrapper.getInstance().setRunning( selectedServer, false );
 
 		ButtonActions buttonActions = new ButtonActions();
 
@@ -415,7 +407,7 @@ public class UIController {
 		showCurrentConsoleInfo();
 		showCurrentTab();
 
-		if ( scm.getRunning().equals( "true" ) ) {
+		if ( ServerWrapper.getInstance().getRunning( serverController.getSelectedServerInstance() ) ) {
 			buttonActions.showConsoleButtonsOnRunning( this );
 		}
 		else {
@@ -435,7 +427,7 @@ public class UIController {
 				if ( getSelectedTabInstance().getId().contains( "console" ) ) {
 					textFlowContent.setVisible( true );
 					textFlowContent.toFront();
-					if ( scm.getRunning().equals( "true" ) ) {
+					if ( ServerWrapper.getInstance().getRunning( serverController.getSelectedServerInstance() ) ) {
 						buttonActions.showConsoleButtonsOnRunning( this );
 					}
 					else {
@@ -445,7 +437,7 @@ public class UIController {
 				else {
 					settings.setVisible( true );
 					settings.toFront();
-					if ( scm.getRunning().equals( "true" ) ) {
+					if ( ServerWrapper.getInstance().getRunning( serverController.getSelectedServerInstance() ) ) {
 						buttonActions.showSettingsButtonsOnRunning( this );
 					}
 					else {
@@ -500,14 +492,7 @@ public class UIController {
 			// add ids to list
 			getServerConfigIdList().add( savedServerId );
 
-			ServerConfigMap scm = null;
-
-			for ( ServerConfigMap server : serverController.getServerConfigListInstance() ) {
-				if ( server.getId().equals( savedServerId ) ) {
-					scm = server;
-				}
-			}
-
+			ServerConfigMap scm = ServerWrapper.getInstance().getServer( serverController.getSelectedServerInstance() );
 
 			HBox hbox = serverSetup.addHBoxToList( this, scm, scene, true );
 

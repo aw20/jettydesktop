@@ -4,6 +4,7 @@ import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
 
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -11,68 +12,65 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TabPane;
 
 import org.aw20.jettydesktop.ui.ServerConfigMap;
+import org.aw20.jettydesktop.ui.ServerWrapper;
 import org.aw20.util.Globals;
 
 
 public class ServerActions {
 
-	public boolean startServer( Executor executor, UIController uiController, ServerController serverController, ServerConfigMap serverConfigMap, String serverId, Scene scene ) {
+	ServerWrapper serverWrapper = ServerWrapper.getInstance();
 
-		serverController.setSelectedServer( serverId );
 
-		uiController.getSplashPane().setVisible( false );
-		uiController.getSplashPane().toBack();
-		uiController.getSplashAnchorPane().setVisible( false );
-		uiController.getSplashAnchorPane().toBack();
-		( (TabPane) scene.lookup( "#" + Globals.FXVariables.TABPANEID ) ).setVisible( true );
-		( (ScrollPane) scene.lookup( "#" + Globals.FXVariables.SCROLLPANEID + serverId ) ).toFront();
-		( (ScrollPane) scene.lookup( "#" + Globals.FXVariables.SCROLLPANEID + serverId ) ).setVisible( true );
+	public boolean startServer( Executor executor, UIController uiController, ServerController serverController, String serverId, Scene scene ) {
 
-		scene.lookup( "#" + Globals.FXVariables.lastUpdatedTextFlow + serverId ).setVisible( true );
-		scene.lookup( "#" + Globals.FXVariables.memoryTextFlow + serverId ).setVisible( true );
+		Platform.runLater( ( ) -> {
+			serverController.setSelectedServer( serverId );
 
-		uiController.updateConsole( serverId, Globals.ConsoleVariables.STARTING_SERVER, uiController.getConsoleStackPane() );
+			uiController.getSplashPane().setVisible( false );
+			uiController.getSplashPane().toBack();
+			uiController.getSplashAnchorPane().setVisible( false );
+			uiController.getSplashAnchorPane().toBack();
+			( (TabPane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.TABPANEID ) ).setVisible( true );
+			( (ScrollPane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SCROLLPANEID + serverId ) ).toFront();
+			( (ScrollPane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SCROLLPANEID + serverId ) ).setVisible( true );
+
+			scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.lastUpdatedTextFlow + serverId ).setVisible( true );
+			scene.lookup( "#" + Globals.FXVariables.memoryTextFlow + serverId ).setVisible( true );
+
+			uiController.updateConsole( serverId, Globals.ConsoleVariables.STARTING_SERVER, uiController.getConsoleStackPane() );
+		} );
+		ServerConfigMap scm = serverWrapper.getServer( serverId );
 
 		try {
-			if ( !serverConfigMap.getId().isEmpty() && !serverConfigMap.getPort().isEmpty() ) {
+			if ( !scm.getPort().isEmpty() ) {
 
-				executor = new Executor( serverConfigMap, uiController.getConsoleStackPane(), scene, uiController );
-				serverConfigMap.setRunning( "true" );
+				executor = new Executor( serverId, uiController.getConsoleStackPane(), scene, uiController );
 
-				for ( ServerConfigMap server : serverController.getServerConfigListInstance() ) {
-					if ( server.getId().equals( serverId ) ) {
-						server.setRunning( "true" );
-					}
-				}
+				serverWrapper.setRunning( serverId, true );
 
 				uiController.updateRunningIcon( true, serverId );
 
 				return true;
 			}
 			else {
-				serverConfigMap.setRunning( "false" );
 				uiController.updateRunningIcon( false, serverId );
 				return false;
 			}
 		} catch ( IOException e ) {
-			serverConfigMap.setRunning( "false" );
 			return false;
 		}
+
 	}
 
 
-	public boolean stopServer( UIController uiController, ServerController serverController, Executor executor, ServerConfigMap serverConfigMap ) {
-		uiController.updateConsole( serverConfigMap.getId(), Globals.ConsoleVariables.STOPPING_SERVER, uiController.getConsoleStackPane() );
-		for ( ServerConfigMap server : serverController.getServerConfigListInstance() ) {
-			if ( server.getId().equals( serverConfigMap.getId() ) ) {
-				server.setRunning( "false" );
-				serverConfigMap.setRunning( "false" );
+	public boolean stopServer( UIController uiController, ServerController serverController, Executor executor, String id ) {
+		uiController.updateConsole( id, Globals.ConsoleVariables.STOPPING_SERVER, uiController.getConsoleStackPane() );
 
-			}
-		}
+		serverWrapper.setRunning( id, false );
+
 		// get correct version of executor on exiting app and stopping all servers
 		for ( Object ex : Executor.getAllInstances() ) {
-			if ( ( (Executor) ex ).getCurrentServerConfigMap().getId().equals( serverConfigMap.getId() ) ) {
+			if ( ( (Executor) ex ).getCurrentServer().equals( id ) ) {
 				executor = (Executor) ex;
 			}
 		}
@@ -82,8 +80,8 @@ public class ServerActions {
 		}
 		// if executor shut down is successful
 		if ( executor.isbRun() == false ) {
-			uiController.updateConsole( serverConfigMap.getId(), Globals.ConsoleVariables.SERVER_STOPPED, uiController.getConsoleStackPane() );
-			uiController.updateRunningIcon( false, serverConfigMap.getId() );
+			uiController.updateConsole( id, Globals.ConsoleVariables.SERVER_STOPPED, uiController.getConsoleStackPane() );
+			uiController.updateRunningIcon( false, id );
 			return true;
 		}
 		else {
