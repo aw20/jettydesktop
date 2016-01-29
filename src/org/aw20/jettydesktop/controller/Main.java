@@ -2,6 +2,8 @@ package org.aw20.jettydesktop.controller;
 
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
@@ -21,15 +23,19 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
@@ -66,228 +72,249 @@ public class Main extends Application {
 	 */
 	@Override
 	public void start( Stage primaryStage ) {
+		stage = primaryStage;
+
+		FXMLLoader loader = new FXMLLoader( getClass().getResource( viewDir + "JettyDesktopUI.fxml" ) );
+		settingsLoader = new FXMLLoader( getClass().getResource( viewDir + "settings.fxml" ) );
+
+		uiController = UIController.getInstance();
+		serverController = ServerController.getInstance();
+
+		serverSetup = new ServerSetup();
+
+		loader.setController( uiController );
+
+		AnchorPane root = null;
 		try {
-			stage = primaryStage;
+			root = loader.load();
+		} catch ( IOException e ) {
+			Alert alert = createNewExceptionAlert( e, "Jetty Desktop has failed to load initial resources. Go on https://github.com/aw20/jettydesktop/ and report the following message." );
 
-			FXMLLoader loader = new FXMLLoader( getClass().getResource( viewDir + "JettyDesktopUI.fxml" ) );
-			settingsLoader = new FXMLLoader( getClass().getResource( viewDir + "settings.fxml" ) );
+			alert.showAndWait();
 
-			uiController = UIController.getInstance();
-			serverController = ServerController.getInstance();
+			System.exit( -1 );
+		}
+		scene = new Scene( root, 889, 655 );
 
-			serverSetup = new ServerSetup();
+		// set up JavaFX variables and window
+		uiController.initialise();
 
-			loader.setController( uiController );
-
-			AnchorPane root = loader.load();
-			scene = new Scene( root, 889, 655 );
-
-			// set up JavaFX variables and window
-			uiController.initialise();
-
-			serverSetup.setUpSpalashScreen( this, serverController, uiController, title );
+		serverSetup.setUpSpalashScreen( this, serverController, uiController, title );
+		try {
 			serverSetup.setUpEmptySettings( settingsLoader, currentJvm, stage, uiController );
-			serverSetup.setUpSettings( serverController, uiController );
-			serverSetup.setUpServerList( uiController, serverController, scene );
-			serverSetup.setUpServerInfo( serverController, uiController, fontWebFolder, fontNameUrl );
+		} catch ( IOException e ) {
+			Alert alert = createNewExceptionAlert( e, "Jetty Desktop has failed to initialise settings. Go on https://github.com/aw20/jettydesktop/ and report the following message." );
+
+			alert.showAndWait();
+
+			System.exit( -1 );
+		}
+		serverSetup.setUpSettings( serverController, uiController );
+		serverSetup.setUpServerList( uiController, serverController, scene );
+		serverSetup.setUpServerInfo( serverController, uiController, fontWebFolder, fontNameUrl );
+
+		try {
 			serverSetup.addSettingsToStackPane( serverController, uiController, settingsLoader, currentJvm, stage, this );
-			serverSetup.setUpConsoleInfo( serverController, uiController );
+		} catch ( IOException e ) {
+			Alert alert = createNewExceptionAlert( e, "Jetty Desktop has failed to initialise settings. Go on https://github.com/aw20/jettydesktop/ and report the following message." );
 
-			scene.getStylesheets().add( getClass().getResource( viewDir + "application.css" ).toExternalForm() );
-			scene.getStylesheets().add( getClass().getResource( viewDir + "alert.css" ).toExternalForm() );
+			alert.showAndWait();
 
-			primaryStage.setScene( scene );
-			primaryStage.setTitle( title );
-			primaryStage.setResizable( true );
-			primaryStage.getIcons().add( new Image( viewDir + "logo.png" ) );
-			primaryStage.show();
+			System.exit( -1 );
+		}
+		serverSetup.setUpConsoleInfo( serverController, uiController );
 
-			// event handlers
+		scene.getStylesheets().add( getClass().getResource( viewDir + "application.css" ).toExternalForm() );
+		scene.getStylesheets().add( getClass().getResource( viewDir + "alert.css" ).toExternalForm() );
 
-			/**
-			 * Method to handle click on list view
-			 */
-			uiController.getListViewAppList().addEventHandler( MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+		primaryStage.setScene( scene );
+		primaryStage.setTitle( title );
+		primaryStage.setResizable( true );
+		primaryStage.getIcons().add( new Image( viewDir + "logo.png" ) );
+		primaryStage.show();
 
-				@Override
-				public void handle( MouseEvent event ) {
-					if ( uiController.getListViewAppList().getSelectionModel().getSelectedItem() != null ) {
-						HBox hbox = uiController.getListViewAppList().getSelectionModel().getSelectedItem();
+		// event handlers
 
-						// get selected server id
-						String serverId = hbox.getId().replace( "hbox", "" );
+		/**
+		 * Method to handle click on list view
+		 */
+		uiController.getListViewAppList().addEventHandler( MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 
-						Hyperlink h = (Hyperlink) hbox.getChildren().get( 0 );
-						ServerConfigMap scm = ServerWrapper.getInstance().getServer( serverId );
-						serverController.setSelectedServer( serverId );
+			@Override
+			public void handle( MouseEvent event ) {
+				if ( uiController.getListViewAppList().getSelectionModel().getSelectedItem() != null ) {
+					HBox hbox = uiController.getListViewAppList().getSelectionModel().getSelectedItem();
 
-						uiController.handleListViewOnClick( hbox, scene, h, scm );
-					}
+					// get selected server id
+					String serverId = hbox.getId().replace( "hbox", "" );
+
+					Hyperlink h = (Hyperlink) hbox.getChildren().get( 0 );
+					ServerConfigMap scm = ServerWrapper.getInstance().getServer( serverId );
+					serverController.setSelectedServer( serverId );
+
+					uiController.handleListViewOnClick( hbox, scene, h, scm );
 				}
-			} );
+			}
+		} );
 
-			/**
-			 * Method to handle click on arrow image
-			 */
-			uiController.getServerInfoImagePane().addEventHandler( MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+		/**
+		 * Method to handle click on arrow image
+		 */
+		uiController.getServerInfoImagePane().addEventHandler( MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 
-				@Override
-				public void handle( MouseEvent event ) {
-					serverInfoArrowImageClick( event );
-				}
-			} );
+			@Override
+			public void handle( MouseEvent event ) {
+				serverInfoArrowImageClick( event );
+			}
+		} );
 
-			/**
-			 * Method to handle click on add web app button
-			 */
-			uiController.getBtnAddWebApp().setOnAction( ( ActionEvent event ) -> {
-				addWebAppBtnClick();
-			} );
+		/**
+		 * Method to handle click on add web app button
+		 */
+		uiController.getBtnAddWebApp().setOnAction( ( ActionEvent event ) -> {
+			addWebAppBtnClick();
+		} );
 
-			/**
-			 * Method to handle click on tab
-			 */
-			uiController.getTabPane().getSelectionModel().selectedItemProperty().addListener( ( ov, oldTab, newTab ) -> {
-				tabPaneSelectionChange( newTab );
-			} );
-
-
-			/**
-			 * Method to handle click on start button
-			 */
-			uiController.getStartBtn().setOnAction( ( ActionEvent e ) -> {
-				uiController.startBtnClick( null, scene );
-			} );
+		/**
+		 * Method to handle click on tab
+		 */
+		uiController.getTabPane().getSelectionModel().selectedItemProperty().addListener( ( ov, oldTab, newTab ) -> {
+			tabPaneSelectionChange( newTab );
+		} );
 
 
-			/**
-			 * Method to handle click on stop button
-			 */
-			uiController.getStopBtn().setOnAction( ( ActionEvent e ) -> {
-				uiController.stopBtnClick( null, scene );
-			} );
+		/**
+		 * Method to handle click on start button
+		 */
+		uiController.getStartBtn().setOnAction( ( ActionEvent e ) -> {
+			uiController.startBtnClick( null, scene );
+		} );
 
 
-			/**
-			 * Method to handle click on clear
-			 */
-			uiController.getClearBtn().setOnAction( ( ActionEvent e ) -> {
-				uiController.clearConsole( serverController.getSelectedServerInstance() );
-			} );
+		/**
+		 * Method to handle click on stop button
+		 */
+		uiController.getStopBtn().setOnAction( ( ActionEvent e ) -> {
+			uiController.stopBtnClick( null, scene );
+		} );
 
 
-			/**
-			 * Method to handle click on open
-			 */
-			uiController.getOpenBtn().setOnAction( ( ActionEvent e ) -> {
-				openBtnClick();
-			} );
+		/**
+		 * Method to handle click on clear
+		 */
+		uiController.getClearBtn().setOnAction( ( ActionEvent e ) -> {
+			uiController.clearConsole( serverController.getSelectedServerInstance() );
+		} );
 
 
-			/**
-			 * Method to handle click on save
-			 */
-			uiController.getSaveBtn().setOnAction( ( ActionEvent e ) -> {
-				try {
-					saveBtnClick();
-				} catch ( Exception e1 ) {
-					Alert alert = createNewAlert( AlertType.ERROR, "Error", "An error has occurred while saving a web app", null );
-					alert.showAndWait();
-				}
-			} );
+		/**
+		 * Method to handle click on open
+		 */
+		uiController.getOpenBtn().setOnAction( ( ActionEvent e ) -> {
+			openBtnClick();
+		} );
 
 
-			/**
-			 * Method to handle click on delete
-			 */
-			uiController.getDeleteBtn().setOnAction( ( ActionEvent e ) -> {
-				String serverToBeDeleted = ServerWrapper.getInstance().getServer( serverController.getSelectedServerInstance() ).getName();
+		/**
+		 * Method to handle click on save
+		 */
+		uiController.getSaveBtn().setOnAction( ( ActionEvent e ) -> {
+			try {
+				saveBtnClick();
+			} catch ( Exception e1 ) {
+				Alert alert = createNewAlert( AlertType.ERROR, "Error", "An error has occurred while saving a web app", null );
+				alert.showAndWait();
+			}
+		} );
 
-				Optional<ButtonType> result = createNewAlert( AlertType.CONFIRMATION, "", "Delete " + serverToBeDeleted + "?", "Are you sure?" ).showAndWait();
 
-				// OK button clicked
-				if ( result.get() == ButtonType.OK ) {
-					e.consume();
-					// delete server console/settings panes
-					serverController.setDeleted();
-					uiController.updateServerOnDelete();
+		/**
+		 * Method to handle click on delete
+		 */
+		uiController.getDeleteBtn().setOnAction( ( ActionEvent e ) -> {
+			String serverToBeDeleted = ServerWrapper.getInstance().getServer( serverController.getSelectedServerInstance() ).getName();
 
-					// show splash screen
-					uiController.getSplashPane().setVisible( true );
-					uiController.getSplashPane().toFront();
-					uiController.getSplashAnchorPane().setVisible( true );
-					uiController.getSplashAnchorPane().toFront();
+			Optional<ButtonType> result = createNewAlert( AlertType.CONFIRMATION, "", "Delete " + serverToBeDeleted + "?", "Are you sure?" ).showAndWait();
 
-					uiController.getServerInfoImagePane().setVisible( false );
-					uiController.getServerInfoPane().setVisible( false );
+			// OK button clicked
+			if ( result.get() == ButtonType.OK ) {
+				e.consume();
+				// delete server console/settings panes
+				serverController.setDeleted();
+				uiController.updateServerOnDelete();
 
-					// remove "current" from others
-					List<HBox> listOfHboxes = uiController.getListViewAppList().getItems();
-					for ( HBox item : listOfHboxes ) {
-						item.getStyleClass().remove( Globals.StyleClasses.CURRENT );
-						item.getParent().setStyle( Globals.StyleVariables.backgroundColourLighterGrey );
-					}
+				// show splash screen
+				uiController.getSplashPane().setVisible( true );
+				uiController.getSplashPane().toFront();
+				uiController.getSplashAnchorPane().setVisible( true );
+				uiController.getSplashAnchorPane().toFront();
 
-					// hide buttons
-					ButtonActions buttonActions = new ButtonActions();
-					buttonActions.showNoButtons( uiController );
+				uiController.getServerInfoImagePane().setVisible( false );
+				uiController.getServerInfoPane().setVisible( false );
 
-					// Cancel button clicked
-				} else {
-					e.consume();
+				// remove "current" from others
+				List<HBox> listOfHboxes = uiController.getListViewAppList().getItems();
+				for ( HBox item : listOfHboxes ) {
+					item.getStyleClass().remove( Globals.StyleClasses.CURRENT );
+					item.getParent().setStyle( Globals.StyleVariables.backgroundColourLighterGrey );
 				}
 
+				// hide buttons
+				ButtonActions buttonActions = new ButtonActions();
+				buttonActions.showNoButtons( uiController );
 
-			} );
+				// Cancel button clicked
+			} else {
+				e.consume();
+			}
 
-			// Exit jetty server
-			Platform.runLater( new Runnable() {
 
-				public void run() {
-					// window close requested
-					stage.setOnCloseRequest( new EventHandler<WindowEvent>() {
+		} );
 
-						public void handle( WindowEvent t ) {
+		// Exit jetty server
+		Platform.runLater( new Runnable() {
 
-							// if there are no server
-							if ( ServerWrapper.getInstance().getListOfServerConfigMap() == null ) {
-								// appFunctions.deleteServers();
-								Platform.exit();
+			public void run() {
+				// window close requested
+				stage.setOnCloseRequest( new EventHandler<WindowEvent>() {
 
-								// if there are servers
-							} else {
-								// else count the running servers
-								int runningServers = ServerWrapper.getInstance().getNumberOfRunningServers();
+					public void handle( WindowEvent t ) {
 
-								// if servers are running call js to run dialog
-								if ( runningServers > 0 ) {
-									Optional<ButtonType> result = createNewAlert( AlertType.CONFIRMATION, "", "Stop all apps (" + runningServers + ") running.", "Are you sure?" ).showAndWait();
+						// if there are no server
+						if ( ServerWrapper.getInstance().getListOfServerConfigMap() == null ) {
+							// appFunctions.deleteServers();
+							Platform.exit();
 
-									// if servers have started exit app - show confirm, hard delete servers, exit platform
-									if ( result.get() == ButtonType.OK ) {
-										stopServersOnExit();
-										serverController.hardDeleteServersOnExit();
-										Platform.exit();
-									} else {
-										// do nothing and close dialog
-										t.consume();
-									}
-								}
+							// if there are servers
+						} else {
+							// else count the running servers
+							int runningServers = ServerWrapper.getInstance().getNumberOfRunningServers();
 
-								// if no servers have started exit app - hard delete servers, exit platform
-								else {
+							// if servers are running call js to run dialog
+							if ( runningServers > 0 ) {
+								Optional<ButtonType> result = createNewAlert( AlertType.CONFIRMATION, "", "Stop all apps (" + runningServers + ") running.", "Are you sure?" ).showAndWait();
+
+								// if servers have started exit app - show confirm, hard delete servers, exit platform
+								if ( result.get() == ButtonType.OK ) {
+									stopServersOnExit();
 									serverController.hardDeleteServersOnExit();
 									Platform.exit();
+								} else {
+									// do nothing and close dialog
+									t.consume();
 								}
 							}
+
+							// if no servers have started exit app - hard delete servers, exit platform
+							else {
+								serverController.hardDeleteServersOnExit();
+								Platform.exit();
+							}
 						}
-					} );
-				}
-			} );
-		} catch ( Exception e ) {
-			Alert alert = createNewAlert( AlertType.CONFIRMATION, "", "An error has occurred while starting Jetty Desktop", null );
-			alert.showAndWait();
-		}
+					}
+				} );
+			}
+		} );
 	}
 
 
@@ -591,6 +618,50 @@ public class Main extends Application {
 		dp.getStylesheets().add( getClass().getResource( viewDir + "alert.css" ).toExternalForm() );
 
 		dp.getStyleClass().remove( "alert" );
+
+		return alert;
+	}
+
+
+	/*
+	 * create alerts for exceptions, deleting and closing the application
+	 */
+	public Alert createNewExceptionAlert( Exception e, String content ) {
+		Alert alert = new Alert( AlertType.ERROR );
+		alert.setTitle( "Exception Dialog" );
+		alert.setHeaderText( null );
+		alert.setContentText( content );
+
+		DialogPane dp = alert.getDialogPane();
+
+		dp.getStylesheets().add( getClass().getResource( viewDir + "alert.css" ).toExternalForm() );
+
+		dp.getStyleClass().remove( "alert" );
+
+		// Create expandable Exception.
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter( sw );
+		e.printStackTrace( pw );
+		String exceptionText = sw.toString();
+
+		Label label = new Label( "The exception stacktrace was:" );
+
+		TextArea textArea = new TextArea( exceptionText );
+		textArea.setEditable( false );
+		textArea.setWrapText( true );
+
+		textArea.setMaxWidth( Double.MAX_VALUE );
+		textArea.setMaxHeight( Double.MAX_VALUE );
+		GridPane.setVgrow( textArea, Priority.ALWAYS );
+		GridPane.setHgrow( textArea, Priority.ALWAYS );
+
+		GridPane expContent = new GridPane();
+		expContent.setMaxWidth( Double.MAX_VALUE );
+		expContent.add( label, 0, 0 );
+		expContent.add( textArea, 0, 1 );
+
+		// Set expandable Exception into the dialog pane.
+		alert.getDialogPane().setExpandableContent( expContent );
 
 		return alert;
 	}
