@@ -7,6 +7,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.aw20.jettydesktop.ui.ServerConfigMap;
+import org.aw20.jettydesktop.ui.ServerManager;
+import org.aw20.util.Globals;
+import org.aw20.util.StringUtil;
+
 import javafx.animation.FillTransition;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -40,11 +45,6 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-
-import org.aw20.jettydesktop.ui.ServerConfigMap;
-import org.aw20.jettydesktop.ui.ServerWrapper;
-import org.aw20.util.Globals;
-import org.aw20.util.StringUtil;
 
 
 public class UIController {
@@ -133,7 +133,7 @@ public class UIController {
 	@FXML
 	private SplitPane splitPane;
 
-	private List<String> serverConfigIdList = new ArrayList<String>();
+	private List<Integer> serverConfigIdList = new ArrayList<Integer>();
 	private Executor executor = null;
 	private ServerActions serverActions = new ServerActions();
 	private ServerSetup serverSetup = new ServerSetup();
@@ -142,30 +142,14 @@ public class UIController {
 	private static Stage stage;
 	private static Tab selectedTabInstance = null;
 
-	private ServerController serverController;
+	private ServerController serverController = new ServerController();
 
-	private Map<String, AnchorPane> serversForListInstance = new HashMap<String, AnchorPane>();
-
-	// create Singleton instance
-	private static UIController instance = null;
+	private Map<Integer, AnchorPane> serversForListInstance = new HashMap<Integer, AnchorPane>();
 
 
-	private UIController( FXMLLoader _loader, Stage _stage ) {
-		serverController = ServerController.getInstance();
+	public UIController( FXMLLoader _loader, Stage _stage ) {
 		loader = _loader;
 		stage = _stage;
-	}
-
-
-	public static UIController getInstance() {
-		if ( instance == null ) {
-			synchronized ( UIController.class ) {
-				if ( instance == null ) {
-					instance = new UIController( loader, stage );
-				}
-			}
-		}
-		return instance;
 	}
 
 
@@ -179,12 +163,12 @@ public class UIController {
 	}
 
 
-	public Map<String, AnchorPane> getServersForListInstance() {
+	public Map<Integer, AnchorPane> getServersForListInstance() {
 		return serversForListInstance;
 	}
 
 
-	public void setServersForListInstance( Map<String, AnchorPane> _serversForListInstance ) {
+	public void setServersForListInstance( Map<Integer, AnchorPane> _serversForListInstance ) {
 		serversForListInstance = _serversForListInstance;
 	}
 
@@ -194,8 +178,8 @@ public class UIController {
 	}
 
 
-	public void updateConsole( String id, String line, StackPane sp ) {
-		Platform.runLater( ( ) -> {
+	public void updateConsole( int id, String line, StackPane sp ) {
+		Platform.runLater( () -> {
 			// target correct console pane
 			TextFlow consoleTextFlow = (TextFlow) sp.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.CONSOLEID + id );
 			Text t = new Text( line );
@@ -214,42 +198,41 @@ public class UIController {
 	/*
 	 * updates icon in server list
 	 */
-	public void updateRunningIcon( boolean running, String serverId ) {
-		final String selectedServer = serverId;
+	public void updateRunningIcon( boolean running, int serverId ) {
+		final int selectedServer = serverId;
 
 		Circle c = (Circle) listViewAppList.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.RUNNINGID + selectedServer );
 
-		Platform.runLater( ( ) -> {
+		Platform.runLater( () -> {
 			if ( running == true ) {
 				c.setFill( Color.LIGHTSEAGREEN );
+			} else {
+				c.setFill( Color.GREY );
 			}
-				else {
-					c.setFill( Color.GREY );
-				}
-			} );
+		} );
 	}
 
 
-	public void updateLastUpdated( String lastUpdated, String serverId, Scene scene ) {
-		Platform.runLater( ( ) -> {
-			Text textContent = (Text) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.lastUpdatedText + serverId );
+	public void updateLastUpdated( String lastUpdated, int currentServer, Scene scene ) {
+		Platform.runLater( () -> {
+			Text textContent = (Text) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.lastUpdatedText + currentServer );
 			textContent.setText( lastUpdated );
 		} );
 	}
 
 
-	public void updateMemory( String memory, String serverId, Scene scene ) {
-		Platform.runLater( ( ) -> {
+	public void updateMemory( String memory, int serverId, Scene scene ) {
+		Platform.runLater( () -> {
 			Text textContent = (Text) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.memoryText + serverId );
 			textContent.setText( memory );
 		} );
 	}
 
 
-	public void clearConsole( String serverId ) {
+	public void clearConsole( int serverId ) {
 		StackPane sp = consoleStackPane;
 
-		Platform.runLater( ( ) -> {
+		Platform.runLater( () -> {
 			TextFlow textFlowContent = (TextFlow) sp.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.CONSOLEID + serverId );
 			textFlowContent.getChildren().clear();
 		} );
@@ -262,10 +245,10 @@ public class UIController {
 		Iterator<Node> itConsoleInfo = getConsoleInfo().getChildren().iterator();
 		while ( itConsoleInfo.hasNext() ) {
 			TextFlow consoleInfoTextFlow = (TextFlow) itConsoleInfo.next();
-			Platform.runLater( ( ) -> {
+			Platform.runLater( () -> {
 				TextFlow textFlow = consoleInfoTextFlow;
 				textFlow.setVisible( false );
-				if ( textFlow.getId().contains( serverController.getSelectedServerInstance() ) ) {
+				if ( textFlow.getId().contains( Integer.toString( ServerController.selectedServer ) ) ) {
 					textFlow.setVisible( true );
 				}
 			} );
@@ -284,16 +267,15 @@ public class UIController {
 				getSplashAnchorPane().toBack();
 				// bring correct settings pane to the front
 				Pane settingsPane = (Pane) itSettings.next();
-				if ( settingsPane.getId().equals( Globals.FXVariables.SETTINGSID + serverController.getSelectedServerInstance() ) ) {
-					Platform.runLater( ( ) -> {
+				if ( settingsPane.getId().equals( Globals.FXVariables.SETTINGSID + ServerController.selectedServer ) ) {
+					Platform.runLater( () -> {
 						Pane tempSettingsPane = settingsPane;
 						tempSettingsPane.setVisible( true );
 						tempSettingsPane.toFront();
 					} );
 				}
 			}
-		}
-		else if ( getSelectedTabInstance() != null && getSelectedTabInstance().getId().contains( "console" ) ) {
+		} else if ( getSelectedTabInstance() != null && getSelectedTabInstance().getId().contains( "console" ) ) {
 			getConsoleStackPane().setVisible( true );
 
 			Iterator<Node> itConsole = getConsoleStackPane().getChildren().iterator();
@@ -304,8 +286,8 @@ public class UIController {
 				getSplashAnchorPane().toBack();
 				// bring correct console pane to the front
 				ScrollPane consoleScrollPane = (ScrollPane) itConsole.next();
-				if ( consoleScrollPane.getId().equals( Globals.FXVariables.SCROLLPANEID + serverController.getSelectedServerInstance() ) ) {
-					Platform.runLater( ( ) -> {
+				if ( consoleScrollPane.getId().equals( Globals.FXVariables.SCROLLPANEID + ServerController.selectedServer ) ) {
+					Platform.runLater( () -> {
 						ScrollPane tempScrollPane = consoleScrollPane;
 						tempScrollPane.setVisible( true );
 						tempScrollPane.toFront();
@@ -317,10 +299,10 @@ public class UIController {
 	}
 
 
-	public void startBtnClick( String id, Scene scene ) {
-		String selectedServer = id;
-		if ( selectedServer == null ) {
-			selectedServer = serverController.getSelectedServerInstance();
+	public void startBtnClick( int id, Scene scene ) {
+		int selectedServer = id;
+		if ( selectedServer == 0 ) {
+			selectedServer = selectedServer;
 		}
 		// target the correct play polygon
 		Polygon p = ( (Polygon) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.POLYGONID + selectedServer ) );
@@ -329,24 +311,22 @@ public class UIController {
 				0d, 0d, // (x, y)
 				0d, 12d,
 				12d, 12d,
-				12d, 0d
-				);
+				12d, 0d );
 		// colour transition from green to red
 		FillTransition ft = new FillTransition( Duration.millis( 4000 ), p, Color.GREEN, Color.RED );
 		ft.play();
 
-		final String ss = selectedServer;
+		final int ss = selectedServer;
 		// on separate thread due to UI not updating until Executor process finished.
 		Thread t1 = new Thread( new Runnable() {
 
-			public void run()
-			{
-				serverActions.startServer( executor, instance, serverController, ss, scene );
+			public void run() {
+				serverActions.startServer( executor, UIController.this, serverController, ss, scene );
 			}
 		} );
 		t1.start();
 
-		ServerWrapper.getInstance().setRunning( selectedServer, true );
+		ServerManager.servers.get( selectedServer ).setRunning( true );
 
 		// open the console tab and correct console pane
 		Tab tab = getTabPane().getTabs().get( 1 );
@@ -363,9 +343,9 @@ public class UIController {
 	}
 
 
-	public void stopBtnClick( String id, Scene scene ) {
-		String selectedServer = serverController.getSelectedServerInstance();
-		if ( selectedServer == null ) {
+	public void stopBtnClick( int id, Scene scene ) {
+		int selectedServer = ServerController.selectedServer;
+		if ( selectedServer == 0 ) {
 			selectedServer = id;
 		}
 
@@ -379,22 +359,20 @@ public class UIController {
 		p.getPoints().setAll(
 				0d, 0d, // (x, y)
 				12d, 6d,
-				0d, 12d
-				);
+				0d, 12d );
 		// colour transition red to green
 		FillTransition ft = new FillTransition( Duration.millis( 2000 ), p, Color.RED, Color.GREEN );
 		ft.play();
 
 		serverActions.stopServer( this, serverController, executor, selectedServer );
 
-		ServerWrapper.getInstance().setRunning( selectedServer, false );
+		ServerManager.servers.get( selectedServer ).setRunning( false );
 
 		ButtonActions buttonActions = new ButtonActions();
 		// enable and disable correct buttons depending on which tab is selected
 		if ( getSelectedTabInstance().getId().contains( "console" ) ) {
 			buttonActions.showConsoleButtonsOnNotRunning( this );
-		}
-		else {
+		} else {
 			buttonActions.showSettingsButtonsOnNotRunning( this );
 		}
 	}
@@ -404,7 +382,7 @@ public class UIController {
 		ButtonActions buttonActions = new ButtonActions();
 		scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSEMPTYID ).setVisible( false );
 		getTabPane().setVisible( true );
-		serverController.setSelectedServer( h.getId() );
+		serverController.setSelectedServer( Integer.parseInt( h.getId() ) );
 
 		getServerInfoPane().setVisible( true );
 		getServerInfoImagePane().setVisible( true );
@@ -412,65 +390,60 @@ public class UIController {
 		showCurrentConsoleInfo();
 		showCurrentTab();
 
-		if ( ServerWrapper.getInstance().getRunning( serverController.getSelectedServerInstance() ) ) {
+		if ( ServerManager.servers.get( ServerController.selectedServer ).isRunning() ) {
 			buttonActions.showConsoleButtonsOnRunning( this );
-		}
-		else {
+		} else {
 			buttonActions.showConsoleButtonsOnNotRunning( this );
 		}
 
 		addCurrentClassToServer( hbox );
 
-		Platform.runLater( ( ) -> {
+		Platform.runLater( () -> {
 			// console is selected
-			String consoleId = ( Globals.FXVariables.CONSOLEID + serverController.getSelectedServerInstance() );
+			String consoleId = ( Globals.FXVariables.CONSOLEID + ServerController.selectedServer );
 			TextFlow textFlowContent = (TextFlow) scene.lookup( Globals.FXVariables.idSelector + consoleId );
-			String settingsId = ( Globals.FXVariables.SETTINGSID + serverController.getSelectedServerInstance() );
+			String settingsId = ( Globals.FXVariables.SETTINGSID + ServerController.selectedServer );
 			Pane settings = (Pane) scene.lookup( Globals.FXVariables.idSelector + settingsId );
 
 			if ( getSelectedTabInstance() != null ) {
 				if ( getSelectedTabInstance().getId().contains( "console" ) ) {
 					textFlowContent.setVisible( true );
 					textFlowContent.toFront();
-					if ( ServerWrapper.getInstance().getRunning( serverController.getSelectedServerInstance() ) ) {
+					if ( ServerManager.servers.get( ServerController.selectedServer ).isRunning() ) {
 						buttonActions.showConsoleButtonsOnRunning( this );
-					}
-					else {
+					} else {
 						buttonActions.showConsoleButtonsOnNotRunning( this );
 					}
-				}// settings is selected
+				} // settings is selected
 				else {
 					settings.setVisible( true );
 					settings.toFront();
-					if ( ServerWrapper.getInstance().getRunning( serverController.getSelectedServerInstance() ) ) {
+					if ( ServerManager.servers.get( ServerController.selectedServer ).isRunning() ) {
 						buttonActions.showSettingsButtonsOnRunning( this );
-					}
-					else {
+					} else {
 						buttonActions.showSettingsButtonsOnNotRunning( this );
 					}
 				}
+			} else {
+				// show correct console
+				settings.setVisible( false );
+				settings.toBack();
+				textFlowContent.setVisible( true );
+				textFlowContent.toFront();
 			}
-				else {
-					// show correct console
-					settings.setVisible( false );
-					settings.toBack();
-					textFlowContent.setVisible( true );
-					textFlowContent.toFront();
-				}
-			} );
+		} );
 
 		// get list cell of hbox
 		// apply css to it on selection
 		if ( hbox.getStyleClass().contains( Globals.StyleClasses.CURRENT ) ) {
 			hbox.getParent().setStyle( Globals.StyleVariables.backgroundColourDarkerGrey );
-		}
-		else {
+		} else {
 			hbox.getParent().setStyle( Globals.StyleVariables.backgroundColourLighterGrey );
 		}
 	}
 
 
-	public void updateSettings( String savedServerId, boolean newServer, Scene scene, Pane settings, String tempName, String tempIp, String tempPort, String tempWebFolder, String tempUri, String tempCustomJvm, boolean isCustomJvm, String tempJvmArgs, String tempMemory ) {
+	public void updateSettings( int savedServerId, boolean newServer, Scene scene, Pane settings, String tempName, String tempIp, String tempPort, String tempWebFolder, String tempUri, String tempCustomJvm, boolean isCustomJvm, String tempJvmArgs, String tempMemory ) {
 
 		if ( !newServer ) {
 			// update settings
@@ -493,15 +466,12 @@ public class UIController {
 			( (Text) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.INFOWEBFOLDERID + id ) ).setText( '\n' + tempWebFolder );
 			( (Text) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.INFONAMEID + id ) ).setText( tempName + " - " );
 			( (Text) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.INFOURLID + id ) ).setText( tempIp + ":" + tempPort );
-		}
-		else {
+		} else {
 			// add ids to list
 			getServerConfigIdList().add( savedServerId );
 
-			ServerConfigMap scm = ServerWrapper.getInstance().getServer( serverController.getSelectedServerInstance() );
-
 			// get new server list item
-			HBox hbox = serverSetup.addHBoxToList( this, scm, scene, true );
+			HBox hbox = serverSetup.addHBoxToList( this, savedServerId, scene, true );
 
 			// add console for server
 			TextFlow newTextFlow = new TextFlow();
@@ -523,31 +493,31 @@ public class UIController {
 
 	public void updateServerOnDelete() {
 		// hide hyperlink
-		HBox poly = (HBox) listViewAppList.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.HBOXID + serverController.getSelectedServerInstance() );
+		HBox poly = (HBox) listViewAppList.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.HBOXID + ServerController.selectedServer );
 		listViewAppList.getItems().remove( poly );
 
 		// hide console
-		ScrollPane sp = (ScrollPane) consoleStackPane.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SCROLLPANEID + serverController.getSelectedServerInstance() );
+		ScrollPane sp = (ScrollPane) consoleStackPane.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SCROLLPANEID + ServerController.selectedServer );
 		consoleStackPane.getChildren().remove( sp );
 
 		// hide settings
-		Pane p = (Pane) settingsStackPane.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSID + serverController.getSelectedServerInstance() );
+		Pane p = (Pane) settingsStackPane.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSID + ServerController.selectedServer );
 		settingsStackPane.getChildren().remove( p );
 
 		// hide server info
-		TextFlow tf = (TextFlow) serverInfoStackPane.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.INFOTEXTFLOWID + serverController.getSelectedServerInstance() );
+		TextFlow tf = (TextFlow) serverInfoStackPane.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.INFOTEXTFLOWID + ServerController.selectedServer );
 		serverInfoStackPane.getChildren().remove( tf );
 
 		// hide console info
-		Pane tf2 = (Pane) consoleInfo.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.memoryTextFlow + serverController.getSelectedServerInstance() );
+		Pane tf2 = (Pane) consoleInfo.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.memoryTextFlow + ServerController.selectedServer );
 		consoleInfo.getChildren().remove( tf2 );
 
-		Pane tf3 = (Pane) consoleInfo.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.lastUpdatedTextFlow + serverController.getSelectedServerInstance() );
+		Pane tf3 = (Pane) consoleInfo.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.lastUpdatedTextFlow + ServerController.selectedServer );
 		consoleInfo.getChildren().remove( tf3 );
 
-		serversForListInstance.remove( serverController.getSelectedServerInstance() );
+		serversForListInstance.remove( ServerController.selectedServer );
 
-		serverController.setSelectedServer( null );
+		serverController.setSelectedServer( 0 );
 
 		refreshServerList();
 	}
@@ -583,7 +553,7 @@ public class UIController {
 				for ( Node nodeChild : hboxChild ) {
 					if ( nodeChild instanceof javafx.scene.control.Hyperlink ) {
 						if ( ( (Hyperlink) nodeChild ).getText().equals( name ) ) {
-							Platform.runLater( ( ) -> {
+							Platform.runLater( () -> {
 								hbox.setPrefWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 18 );
 								hbox.setMaxWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 18 );
 								hbox.setMinWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 18 );
@@ -609,10 +579,10 @@ public class UIController {
 			getSplashAnchorPane().setVisible( false );
 			getSplashAnchorPane().toBack();
 			Pane serverInfoPane = (Pane) itInfo.next();
-			Platform.runLater( ( ) -> {
+			Platform.runLater( () -> {
 				serverInfoPane.setVisible( false );
 				// show server info
-				if ( serverInfoPane.getId().equals( Globals.FXVariables.SERVERINFOID + serverController.getSelectedServerInstance() ) ) {
+				if ( serverInfoPane.getId().equals( Globals.FXVariables.SERVERINFOID + ServerController.selectedServer ) ) {
 					serverInfoPane.setVisible( true );
 					serverInfoPane.toFront();
 				}
@@ -760,7 +730,7 @@ public class UIController {
 	}
 
 
-	public List<String> getServerConfigIdList() {
+	public List<Integer> getServerConfigIdList() {
 		return serverConfigIdList;
 	}
 

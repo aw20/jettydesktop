@@ -39,13 +39,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import javafx.scene.Scene;
-import javafx.scene.layout.StackPane;
-
 import org.aw20.jettydesktop.rte.JettyRunTime;
 import org.aw20.jettydesktop.ui.ServerConfigMap;
-import org.aw20.jettydesktop.ui.ServerWrapper;
+import org.aw20.jettydesktop.ui.ServerManager;
 import org.aw20.util.SocketUtil;
+
+import javafx.scene.Scene;
+import javafx.scene.layout.StackPane;
 
 
 @SuppressWarnings( "rawtypes" )
@@ -61,7 +61,7 @@ public class Executor extends Object {
 	private ioConsumer ioconsumers[];
 	private adminPortWatcher AdminPortWatcher = null;
 	private int adminPort;
-	private String currentServer = null;
+	private int currentServer;
 	ServerConfigMap currentServerConfigMap = null;
 
 	private StackPane currentStackPaneConsole;
@@ -88,13 +88,13 @@ public class Executor extends Object {
 
 
 	@SuppressWarnings( "unchecked" )
-	public Executor( String _currentServer, StackPane _currentStackPaneConsole, Scene _scene, UIController _uiController ) throws IOException {
+	public Executor( int serverId, StackPane _currentStackPaneConsole, Scene _scene, UIController _uiController ) throws IOException {
 		allInstances.add( this );
 
-		currentServer = _currentServer;
+		currentServer = serverId;
 		currentStackPaneConsole = _currentStackPaneConsole;
 		scene = _scene;
-		currentServerConfigMap = ServerWrapper.getInstance().getServerConfigObject().get( currentServer );
+		currentServerConfigMap = ServerManager.servers.get( currentServer ).getServerConfigMap();
 
 		// Check to see if this server is already running
 		if ( SocketUtil.isRemotePortAlive( currentServerConfigMap.getIP(), Integer.parseInt( currentServerConfigMap.getPort() ) ) ) {
@@ -122,7 +122,6 @@ public class Executor extends Object {
 
 		List<String> programArgs = new ArrayList<String>();
 		programArgs.add( JDK_HOME );
-		// programArgs.add( null );
 
 		if ( currentServerConfigMap.getMemoryJVM() != null )
 			programArgs.add( "-Xmx" + currentServerConfigMap.getMemoryJVM() + "m" );
@@ -163,7 +162,7 @@ public class Executor extends Object {
 	}
 
 
-	private void findFreePort( UIController _uiController, String _currentServer ) {
+	private void findFreePort( UIController _uiController, int _currentServer ) {
 		try {
 			adminPort = 34000;
 
@@ -190,10 +189,10 @@ public class Executor extends Object {
 		Socket s;
 
 		UIController uiController;
-		String currentServer;
+		int currentServer;
 
 
-		public adminPortWatcher( UIController _uiController, String _currentServer ) throws IOException {
+		public adminPortWatcher( UIController _uiController, int _currentServer ) throws IOException {
 			uiController = _uiController;
 			currentServer = _currentServer;
 			s = new Socket();
@@ -240,10 +239,10 @@ public class Executor extends Object {
 
 		BufferedReader br;
 		UIController uiController;
-		String currentServer;
+		int currentServer;
 
 
-		public ioConsumer( InputStream io, UIController _uiController, String _currentServer ) {
+		public ioConsumer( InputStream io, UIController _uiController, int _currentServer ) {
 			uiController = _uiController;
 			currentServer = _currentServer;
 			br = new BufferedReader( new InputStreamReader( io ) );
@@ -259,7 +258,7 @@ public class Executor extends Object {
 					while ( ( line = br.readLine() ) != null ) {
 						final String l = line;
 						// update console
-						uiController.updateConsole( getCurrentServer(), l + "\n", currentStackPaneConsole );
+						uiController.updateConsole( currentServer, l + "\n", currentStackPaneConsole );
 						// update last updated text
 						uiController.updateLastUpdated( "last updated: " + LocalDateTime.now().format( formatter ).toString(), currentServer, scene );
 					}
@@ -316,8 +315,7 @@ public class Executor extends Object {
 	}
 
 
-	public String getCurrentServer() {
+	public int getCurrentServer() {
 		return currentServer;
 	}
-
 }

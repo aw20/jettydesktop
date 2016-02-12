@@ -4,6 +4,10 @@ import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
 
+import org.aw20.jettydesktop.ui.ServerManager;
+import org.aw20.jettydesktop.ui.ServerWrapper;
+import org.aw20.util.Globals;
+
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -11,19 +15,15 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TabPane;
 
-import org.aw20.jettydesktop.ui.ServerConfigMap;
-import org.aw20.jettydesktop.ui.ServerWrapper;
-import org.aw20.util.Globals;
-
 
 public class ServerActions {
 
-	ServerWrapper serverWrapper = ServerWrapper.getInstance();
+	// ServerWrapper1 serverWrapper = ServerWrapper1.getInstance();
 
 
-	public boolean startServer( Executor executor, UIController uiController, ServerController serverController, String serverId, Scene scene ) {
+	public boolean startServer( Executor executor, UIController uiController, ServerController serverController, int serverId, Scene scene ) {
 		// run later on JavaFX thread
-		Platform.runLater( ( ) -> {
+		Platform.runLater( () -> {
 			serverController.setSelectedServer( serverId );
 			// show console and hide splash screen if open
 			uiController.getSplashPane().setVisible( false );
@@ -40,19 +40,19 @@ public class ServerActions {
 			uiController.updateConsole( serverId, Globals.ConsoleVariables.STARTING_SERVER, uiController.getConsoleStackPane() );
 		} );
 
-		ServerConfigMap scm = serverWrapper.getServer( serverId );
+		ServerWrapper server = ServerManager.servers.get( serverId );
+		// ServerConfigMap scm = serverWrapper.getServer( serverId );
 
 		try {
-			if ( !scm.getPort().isEmpty() ) {
+			if ( !server.getServerConfigMap().getPort().isEmpty() ) {
 				// start server
 				executor = new Executor( serverId, uiController.getConsoleStackPane(), scene, uiController );
 				// set to running in settings
-				serverWrapper.setRunning( serverId, true );
+				server.setRunning( true );
 				// update icon in server list
 				uiController.updateRunningIcon( true, serverId );
 				return true;
-			}
-			else {
+			} else {
 				uiController.updateRunningIcon( false, serverId );
 				return false;
 			}
@@ -63,14 +63,15 @@ public class ServerActions {
 	}
 
 
-	public boolean stopServer( UIController uiController, ServerController serverController, Executor executor, String id ) {
-		uiController.updateConsole( id, Globals.ConsoleVariables.STOPPING_SERVER, uiController.getConsoleStackPane() );
+	public boolean stopServer( UIController uiController, ServerController serverController, Executor executor, int serverId ) {
+		uiController.updateConsole( serverId, Globals.ConsoleVariables.STOPPING_SERVER, uiController.getConsoleStackPane() );
 
-		serverWrapper.setRunning( id, false );
+		ServerWrapper server = ServerManager.servers.get( serverId );
+		server.setRunning( false );
 
 		// get correct version of executor on exiting app and stopping all servers
 		for ( Object ex : Executor.getAllInstances() ) {
-			if ( ( (Executor) ex ).getCurrentServer().equals( id ) ) {
+			if ( ( (Executor) ex ).getCurrentServer() == serverId ) {
 				executor = (Executor) ex;
 			}
 		}
@@ -81,11 +82,10 @@ public class ServerActions {
 
 		// if executor shut down is successful
 		if ( executor.isbRun() == false ) {
-			uiController.updateConsole( id, Globals.ConsoleVariables.SERVER_STOPPED, uiController.getConsoleStackPane() );
-			uiController.updateRunningIcon( false, id );
+			uiController.updateConsole( serverId, Globals.ConsoleVariables.SERVER_STOPPED, uiController.getConsoleStackPane() );
+			uiController.updateRunningIcon( false, serverId );
 			return true;
-		}
-		else {
+		} else {
 			return false;
 		}
 	}

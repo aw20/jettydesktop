@@ -7,8 +7,14 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Vector;
+
+import org.aw20.jettydesktop.ui.ServerConfigMap;
+import org.aw20.jettydesktop.ui.ServerManager;
+import org.aw20.jettydesktop.ui.ServerWrapper;
+import org.aw20.util.Globals;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -44,10 +50,6 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
-import org.aw20.jettydesktop.ui.ServerConfigMap;
-import org.aw20.jettydesktop.ui.ServerWrapper;
-import org.aw20.util.Globals;
-
 
 public class Main extends Application {
 
@@ -59,7 +61,7 @@ public class Main extends Application {
 	private final String viewDir = "/org/aw20/jettydesktop/view/";
 
 	private UIController uiController;
-	private ServerController serverController;
+	private ServerController serverController = new ServerController();
 	private ServerSetup serverSetup;
 
 	private Stage stage;
@@ -77,8 +79,7 @@ public class Main extends Application {
 		FXMLLoader loader = new FXMLLoader( getClass().getResource( viewDir + "JettyDesktopUI.fxml" ) );
 		settingsLoader = new FXMLLoader( getClass().getResource( viewDir + "settings.fxml" ) );
 
-		uiController = UIController.getInstance();
-		serverController = ServerController.getInstance();
+		uiController = new UIController( loader, stage );
 
 		serverSetup = new ServerSetup();
 
@@ -146,16 +147,17 @@ public class Main extends Application {
 					HBox hbox = uiController.getListViewAppList().getSelectionModel().getSelectedItem();
 
 					// get selected server id
-					String serverId = hbox.getId().replace( "hbox", "" );
+					String serverId = hbox.getId().replace( Globals.FXVariables.HBOXID, "" );
 
 					Hyperlink h = (Hyperlink) hbox.getChildren().get( 0 );
-					ServerConfigMap scm = ServerWrapper.getInstance().getServer( serverId );
-					serverController.setSelectedServer( serverId );
+					ServerConfigMap scm = ServerManager.servers.get( Integer.parseInt( serverId ) ).getServerConfigMap();
+					serverController.setSelectedServer( Integer.parseInt( serverId ) );
 
 					uiController.handleListViewOnClick( hbox, scene, h, scm );
 				}
 			}
 		} );
+
 
 		/**
 		 * Method to handle click on arrow image
@@ -187,7 +189,7 @@ public class Main extends Application {
 		 * Method to handle click on start button
 		 */
 		uiController.getStartBtn().setOnAction( ( ActionEvent e ) -> {
-			uiController.startBtnClick( null, scene );
+			uiController.startBtnClick( 0, scene );
 		} );
 
 
@@ -195,7 +197,7 @@ public class Main extends Application {
 		 * Method to handle click on stop button
 		 */
 		uiController.getStopBtn().setOnAction( ( ActionEvent e ) -> {
-			uiController.stopBtnClick( null, scene );
+			uiController.stopBtnClick( 0, scene );
 		} );
 
 
@@ -203,7 +205,7 @@ public class Main extends Application {
 		 * Method to handle click on clear
 		 */
 		uiController.getClearBtn().setOnAction( ( ActionEvent e ) -> {
-			uiController.clearConsole( serverController.getSelectedServerInstance() );
+			uiController.clearConsole( ServerController.selectedServer );
 		} );
 
 
@@ -220,7 +222,9 @@ public class Main extends Application {
 		 */
 		uiController.getSaveBtn().setOnAction( ( ActionEvent e ) -> {
 			try {
-				saveBtnClick();
+				if ( validateSettings() ) {
+					saveBtnClick();
+				}
 			} catch ( Exception e1 ) {
 				Alert alert = createNewAlert( AlertType.ERROR, "Error", "An error has occurred while saving a web app", null );
 				alert.showAndWait();
@@ -232,7 +236,7 @@ public class Main extends Application {
 		 * Method to handle click on delete
 		 */
 		uiController.getDeleteBtn().setOnAction( ( ActionEvent e ) -> {
-			String serverToBeDeleted = ServerWrapper.getInstance().getServer( serverController.getSelectedServerInstance() ).getName();
+			String serverToBeDeleted = ServerManager.servers.get( ServerController.selectedServer ).getServerConfigMap().getName();
 
 			Optional<ButtonType> result = createNewAlert( AlertType.CONFIRMATION, "", "Delete " + serverToBeDeleted + "?", "Are you sure?" ).showAndWait();
 
@@ -281,14 +285,21 @@ public class Main extends Application {
 					public void handle( WindowEvent t ) {
 
 						// if there are no server
-						if ( ServerWrapper.getInstance().getListOfServerConfigMap() == null ) {
+						if ( ServerManager.servers == null || ServerManager.servers.isEmpty() ) {
+							// if ( ServerWrapper1.getInstance().getListOfServerConfigMap() == null ) {
 							// appFunctions.deleteServers();
 							Platform.exit();
 
 							// if there are servers
 						} else {
 							// else count the running servers
-							int runningServers = ServerWrapper.getInstance().getNumberOfRunningServers();
+							int runningServers = 0;
+							for ( Entry<Integer, ServerWrapper> server : ServerManager.servers.entrySet() ) {
+								if ( server.getValue().isRunning() ) {
+									runningServers++;
+								}
+							}
+							// int runningServers = ServerWrapper1.getInstance().getNumberOfRunningServers();
 
 							// if servers are running call js to run dialog
 							if ( runningServers > 0 ) {
@@ -348,7 +359,7 @@ public class Main extends Application {
 
 			uiController.getServerInfoStackPaneMaster().setVisible( true );
 
-			Pane serverInfoPane = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SERVERINFOID + serverController.getSelectedServerInstance() );
+			Pane serverInfoPane = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SERVERINFOID + ServerController.selectedServer );
 			serverInfoPane.setVisible( true );
 			serverInfoPane.toFront();
 
@@ -385,10 +396,10 @@ public class Main extends Application {
 			item.getParent().setStyle( Globals.StyleVariables.backgroundColourLighterGrey );
 		}
 
-		serverController.setSelectedServer( null );
+		serverController.setSelectedServer( 0 );
 
 		// show empty settings pane
-		Pane p = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSID + "Empty" );
+		Pane p = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSEMPTYID );
 		p.toFront();
 		p.setVisible( true );
 	}
@@ -396,16 +407,16 @@ public class Main extends Application {
 
 	private void tabPaneSelectionChange( Tab newTab ) {
 		uiController.setSelectedTabInstance( newTab );
-		String ss = serverController.getSelectedServerInstance();
+		int selectedServer = ServerController.selectedServer;
 		ButtonActions buttonActions = new ButtonActions();
 		if ( newTab.getId().equals( "settingsTab" ) ) {
 			// open settings tab and correct pane
-			Pane pSettings = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSID + ss );
+			Pane pSettings = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSID + selectedServer );
 			pSettings.setVisible( true );
 			pSettings.toFront();
 
 			// disable buttons if server running
-			if ( ServerWrapper.getInstance().getRunning( serverController.getSelectedServerInstance() ) ) {
+			if ( ServerManager.servers.get( selectedServer ).isRunning() ) {
 				buttonActions.showSettingsButtonsOnRunning( uiController );
 			} else {
 				buttonActions.showSettingsButtonsOnNotRunning( uiController );
@@ -422,18 +433,18 @@ public class Main extends Application {
 				uiController.getSplashAnchorPane().toBack();
 				ScrollPane consoleScrollPane = (ScrollPane) itConsole.next();
 
-				Platform.runLater( ( ) -> {
+				Platform.runLater( () -> {
 					ScrollPane sp1 = consoleScrollPane;
 					sp1.setVisible( false );
 					// show server info
-					if ( sp1.getId().equals( Globals.FXVariables.SCROLLPANEID + serverController.getSelectedServerInstance() ) ) {
+					if ( sp1.getId().equals( Globals.FXVariables.SCROLLPANEID + selectedServer ) ) {
 						sp1.setVisible( true );
 						sp1.toFront();
 					}
 				} );
 			}
 			// show and disable correct buttons on console showing
-			if ( ServerWrapper.getInstance().getRunning( serverController.getSelectedServerInstance() ) ) {
+			if ( ServerManager.servers.get( selectedServer ).isRunning() ) {
 				buttonActions.showConsoleButtonsOnRunning( uiController );
 			} else {
 				buttonActions.showConsoleButtonsOnNotRunning( uiController );
@@ -459,8 +470,8 @@ public class Main extends Application {
 		boolean newServer = false;
 		Pane tempSettings;
 		// not new server
-		if ( serverController.getSelectedServerInstance() != null ) {
-			tempSettings = ( (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSID + serverController.getSelectedServerInstance() ) );
+		if ( ServerController.selectedServer != 0 ) {
+			tempSettings = ( (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSID + ServerController.selectedServer ) );
 		} else {
 			newServer = true;
 			tempSettings = ( (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSEMPTYID ) );
@@ -477,7 +488,7 @@ public class Main extends Application {
 		String tempMemory = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.memoryTextBox ) ).getText();
 		boolean isCustomJvm = ( (RadioButton) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.customJvmRadioBtn ) ).selectedProperty().get();
 
-		String savedServerId = serverController.saveServer( newServer, tempName, tempIp, tempPort, tempWebFolder, tempUri, tempCustomJvm, isCustomJvm, tempJvmArgs, tempMemory );
+		int savedServerId = serverController.saveServer( newServer, tempName, tempIp, tempPort, tempWebFolder, tempUri, tempCustomJvm, isCustomJvm, tempJvmArgs, tempMemory );
 
 		if ( newServer ) {
 			// add info to server info pane
@@ -553,7 +564,8 @@ public class Main extends Application {
 		uiController.getTabPane().getSelectionModel().select( tab );
 
 		// show correct console buttons
-		if ( ServerWrapper.getInstance().getRunning( serverController.getSelectedServerInstance() ) ) {
+		if ( ServerManager.servers.get( ServerController.selectedServer ).isRunning() ) {
+			// if ( ServerWrapper1.getInstance().getRunning( serverController.getSelectedServerInstance() ) ) {
 			buttonActions.showConsoleButtonsOnRunning( uiController );
 		} else {
 			buttonActions.showConsoleButtonsOnNotRunning( uiController );
@@ -577,20 +589,58 @@ public class Main extends Application {
 
 
 	/*
+	 * method to validate settings on save
+	 */
+	private boolean validateSettings() {
+		Pane tempSettings;
+		// not new server
+		if ( ServerController.selectedServer != 0 ) {
+			tempSettings = ( (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSID + ServerController.selectedServer ) );
+		} else {
+			tempSettings = ( (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSEMPTYID ) );
+		}
+		// get all user input fields
+		String tempName = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.nameTextBox ) ).getText();
+		String settingsId = tempSettings.getId().replace( Globals.FXVariables.SETTINGSID, "" );
+
+		/*
+		 * if name == server name that you're changing - ie remains unchanged, return true
+		 * if name == server name in settings return false
+		 * if name != server name in settings return true
+		 */
+		for ( Entry<Integer, ServerWrapper> server : ServerManager.servers.entrySet() ) {
+			if ( server.getValue().getServerConfigMap().getName().toLowerCase().equals( tempName.toLowerCase() ) ) {
+
+				if ( !settingsId.equals( String.valueOf( server.getKey() ) ) ) {
+					Alert alert = createNewAlert( AlertType.WARNING, "Error", "Please choose a different name for the new server", null );
+					alert.showAndWait();
+					return false;
+				} else {
+					return true;
+				}
+			}
+		}
+
+		return true;
+	}
+
+
+	/*
 	 * button to open current web app - enabled when webapp is running
 	 */
 	private void openBtnClick() {
-		String selectedServer = serverController.getSelectedServerInstance();
+		int selectedServer = ServerController.selectedServer;
 		String webFolder = "";
 		String host = "";
 		String port = "";
 		String defaultUri = "";
-		ServerConfigMap scm = ServerWrapper.getInstance().getServerConfigObject().get( selectedServer );
+		ServerWrapper serverWrapper = ServerManager.servers.get( selectedServer );
 
-		webFolder = scm.getWebFolder();
-		host = scm.getIP();
-		port = scm.getPort();
-		defaultUri = scm.getDefaultWebUri();
+
+		webFolder = serverWrapper.getServerConfigMap().getWebFolder();
+		host = serverWrapper.getServerConfigMap().getIP();
+		port = serverWrapper.getServerConfigMap().getPort();
+		defaultUri = serverWrapper.getServerConfigMap().getDefaultWebUri();
 
 		if ( !webFolder.isEmpty() && !webFolder.equals( "" ) ) {
 			if ( host.isEmpty() ) {
