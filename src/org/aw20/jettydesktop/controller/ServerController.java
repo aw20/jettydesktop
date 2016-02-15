@@ -21,7 +21,6 @@ import org.aw20.jettydesktop.ui.ServerWrapper;
 public class ServerController {
 
 	static int selectedServer;
-	private static ServerController instance = null;
 
 
 	public void setSelectedServer( int savedServerId ) {
