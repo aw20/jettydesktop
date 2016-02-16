@@ -82,7 +82,7 @@ public class ServerSetup {
 
 		// play/stop button click
 		p.setOnMouseClicked( event -> {
-			if ( ServerManager.servers.get( serverId ).isRunning() ) {
+			if ( ServerManager.getServers().get( serverId ).isRunning() ) {
 				// if ( ServerWrapper1.getInstance().getRunning( id ) ) {
 				uiController.stopBtnClick( serverId, scene );
 			} else {
@@ -102,21 +102,21 @@ public class ServerSetup {
 		polygonPane.setMaxWidth( Globals.StyleVariables.polygonPaneWidth );
 
 		// hyperlink - server name
-		Hyperlink h = new Hyperlink( ServerManager.servers.get( serverId ).getServerConfigMap().getName(), c );
+		Hyperlink h = new Hyperlink( ServerManager.getServers().get( serverId ).getServerConfigMap().getName(), c );
 
 		h.setPadding( new Insets( 0, 0, 0, 10 ) );
 		h.setId( Integer.toString( serverId ) );
 		h.getStyleClass().add( "serverListHyperlink" );
-		h.setPrefWidth( Globals.StyleVariables.hyperlinkWidth - 18 );
-		h.setMinWidth( Globals.StyleVariables.hyperlinkWidth - 18 );
-		h.setMaxWidth( Globals.StyleVariables.hyperlinkWidth - 18 );
+		h.setPrefWidth( Globals.StyleVariables.hyperlinkWidth - 25 );
+		h.setMinWidth( Globals.StyleVariables.hyperlinkWidth - 25 );
+		h.setMaxWidth( Globals.StyleVariables.hyperlinkWidth - 25 );
 
 		HBox hbox = new HBox( h, polygonPane );
 
 		hbox.getStyleClass().add( "hboxServer" );
-		hbox.setPrefWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 18 );
-		hbox.setMaxWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 18 );
-		hbox.setMinWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 18 );
+		hbox.setPrefWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 25 );
+		hbox.setMaxWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 25 );
+		hbox.setMinWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 25 );
 		hbox.setId( Globals.FXVariables.HBOXID + serverId );
 
 		AnchorPane a = new AnchorPane();
@@ -124,8 +124,6 @@ public class ServerSetup {
 
 		AnchorPane.setLeftAnchor( hbox, 0.0 );
 		AnchorPane.setRightAnchor( hbox, 0.0 );
-
-		uiController.getServersForListInstance().put( serverId, a );
 
 		// server list on hover actions
 		polygonPane.setOnMouseEntered( event -> {
@@ -146,8 +144,10 @@ public class ServerSetup {
 
 		// server list on click action
 		h.setOnAction( event -> {
-			uiController.handleListViewOnClick( hbox, scene, h, ServerManager.servers.get( serverId ).getServerConfigMap() );
+			uiController.handleListViewOnClick( hbox, scene, h, ServerManager.getServers().get( serverId ).getServerConfigMap() );
 		} );
+
+		uiController.getServersForListInstance().put( serverId, a );
 
 		return hbox;
 	}
@@ -220,7 +220,7 @@ public class ServerSetup {
 	public void setUpSettings( ServerController serverController, UIController uiController ) {
 		// load settings into server config map
 		serverController.loadSettings();
-		for ( ServerWrapper serverWrapper : ServerManager.servers.values() ) {
+		for ( ServerWrapper serverWrapper : ServerManager.getServers().values() ) {
 			// add ids to list
 			int id = serverWrapper.getId();
 			uiController.getServerConfigIdList().add( id );
@@ -247,7 +247,7 @@ public class ServerSetup {
 			uiController.getServerInfoImagePane().setVisible( false );
 		}
 
-		for ( ServerWrapper serverWrapper : ServerManager.servers.values() ) {
+		for ( ServerWrapper serverWrapper : ServerManager.getServers().values() ) {
 
 			String id = String.valueOf( serverWrapper.getId() );
 
@@ -282,7 +282,7 @@ public class ServerSetup {
 
 	public void setUpConsoleInfo( ServerController serverController, UIController uiController ) {
 		// set server info hidden initially
-		for ( ServerWrapper serverWrapper : ServerManager.servers.values() ) {
+		for ( ServerWrapper serverWrapper : ServerManager.getServers().values() ) {
 
 			String id = String.valueOf( serverWrapper.getId() );
 
@@ -319,17 +319,15 @@ public class ServerSetup {
 		uiController.getListViewAppList().setPadding( new Insets( 0.0 ) );
 
 		// set action for on click server
-		for ( Entry<Integer, ServerWrapper> server : ServerManager.servers.entrySet() ) {
+		for ( Entry<Integer, ServerWrapper> server : ServerManager.getServers().entrySet() ) {
 			addHBoxToList( uiController, server.getKey(), scene, false );
 		}
-		// for ( ServerConfigMap scm : ServerWrapper1.getInstance().getListOfServerConfigMap() ) {
-		// addHBoxToList( uiController, scm, scene, false );
-		// }
 
 		for ( Entry<Integer, AnchorPane> h : uiController.getServersForListInstance().entrySet() ) {
 			AnchorPane hbox = h.getValue();
 			uiController.getListViewAppList().getItems().add( (HBox) hbox.getChildren().get( 0 ) );
 		}
+
 		// re order server list
 		uiController.refreshServerList();
 
@@ -338,7 +336,7 @@ public class ServerSetup {
 
 	public void addSettingsToStackPane( ServerController serverController, UIController uiController, FXMLLoader settingsLoader, String currentJvm, Stage stage, Main main ) throws IOException {
 		Map<String, Pane> panes = new HashMap<String, Pane>();
-		for ( ServerWrapper serverWrapper : ServerManager.servers.values() ) {
+		for ( ServerWrapper serverWrapper : ServerManager.getServers().values() ) {
 
 			String id = String.valueOf( serverWrapper.getId() );
 
@@ -439,7 +437,7 @@ public class ServerSetup {
 		} );
 		TextFlow textFlow = null;
 		// if there are no webapps - instruct to add one
-		if ( ServerManager.servers == null || ServerManager.servers.isEmpty() ) {
+		if ( ServerManager.getServers() == null || ServerManager.getServers().isEmpty() ) {
 			textFlow = new TextFlow( new Text( title ), new Text( "\nView " ), hpl, new Text( " for more information" ), new Text( "\nClick an app to start" ) );
 			textFlow.getStyleClass().add( "splashScreenText" );
 			uiController.getSplashPane().add( textFlow, 1, 1 );

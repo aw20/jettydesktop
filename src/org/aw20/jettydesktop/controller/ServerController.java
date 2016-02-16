@@ -29,9 +29,9 @@ public class ServerController {
 
 
 	public void hardDeleteServersOnExit() {
-		for ( Entry<Integer, ServerWrapper> entry : ServerManager.servers.entrySet() ) {
+		for ( Entry<Integer, ServerWrapper> entry : ServerManager.getServers().entrySet() ) {
 			if ( entry.getValue().isDeleted() ) {
-				ServerManager.servers.remove( entry );
+				ServerManager.getServers().remove( entry );
 			}
 		}
 		saveSettings();
@@ -40,18 +40,18 @@ public class ServerController {
 
 	// sets soft delete in ServerWrapper
 	public void setDeleted() {
-		ServerManager.servers.get( selectedServer ).setDeleted( true );
+		ServerManager.getServers().get( selectedServer ).setDeleted( true );
 		saveSettings();
 	}
 
 
 	// produces ID for new server
 	public int getNewId() {
-		Set<Integer> ids = ServerManager.servers.keySet();
+		Set<Integer> ids = ServerManager.getServers().keySet();
 		if ( ids.isEmpty() ) {
 			return 1;
 		} else {
-			return Collections.max( ServerManager.servers.keySet() ) + 1;
+			return Collections.max( ServerManager.getServers().keySet() ) + 1;
 		}
 	}
 
@@ -90,11 +90,11 @@ public class ServerController {
 				scm.setMemoryJVM( "64" );
 			}
 			ServerWrapper serverWrapper = new ServerWrapper( id, scm );
-			ServerManager.servers.put( id, serverWrapper );
+			ServerManager.getServers().put( id, serverWrapper );
 
 		} else {
 			id = selectedServer;
-			ServerWrapper serverWrapper = ServerManager.servers.get( id );
+			ServerWrapper serverWrapper = ServerManager.getServers().get( id );
 
 			// overwrite existing data
 			serverWrapper.getServerConfigMap().setIP( tempIp );
@@ -149,11 +149,11 @@ public class ServerController {
 			serverConfigList = new ArrayList<org.aw20.jettydesktop.ui.ServerConfigMap>();
 		}
 
-		ServerManager.servers = new HashMap<Integer, ServerWrapper>();
+		ServerManager.setServers( new HashMap<Integer, ServerWrapper>() );
 
 		int count = 1;
 		for ( ServerConfigMap scm : serverConfigList ) {
-			ServerManager.servers.put( count, new ServerWrapper( count, scm ) );
+			ServerManager.addServer( count, new ServerWrapper( count, scm ) );
 			count++;
 		}
 	}
@@ -161,7 +161,7 @@ public class ServerController {
 
 	public void saveSettings() {
 		List<ServerConfigMap> scmList = new ArrayList<ServerConfigMap>();
-		for ( Entry<Integer, ServerWrapper> serverWrapper : ServerManager.servers.entrySet() ) {
+		for ( Entry<Integer, ServerWrapper> serverWrapper : ServerManager.getServers().entrySet() ) {
 			scmList.add( serverWrapper.getValue().getServerConfigMap() );
 		}
 		ObjectOutputStream OS;

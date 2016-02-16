@@ -94,11 +94,12 @@ public class Executor extends Object {
 		currentServer = serverId;
 		currentStackPaneConsole = _currentStackPaneConsole;
 		scene = _scene;
-		currentServerConfigMap = ServerManager.servers.get( currentServer ).getServerConfigMap();
+		currentServerConfigMap = ServerManager.getServers().get( currentServer ).getServerConfigMap();
 
 		// Check to see if this server is already running
 		if ( SocketUtil.isRemotePortAlive( currentServerConfigMap.getIP(), Integer.parseInt( currentServerConfigMap.getPort() ) ) ) {
 			_uiController.updateConsole( currentServer, "Port #" + currentServerConfigMap.getPort() + " appears to be in use already.\n", currentStackPaneConsole );
+			this.exit();
 			throw new IOException( "Port#" + currentServerConfigMap.getPort() + " appears to be in use already" );
 		}
 
@@ -275,17 +276,17 @@ public class Executor extends Object {
 
 
 	public boolean isWebAppRunning() {
-		return true;
+		return bRun;
 	}
 
 
 	public void exit() {
 		if ( process != null ) {
 			process.destroy();
-			setbRun( false );
 			ioconsumers[0].interrupt();
 			ioconsumers[1].interrupt();
 		}
+		setbRun( false );
 
 		if ( AdminPortWatcher != null )
 			AdminPortWatcher.interrupt();

@@ -79,7 +79,7 @@ public class Main extends Application {
 		FXMLLoader loader = new FXMLLoader( getClass().getResource( viewDir + "JettyDesktopUI.fxml" ) );
 		settingsLoader = new FXMLLoader( getClass().getResource( viewDir + "settings.fxml" ) );
 
-		uiController = new UIController( loader, stage );
+		uiController = new UIController();
 
 		serverSetup = new ServerSetup();
 
@@ -141,8 +141,10 @@ public class Main extends Application {
 		 */
 		uiController.getListViewAppList().addEventHandler( MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 
+
 			@Override
 			public void handle( MouseEvent event ) {
+				// Platform.runLater( () -> {
 				if ( uiController.getListViewAppList().getSelectionModel().getSelectedItem() != null ) {
 					HBox hbox = uiController.getListViewAppList().getSelectionModel().getSelectedItem();
 
@@ -150,11 +152,13 @@ public class Main extends Application {
 					String serverId = hbox.getId().replace( Globals.FXVariables.HBOXID, "" );
 
 					Hyperlink h = (Hyperlink) hbox.getChildren().get( 0 );
-					ServerConfigMap scm = ServerManager.servers.get( Integer.parseInt( serverId ) ).getServerConfigMap();
+					ServerConfigMap scm = ServerManager.getServers().get( Integer.parseInt( serverId ) ).getServerConfigMap();
 					serverController.setSelectedServer( Integer.parseInt( serverId ) );
 
 					uiController.handleListViewOnClick( hbox, scene, h, scm );
 				}
+				// } );
+
 			}
 		} );
 
@@ -226,7 +230,7 @@ public class Main extends Application {
 					saveBtnClick();
 				}
 			} catch ( Exception e1 ) {
-				Alert alert = createNewAlert( AlertType.ERROR, "Error", "An error has occurred while saving a web app", null );
+				Alert alert = createNewExceptionAlert( e1, "An error has occurred while saving a web app" );// ( AlertType.ERROR, "Error", "An error has occurred while saving a web app", null );
 				alert.showAndWait();
 			}
 		} );
@@ -236,7 +240,7 @@ public class Main extends Application {
 		 * Method to handle click on delete
 		 */
 		uiController.getDeleteBtn().setOnAction( ( ActionEvent e ) -> {
-			String serverToBeDeleted = ServerManager.servers.get( ServerController.selectedServer ).getServerConfigMap().getName();
+			String serverToBeDeleted = ServerManager.getServers().get( ServerController.selectedServer ).getServerConfigMap().getName();
 
 			Optional<ButtonType> result = createNewAlert( AlertType.CONFIRMATION, "", "Delete " + serverToBeDeleted + "?", "Are you sure?" ).showAndWait();
 
@@ -285,7 +289,7 @@ public class Main extends Application {
 					public void handle( WindowEvent t ) {
 
 						// if there are no server
-						if ( ServerManager.servers == null || ServerManager.servers.isEmpty() ) {
+						if ( ServerManager.getServers() == null || ServerManager.getServers().isEmpty() ) {
 							// if ( ServerWrapper1.getInstance().getListOfServerConfigMap() == null ) {
 							// appFunctions.deleteServers();
 							Platform.exit();
@@ -294,7 +298,7 @@ public class Main extends Application {
 						} else {
 							// else count the running servers
 							int runningServers = 0;
-							for ( Entry<Integer, ServerWrapper> server : ServerManager.servers.entrySet() ) {
+							for ( Entry<Integer, ServerWrapper> server : ServerManager.getServers().entrySet() ) {
 								if ( server.getValue().isRunning() ) {
 									runningServers++;
 								}
@@ -416,7 +420,7 @@ public class Main extends Application {
 			pSettings.toFront();
 
 			// disable buttons if server running
-			if ( ServerManager.servers.get( selectedServer ).isRunning() ) {
+			if ( ServerManager.getServers().get( selectedServer ).isRunning() ) {
 				buttonActions.showSettingsButtonsOnRunning( uiController );
 			} else {
 				buttonActions.showSettingsButtonsOnNotRunning( uiController );
@@ -444,7 +448,7 @@ public class Main extends Application {
 				} );
 			}
 			// show and disable correct buttons on console showing
-			if ( ServerManager.servers.get( selectedServer ).isRunning() ) {
+			if ( ServerManager.getServers().get( selectedServer ).isRunning() ) {
 				buttonActions.showConsoleButtonsOnRunning( uiController );
 			} else {
 				buttonActions.showConsoleButtonsOnNotRunning( uiController );
@@ -564,8 +568,7 @@ public class Main extends Application {
 		uiController.getTabPane().getSelectionModel().select( tab );
 
 		// show correct console buttons
-		if ( ServerManager.servers.get( ServerController.selectedServer ).isRunning() ) {
-			// if ( ServerWrapper1.getInstance().getRunning( serverController.getSelectedServerInstance() ) ) {
+		if ( ServerManager.getServers().get( ServerController.selectedServer ).isRunning() ) {
 			buttonActions.showConsoleButtonsOnRunning( uiController );
 		} else {
 			buttonActions.showConsoleButtonsOnNotRunning( uiController );
@@ -608,7 +611,7 @@ public class Main extends Application {
 		 * if name == server name in settings return false
 		 * if name != server name in settings return true
 		 */
-		for ( Entry<Integer, ServerWrapper> server : ServerManager.servers.entrySet() ) {
+		for ( Entry<Integer, ServerWrapper> server : ServerManager.getServers().entrySet() ) {
 			if ( server.getValue().getServerConfigMap().getName().toLowerCase().equals( tempName.toLowerCase() ) ) {
 
 				if ( !settingsId.equals( String.valueOf( server.getKey() ) ) ) {
@@ -634,7 +637,7 @@ public class Main extends Application {
 		String host = "";
 		String port = "";
 		String defaultUri = "";
-		ServerWrapper serverWrapper = ServerManager.servers.get( selectedServer );
+		ServerWrapper serverWrapper = ServerManager.getServers().get( selectedServer );
 
 
 		webFolder = serverWrapper.getServerConfigMap().getWebFolder();

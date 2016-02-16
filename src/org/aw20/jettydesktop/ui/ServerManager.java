@@ -1,19 +1,30 @@
 package org.aw20.jettydesktop.ui;
 
+import java.util.HashMap;
 import java.util.Map;
 
 
 public class ServerManager {
 
-	public static Map<Integer, ServerWrapper> servers = null;
+	private static Map<Integer, ServerWrapper> servers = null;
 
 
-	public Map<Integer, ServerWrapper> getServers() {
+	ServerManager() {
+		servers = new HashMap<Integer, ServerWrapper>();
+	}
+
+
+	public static Map<Integer, ServerWrapper> getServers() {
 		return servers;
 	}
 
 
-	public void setServers( Map<Integer, ServerWrapper> servers ) {
-		this.servers = servers;
+	public static void setServers( Map<Integer, ServerWrapper> servers ) {
+		ServerManager.servers = servers;
+	}
+
+
+	public static void addServer( int id, ServerWrapper server ) {
+		servers.put( id, server );
 	}
 }

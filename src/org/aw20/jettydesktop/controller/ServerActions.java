@@ -40,7 +40,7 @@ public class ServerActions {
 			uiController.updateConsole( serverId, Globals.ConsoleVariables.STARTING_SERVER, uiController.getConsoleStackPane() );
 		} );
 
-		ServerWrapper server = ServerManager.servers.get( serverId );
+		ServerWrapper server = ServerManager.getServers().get( serverId );
 		// ServerConfigMap scm = serverWrapper.getServer( serverId );
 
 		try {
@@ -66,7 +66,7 @@ public class ServerActions {
 	public boolean stopServer( UIController uiController, ServerController serverController, Executor executor, int serverId ) {
 		uiController.updateConsole( serverId, Globals.ConsoleVariables.STOPPING_SERVER, uiController.getConsoleStackPane() );
 
-		ServerWrapper server = ServerManager.servers.get( serverId );
+		ServerWrapper server = ServerManager.getServers().get( serverId );
 		server.setRunning( false );
 
 		// get correct version of executor on exiting app and stopping all servers

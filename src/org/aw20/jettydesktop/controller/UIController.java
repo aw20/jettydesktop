@@ -17,12 +17,12 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
@@ -43,7 +43,6 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
-import javafx.stage.Stage;
 import javafx.util.Duration;
 
 
@@ -138,19 +137,13 @@ public class UIController {
 	private ServerActions serverActions = new ServerActions();
 	private ServerSetup serverSetup = new ServerSetup();
 
-	private static FXMLLoader loader;
-	private static Stage stage;
 	private static Tab selectedTabInstance = null;
 
 	private ServerController serverController = new ServerController();
 
 	private Map<Integer, AnchorPane> serversForListInstance = new HashMap<Integer, AnchorPane>();
 
-
-	public UIController( FXMLLoader _loader, Stage _stage ) {
-		loader = _loader;
-		stage = _stage;
-	}
+	static UIController uiController;
 
 
 	public Tab getSelectedTabInstance() {
@@ -302,51 +295,75 @@ public class UIController {
 	public void startBtnClick( int id, Scene scene ) {
 		int selectedServer = id;
 		if ( selectedServer == 0 ) {
-			selectedServer = selectedServer;
+			selectedServer = ServerController.selectedServer;
 		}
-		// target the correct play polygon
-		Polygon p = ( (Polygon) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.POLYGONID + selectedServer ) );
-		// transform it to a square
-		p.getPoints().setAll(
-				0d, 0d, // (x, y)
-				0d, 12d,
-				12d, 12d,
-				12d, 0d );
-		// colour transition from green to red
-		FillTransition ft = new FillTransition( Duration.millis( 4000 ), p, Color.GREEN, Color.RED );
-		ft.play();
 
-		final int ss = selectedServer;
+
+		final int finalSelectedServer = selectedServer;
 		// on separate thread due to UI not updating until Executor process finished.
 		Thread t1 = new Thread( new Runnable() {
 
 			public void run() {
-				serverActions.startServer( executor, UIController.this, serverController, ss, scene );
+
+				serverActions.startServer( executor, UIController.this, serverController, finalSelectedServer, scene );
+
+				Platform.runLater( () -> {
+					for ( Object executor : Executor.getAllInstances() ) {
+						if ( ( (Executor) executor ).getCurrentServer() == finalSelectedServer ) {
+
+							if ( ( (Executor) executor ).isWebAppRunning() ) {// executor is running
+
+								ServerManager.getServers().get( finalSelectedServer ).setRunning( true );
+
+								// target the correct play polygon
+								Polygon p = ( (Polygon) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.POLYGONID + finalSelectedServer ) );
+								// transform it to a square
+								p.getPoints().setAll(
+										0d, 0d, // (x, y)
+										0d, 12d,
+										12d, 12d,
+										12d, 0d );
+								// colour transition from green to red
+								FillTransition ft = new FillTransition( Duration.millis( 4000 ), p, Color.GREEN, Color.RED );
+								ft.play();
+
+
+								// open the console tab and correct console pane
+								Tab tab = getTabPane().getTabs().get( 1 );
+								getTabPane().getSelectionModel().select( tab );
+								setSelectedTabInstance( tab );
+
+								( (ScrollPane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SCROLLPANEID + finalSelectedServer ) ).setVisible( true );
+								ButtonActions buttonActions = new ButtonActions();
+								buttonActions.showConsoleButtonsOnRunning( UIController.this );
+								// update server info
+								Pane serverInfoPane = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SERVERINFOID + finalSelectedServer );
+								serverInfoPane.setVisible( true );
+								serverInfoPane.toFront();
+
+							} else {
+								// update console with server not started message
+								updateConsole( finalSelectedServer, "Server not started.", getConsoleStackPane() );
+							}
+
+
+						}
+						break;
+					}
+				} );
 			}
+
 		} );
 		t1.start();
 
-		ServerManager.servers.get( selectedServer ).setRunning( true );
 
-		// open the console tab and correct console pane
-		Tab tab = getTabPane().getTabs().get( 1 );
-		getTabPane().getSelectionModel().select( tab );
-		setSelectedTabInstance( tab );
-
-		( (ScrollPane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SCROLLPANEID + selectedServer ) ).setVisible( true );
-		ButtonActions buttonActions = new ButtonActions();
-		buttonActions.showConsoleButtonsOnRunning( this );
-		// update server info
-		Pane serverInfoPane = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SERVERINFOID + selectedServer );
-		serverInfoPane.setVisible( true );
-		serverInfoPane.toFront();
 	}
 
 
 	public void stopBtnClick( int id, Scene scene ) {
-		int selectedServer = ServerController.selectedServer;
+		int selectedServer = id;
 		if ( selectedServer == 0 ) {
-			selectedServer = id;
+			selectedServer = ServerController.selectedServer;
 		}
 
 		if ( getSelectedTabInstance() == null ) {
@@ -366,7 +383,7 @@ public class UIController {
 
 		serverActions.stopServer( this, serverController, executor, selectedServer );
 
-		ServerManager.servers.get( selectedServer ).setRunning( false );
+		ServerManager.getServers().get( selectedServer ).setRunning( false );
 
 		ButtonActions buttonActions = new ButtonActions();
 		// enable and disable correct buttons depending on which tab is selected
@@ -390,7 +407,7 @@ public class UIController {
 		showCurrentConsoleInfo();
 		showCurrentTab();
 
-		if ( ServerManager.servers.get( ServerController.selectedServer ).isRunning() ) {
+		if ( ServerManager.getServers().get( ServerController.selectedServer ).isRunning() ) {
 			buttonActions.showConsoleButtonsOnRunning( this );
 		} else {
 			buttonActions.showConsoleButtonsOnNotRunning( this );
@@ -398,40 +415,39 @@ public class UIController {
 
 		addCurrentClassToServer( hbox );
 
-		Platform.runLater( () -> {
-			// console is selected
-			String consoleId = ( Globals.FXVariables.CONSOLEID + ServerController.selectedServer );
-			TextFlow textFlowContent = (TextFlow) scene.lookup( Globals.FXVariables.idSelector + consoleId );
-			String settingsId = ( Globals.FXVariables.SETTINGSID + ServerController.selectedServer );
-			Pane settings = (Pane) scene.lookup( Globals.FXVariables.idSelector + settingsId );
+		// console is selected
+		String consoleId = ( Globals.FXVariables.CONSOLEID + ServerController.selectedServer );
+		TextFlow textFlowContent = (TextFlow) scene.lookup( Globals.FXVariables.idSelector + consoleId );
+		String settingsId = ( Globals.FXVariables.SETTINGSID + ServerController.selectedServer );
+		Pane settings = (Pane) scene.lookup( Globals.FXVariables.idSelector + settingsId );
 
-			if ( getSelectedTabInstance() != null ) {
-				if ( getSelectedTabInstance().getId().contains( "console" ) ) {
-					textFlowContent.setVisible( true );
-					textFlowContent.toFront();
-					if ( ServerManager.servers.get( ServerController.selectedServer ).isRunning() ) {
-						buttonActions.showConsoleButtonsOnRunning( this );
-					} else {
-						buttonActions.showConsoleButtonsOnNotRunning( this );
-					}
-				} // settings is selected
-				else {
-					settings.setVisible( true );
-					settings.toFront();
-					if ( ServerManager.servers.get( ServerController.selectedServer ).isRunning() ) {
-						buttonActions.showSettingsButtonsOnRunning( this );
-					} else {
-						buttonActions.showSettingsButtonsOnNotRunning( this );
-					}
-				}
-			} else {
-				// show correct console
-				settings.setVisible( false );
-				settings.toBack();
+		if ( getSelectedTabInstance() != null ) {
+			if ( getSelectedTabInstance().getId().contains( "console" ) ) {
 				textFlowContent.setVisible( true );
 				textFlowContent.toFront();
+				if ( ServerManager.getServers().get( ServerController.selectedServer ).isRunning() ) {
+					buttonActions.showConsoleButtonsOnRunning( this );
+				} else {
+					buttonActions.showConsoleButtonsOnNotRunning( this );
+				}
+			} // settings is selected
+			else {
+				settings.setVisible( true );
+				settings.toFront();
+				if ( ServerManager.getServers().get( ServerController.selectedServer ).isRunning() ) {
+					buttonActions.showSettingsButtonsOnRunning( this );
+				} else {
+					buttonActions.showSettingsButtonsOnNotRunning( this );
+				}
 			}
-		} );
+		} else {
+			// show correct console
+			settings.setVisible( false );
+			settings.toBack();
+			textFlowContent.setVisible( true );
+			textFlowContent.toFront();
+		}
+
 
 		// get list cell of hbox
 		// apply css to it on selection
@@ -461,6 +477,12 @@ public class UIController {
 
 			// update hyperlink in listViewAppList with name
 			( (Hyperlink) scene.lookup( Globals.FXVariables.idSelector + id ) ).setText( tempName );
+
+			HBox hbox = (HBox) scene.lookup( Globals.FXVariables.idSelector + id ).getParent();
+
+			( (ListCell) hbox.getParent() ).updateSelected( true );
+
+			addCurrentClassToServer( hbox );
 
 			// update info in server info pane
 			( (Text) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.INFOWEBFOLDERID + id ) ).setText( '\n' + tempWebFolder );
