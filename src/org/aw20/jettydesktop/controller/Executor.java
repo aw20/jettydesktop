@@ -45,7 +45,6 @@ import org.aw20.jettydesktop.ui.ServerManager;
 import org.aw20.util.SocketUtil;
 
 import javafx.scene.Scene;
-import javafx.scene.layout.StackPane;
 
 
 @SuppressWarnings( "rawtypes" )
@@ -62,9 +61,8 @@ public class Executor extends Object {
 	private adminPortWatcher AdminPortWatcher = null;
 	private int adminPort;
 	private int currentServer;
-	ServerConfigMap currentServerConfigMap = null;
+	private ServerConfigMap currentServerConfigMap = null;
 
-	private StackPane currentStackPaneConsole;
 	private Scene scene;
 
 	private DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDateTime( FormatStyle.MEDIUM, FormatStyle.MEDIUM );
@@ -88,17 +86,17 @@ public class Executor extends Object {
 
 
 	@SuppressWarnings( "unchecked" )
-	public Executor( int serverId, StackPane _currentStackPaneConsole, Scene _scene, UIController _uiController ) throws IOException {
+	public Executor( int serverId, Scene _scene, UIController _uiController ) throws IOException {
 		allInstances.add( this );
 
 		currentServer = serverId;
-		currentStackPaneConsole = _currentStackPaneConsole;
 		scene = _scene;
 		currentServerConfigMap = ServerManager.getServers().get( currentServer ).getServerConfigMap();
 
 		// Check to see if this server is already running
 		if ( SocketUtil.isRemotePortAlive( currentServerConfigMap.getIP(), Integer.parseInt( currentServerConfigMap.getPort() ) ) ) {
-			_uiController.updateConsole( currentServer, "Port #" + currentServerConfigMap.getPort() + " appears to be in use already.\n", currentStackPaneConsole );
+			ConsoleController consoleController = new ConsoleController();
+			consoleController.updateConsole( currentServer, "Port #" + currentServerConfigMap.getPort() + " appears to be in use already.\n", scene );
 			this.exit();
 			throw new IOException( "Port#" + currentServerConfigMap.getPort() + " appears to be in use already" );
 		}
@@ -178,22 +176,23 @@ public class Executor extends Object {
 			adminPort = -1;
 
 		} catch ( Exception e ) {
-			_uiController.updateConsole( _currentServer, "Using Free Admin Port: " + adminPort + "\n", currentStackPaneConsole );
+			ConsoleController consoleController = new ConsoleController();
+			consoleController.updateConsole( _currentServer, "Using Free Admin Port: " + adminPort + "\n", scene );
 			return;
 		}
 	}
 
 
-	class adminPortWatcher extends Thread {
+	private class adminPortWatcher extends Thread {
 
-		BufferedReader br;
-		Socket s;
+		private BufferedReader br;
+		private Socket s;
 
-		UIController uiController;
-		int currentServer;
+		private UIController uiController;
+		private int currentServer;
 
 
-		public adminPortWatcher( UIController _uiController, int _currentServer ) throws IOException {
+		private adminPortWatcher( UIController _uiController, int _currentServer ) throws IOException {
 			uiController = _uiController;
 			currentServer = _currentServer;
 			s = new Socket();
@@ -220,7 +219,8 @@ public class Executor extends Object {
 
 						final String l = line;
 						// update memory
-						uiController.updateMemory( l, currentServer, scene );
+						ServerInfoController serverInfoController = new ServerInfoController();
+						serverInfoController.updateMemory( l, currentServer, scene );
 					}
 				} catch ( IOException e ) {
 					break;
@@ -236,14 +236,14 @@ public class Executor extends Object {
 	}
 
 
-	class ioConsumer extends Thread {
+	private class ioConsumer extends Thread {
 
-		BufferedReader br;
-		UIController uiController;
-		int currentServer;
+		private BufferedReader br;
+		private UIController uiController;
+		private int currentServer;
 
 
-		public ioConsumer( InputStream io, UIController _uiController, int _currentServer ) {
+		private ioConsumer( InputStream io, UIController _uiController, int _currentServer ) {
 			uiController = _uiController;
 			currentServer = _currentServer;
 			br = new BufferedReader( new InputStreamReader( io ) );
@@ -259,9 +259,11 @@ public class Executor extends Object {
 					while ( ( line = br.readLine() ) != null ) {
 						final String l = line;
 						// update console
-						uiController.updateConsole( currentServer, l + "\n", currentStackPaneConsole );
+						ConsoleController consoleController = new ConsoleController();
+						consoleController.updateConsole( currentServer, l + "\n", scene );
 						// update last updated text
-						uiController.updateLastUpdated( "last updated: " + LocalDateTime.now().format( formatter ).toString(), currentServer, scene );
+						ServerInfoController serverInfoController = new ServerInfoController();
+						serverInfoController.updateLastUpdated( "last updated: " + LocalDateTime.now().format( formatter ).toString(), currentServer, scene );
 					}
 				} catch ( IOException e ) {
 					break;
@@ -311,7 +313,7 @@ public class Executor extends Object {
 	}
 
 
-	public void setbRun( boolean bRun ) {
+	private void setbRun( boolean bRun ) {
 		this.bRun = bRun;
 	}
 

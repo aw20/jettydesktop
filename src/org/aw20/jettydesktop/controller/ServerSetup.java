@@ -38,16 +38,20 @@ import javafx.stage.Stage;
 
 public class ServerSetup {
 
-	public static void initialise( UIController uiController, ServerController serverController ) {
+	private UIController uiController;
+
+
+	public void initialise( UIController uiController, ServerController serverController ) {
+		this.uiController = uiController;
 		// on start up, because no web app is selected, don't show console/settings tabs
-		if ( serverController.selectedServer == 0 ) {
+		if ( serverController.getSelectedServer() == 0 ) {
 			uiController.getTabPane().setVisible( false );
 		}
 
 		uiController.getTabPane().getSelectionModel().select( 1 );
 
-		ButtonActions buttonActions = new ButtonActions();
-		buttonActions.showNoButtons( uiController );
+		ButtonController buttonController = new ButtonController();
+		buttonController.showNoButtons( uiController );
 
 		// set initial size of server list
 		uiController.getVboxAppListScrollPane().setFitToWidth( true );
@@ -57,7 +61,7 @@ public class ServerSetup {
 	}
 
 
-	public HBox addHBoxToList( UIController uiController, int serverId, Scene scene, boolean newServer ) {
+	public HBox addHBoxToList( int serverId, Scene scene, boolean newServer, UIController uiController, ServerController serverController, ServerActions serverActions, Executor executor ) {
 
 		// running circle
 		Circle c = new Circle( 5.0f, Color.GREY );
@@ -80,19 +84,21 @@ public class ServerSetup {
 		p.setTranslateY( 10.0 );
 		p.setTranslateX( 12.0 );
 
+		ButtonController buttonController = new ButtonController();
+
 		// play/stop button click
 		p.setOnMouseClicked( event -> {
 			if ( ServerManager.getServers().get( serverId ).isRunning() ) {
-				// if ( ServerWrapper1.getInstance().getRunning( id ) ) {
-				uiController.stopBtnClick( serverId, scene );
+				buttonController.stopBtnClick( serverId, scene, serverController, serverActions, executor, uiController );
 			} else {
-				uiController.startBtnClick( serverId, scene );
+				buttonController.startBtnClick( serverId, scene, serverController, serverActions, executor, uiController );
 				uiController.setSelectedTabInstance( uiController.getTabPane().getTabs().get( 1 ) );
 				if ( !uiController.getServerInfoImagePane().isVisible() ) {
 					uiController.getServerInfoPane().setVisible( true );
 					uiController.getServerInfoImagePane().setVisible( true );
 				}
-				uiController.showCurrentServerInfoPane();
+				ServerInfoController serverInfoController = new ServerInfoController();
+				serverInfoController.showCurrentServerInfoPane( uiController, serverId );
 			}
 		} );
 
@@ -107,16 +113,16 @@ public class ServerSetup {
 		h.setPadding( new Insets( 0, 0, 0, 10 ) );
 		h.setId( Integer.toString( serverId ) );
 		h.getStyleClass().add( "serverListHyperlink" );
-		h.setPrefWidth( Globals.StyleVariables.hyperlinkWidth - 25 );
-		h.setMinWidth( Globals.StyleVariables.hyperlinkWidth - 25 );
-		h.setMaxWidth( Globals.StyleVariables.hyperlinkWidth - 25 );
+		h.setPrefWidth( Globals.StyleVariables.hyperlinkWidth - 18 );
+		h.setMinWidth( Globals.StyleVariables.hyperlinkWidth - 18 );
+		h.setMaxWidth( Globals.StyleVariables.hyperlinkWidth - 18 );
 
 		HBox hbox = new HBox( h, polygonPane );
 
 		hbox.getStyleClass().add( "hboxServer" );
-		hbox.setPrefWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 25 );
-		hbox.setMaxWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 25 );
-		hbox.setMinWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 25 );
+		hbox.setPrefWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 18 );
+		hbox.setMaxWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 18 );
+		hbox.setMinWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 18 );
 		hbox.setId( Globals.FXVariables.HBOXID + serverId );
 
 		AnchorPane a = new AnchorPane();
@@ -144,10 +150,10 @@ public class ServerSetup {
 
 		// server list on click action
 		h.setOnAction( event -> {
-			uiController.handleListViewOnClick( hbox, scene, h, ServerManager.getServers().get( serverId ).getServerConfigMap() );
+			uiController.handleListViewOnClick( hbox, scene, h, serverId );
 		} );
 
-		uiController.getServersForListInstance().put( serverId, a );
+		uiController.getServersForAppList().put( serverId, a );
 
 		return hbox;
 	}
@@ -217,7 +223,7 @@ public class ServerSetup {
 	}
 
 
-	public void setUpSettings( ServerController serverController, UIController uiController ) {
+	public void setUpSettings( ServerController serverController ) {
 		// load settings into server config map
 		serverController.loadSettings();
 		for ( ServerWrapper serverWrapper : ServerManager.getServers().values() ) {
@@ -236,14 +242,14 @@ public class ServerSetup {
 	}
 
 
-	public void setUpServerInfo( ServerController serverController, UIController uiController, Font fontWebFolder, Font fontNameUrl ) {
+	public void setUpServerInfo( ServerController serverController, Font fontWebFolder, Font fontNameUrl ) {
 		// set server info hidden initially
 		AnchorPane.setTopAnchor( uiController.getTabPaneMaster(), 0.0 );
 
 		uiController.getArrowImage().setRotate( 180.0 );
 		uiController.getServerInfoStackPaneMaster().setVisible( false );
 
-		if ( serverController.selectedServer == 0 ) {
+		if ( serverController.getSelectedServer() == 0 ) {
 			uiController.getServerInfoImagePane().setVisible( false );
 		}
 
@@ -280,7 +286,7 @@ public class ServerSetup {
 	}
 
 
-	public void setUpConsoleInfo( ServerController serverController, UIController uiController ) {
+	public void setUpConsoleInfo() {
 		// set server info hidden initially
 		for ( ServerWrapper serverWrapper : ServerManager.getServers().values() ) {
 
@@ -314,27 +320,28 @@ public class ServerSetup {
 	}
 
 
-	public void setUpServerList( UIController uiController, ServerController serverController, Scene scene ) {
+	public void setUpServerList( Scene scene, UIController uiController, ServerController serverController, ServerActions serverActions, Executor exector ) {
 		// load server list
 		uiController.getListViewAppList().setPadding( new Insets( 0.0 ) );
 
 		// set action for on click server
 		for ( Entry<Integer, ServerWrapper> server : ServerManager.getServers().entrySet() ) {
-			addHBoxToList( uiController, server.getKey(), scene, false );
+			addHBoxToList( server.getKey(), scene, false, uiController, serverController, serverActions, exector );
 		}
 
-		for ( Entry<Integer, AnchorPane> h : uiController.getServersForListInstance().entrySet() ) {
+		for ( Entry<Integer, AnchorPane> h : uiController.getServersForAppList().entrySet() ) {
 			AnchorPane hbox = h.getValue();
 			uiController.getListViewAppList().getItems().add( (HBox) hbox.getChildren().get( 0 ) );
 		}
 
 		// re order server list
-		uiController.refreshServerList();
+		ServerInfoController serverInfoController = new ServerInfoController();
+		serverInfoController.refreshServerList( uiController );
 
 	}
 
 
-	public void addSettingsToStackPane( ServerController serverController, UIController uiController, FXMLLoader settingsLoader, String currentJvm, Stage stage, Main main ) throws IOException {
+	public void addSettingsToStackPane( FXMLLoader settingsLoader, String currentJvm, Stage stage, Main main ) throws IOException {
 		Map<String, Pane> panes = new HashMap<String, Pane>();
 		for ( ServerWrapper serverWrapper : ServerManager.getServers().values() ) {
 
@@ -427,7 +434,7 @@ public class ServerSetup {
 	}
 
 
-	public void setUpSpalashScreen( Main main, ServerController serverController, UIController uiController, String title ) {
+	public void setUpSpalashScreen( Main main, String title ) {
 		// set up both screens:
 
 		Hyperlink hpl = new Hyperlink( "Jetty on Github" );

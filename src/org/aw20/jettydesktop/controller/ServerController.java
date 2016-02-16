@@ -18,9 +18,13 @@ import org.aw20.jettydesktop.ui.ServerManager;
 import org.aw20.jettydesktop.ui.ServerWrapper;
 
 
+/*
+ * Class to control server actions such as save, delete, load. 
+ * Contains current selected server in app
+ */
 public class ServerController {
 
-	static int selectedServer;
+	private int selectedServer;
 
 
 	public void setSelectedServer( int savedServerId ) {
@@ -28,19 +32,14 @@ public class ServerController {
 	}
 
 
-	public void hardDeleteServersOnExit() {
-		for ( Entry<Integer, ServerWrapper> entry : ServerManager.getServers().entrySet() ) {
-			if ( entry.getValue().isDeleted() ) {
-				ServerManager.getServers().remove( entry );
-			}
-		}
-		saveSettings();
+	public int getSelectedServer() {
+		return selectedServer;
 	}
 
 
-	// sets soft delete in ServerWrapper
+	// deleted ServerWrapper from server list and saves settings
 	public void setDeleted() {
-		ServerManager.getServers().get( selectedServer ).setDeleted( true );
+		ServerManager.removeServer( selectedServer );
 		saveSettings();
 	}
 
@@ -159,7 +158,7 @@ public class ServerController {
 	}
 
 
-	public void saveSettings() {
+	private void saveSettings() {
 		List<ServerConfigMap> scmList = new ArrayList<ServerConfigMap>();
 		for ( Entry<Integer, ServerWrapper> serverWrapper : ServerManager.getServers().entrySet() ) {
 			scmList.add( serverWrapper.getValue().getServerConfigMap() );

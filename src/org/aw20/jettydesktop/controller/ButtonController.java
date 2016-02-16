@@ -1,0 +1,229 @@
+package org.aw20.jettydesktop.controller;
+
+import org.aw20.jettydesktop.ui.ServerManager;
+import org.aw20.util.Globals;
+
+import javafx.animation.FillTransition;
+import javafx.application.Platform;
+import javafx.scene.Scene;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Tab;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Polygon;
+import javafx.util.Duration;
+
+
+public class ButtonController {
+
+	/**
+	 * Method to show no buttons
+	 * 
+	 * @param uiController
+	 */
+	public void showNoButtons( UIController uiController ) {
+		uiController.getDeleteBtn().setVisible( false );
+		uiController.getSaveBtn().setVisible( false );
+
+		uiController.getStartBtn().setVisible( false );
+		uiController.getStopBtn().setVisible( false );
+		uiController.getOpenBtn().setVisible( false );
+		uiController.getClearBtn().setVisible( false );
+	}
+
+
+	/**
+	 * Method to show disabled delete and disabled save buttons
+	 * 
+	 * @param uiController
+	 */
+	public void showSettingsButtonsOnRunning( UIController uiController ) {
+		uiController.getDeleteBtn().setVisible( true );
+		uiController.getSaveBtn().setVisible( true );
+
+		uiController.getDeleteBtn().setDisable( true );
+		uiController.getSaveBtn().setDisable( true );
+
+		uiController.getStartBtn().setVisible( false );
+		uiController.getStopBtn().setVisible( false );
+		uiController.getOpenBtn().setVisible( false );
+		uiController.getClearBtn().setVisible( false );
+	}
+
+
+	/**
+	 * Method to show no delete and save buttons
+	 * 
+	 * @param uiController
+	 */
+	public void showSettingsButtonsOnNotRunning( UIController uiController ) {
+		uiController.getDeleteBtn().setVisible( true );
+		uiController.getSaveBtn().setVisible( true );
+
+		uiController.getDeleteBtn().setDisable( false );
+		uiController.getSaveBtn().setDisable( false );
+
+		uiController.getStartBtn().setVisible( false );
+		uiController.getStopBtn().setVisible( false );
+		uiController.getOpenBtn().setVisible( false );
+		uiController.getClearBtn().setVisible( false );
+	}
+
+
+	/**
+	 * Method to show stop, open and clear buttons
+	 * 
+	 * @param uiController
+	 */
+	public void showConsoleButtonsOnRunning( UIController uiController ) {
+		uiController.getStartBtn().setVisible( false );
+		uiController.getStopBtn().setVisible( true );
+		uiController.getOpenBtn().setVisible( true );
+		uiController.getClearBtn().setVisible( true );
+
+		uiController.getOpenBtn().setDisable( false );
+
+		uiController.getDeleteBtn().setVisible( false );
+		uiController.getSaveBtn().setVisible( false );
+	}
+
+
+	/**
+	 * Method to show start, disabled open and clear buttons
+	 * 
+	 * @param uiController
+	 */
+	public void showConsoleButtonsOnNotRunning( UIController uiController ) {
+		uiController.getStartBtn().setVisible( true );
+		uiController.getStopBtn().setVisible( false );
+		uiController.getOpenBtn().setVisible( true );
+		uiController.getClearBtn().setVisible( true );
+
+		uiController.getOpenBtn().setDisable( true );
+
+		uiController.getDeleteBtn().setVisible( false );
+		uiController.getSaveBtn().setVisible( false );
+	}
+
+
+	/**
+	 * Method to show save button
+	 * 
+	 * @param uiController
+	 */
+	public void showButtonsOnNewWebApp( UIController uiController ) {
+		uiController.getStartBtn().setVisible( false );
+		uiController.getStopBtn().setVisible( false );
+		uiController.getOpenBtn().setVisible( false );
+		uiController.getClearBtn().setVisible( false );
+
+		uiController.getOpenBtn().setDisable( false );
+
+		uiController.getDeleteBtn().setVisible( false );
+		uiController.getSaveBtn().setVisible( true );
+	}
+
+
+	public void startBtnClick( int id, Scene scene, ServerController serverController, ServerActions serverActions, Executor executor, UIController uiController ) {
+		int selectedServer = id;
+		if ( selectedServer == 0 ) {
+			selectedServer = serverController.getSelectedServer();
+		}
+
+
+		final int finalSelectedServer = selectedServer;
+		final Scene finalScene = scene;
+		// on separate thread due to UI not updating until Executor process finished.
+		Thread t1 = new Thread( new Runnable() {
+
+			public void run() {
+
+				serverActions.startServer( executor, uiController, serverController, finalSelectedServer, finalScene );
+
+				Platform.runLater( () -> {
+					for ( Object executor : Executor.getAllInstances() ) {
+						if ( ( (Executor) executor ).getCurrentServer() == finalSelectedServer ) {
+
+							if ( ( (Executor) executor ).isWebAppRunning() ) {// executor is running
+								ButtonController buttonController = new ButtonController();
+								buttonController.showConsoleButtonsOnRunning( uiController );
+
+								ServerManager.getServers().get( finalSelectedServer ).setRunning( true );
+
+								// target the correct play polygon
+								Polygon p = ( (Polygon) finalScene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.POLYGONID + finalSelectedServer ) );
+								// transform it to a square
+								p.getPoints().setAll(
+										0d, 0d, // (x, y)
+										0d, 12d,
+										12d, 12d,
+										12d, 0d );
+								// colour transition from green to red
+								FillTransition ft = new FillTransition( Duration.millis( 4000 ), p, Color.GREEN, Color.RED );
+								ft.play();
+
+
+								// open the console tab and correct console pane
+								Tab tab = uiController.getTabPane().getTabs().get( 1 );
+								uiController.getTabPane().getSelectionModel().select( tab );
+								uiController.setSelectedTabInstance( tab );
+
+								( (ScrollPane) finalScene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SCROLLPANEID + finalSelectedServer ) ).setVisible( true );
+
+								// update server info
+								Pane serverInfoPane = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SERVERINFOID + finalSelectedServer );
+								serverInfoPane.setVisible( true );
+								serverInfoPane.toFront();
+
+							} else {
+								// update console with server not started message
+								ConsoleController consoleController = new ConsoleController();
+								consoleController.updateConsole( finalSelectedServer, "Server not started.", scene );
+							}
+						}
+						break;
+					}
+				} );
+			}
+
+		} );
+		t1.start();
+
+	}
+
+
+	public void stopBtnClick( int id, Scene scene, ServerController serverController, ServerActions serverActions, Executor executor, UIController uiController ) {
+		int selectedServer = id;
+		if ( selectedServer == 0 ) {
+			selectedServer = serverController.getSelectedServer();
+		}
+
+		if ( uiController.getSelectedTabInstance() == null ) {
+			Tab tab = uiController.getTabPane().getTabs().get( 1 );
+			uiController.setSelectedTabInstance( tab );
+		}
+		// target stop polygon
+		Polygon p = ( (Polygon) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.POLYGONID + selectedServer ) );
+		// transform into a play polygon
+		p.getPoints().setAll(
+				0d, 0d, // (x, y)
+				12d, 6d,
+				0d, 12d );
+		// colour transition red to green
+		FillTransition ft = new FillTransition( Duration.millis( 2000 ), p, Color.RED, Color.GREEN );
+		ft.play();
+
+		serverActions.stopServer( uiController, serverController, executor, selectedServer, scene );
+
+		ServerManager.getServers().get( selectedServer ).setRunning( false );
+
+		ButtonController buttonController = new ButtonController();
+		// enable and disable correct buttons depending on which tab is selected
+		if ( uiController.getSelectedTabInstance().getId().contains( "console" ) ) {
+			buttonController.showConsoleButtonsOnNotRunning( uiController );
+		} else {
+			buttonController.showSettingsButtonsOnNotRunning( uiController );
+		}
+	}
+
+}

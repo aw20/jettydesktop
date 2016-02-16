@@ -1,11 +1,13 @@
 package org.aw20.jettydesktop.ui;
 
-
+/*
+ * Class to set and get server attributes 
+ * Contains id, running boolean and ServerConfigMap
+ */
 public class ServerWrapper {
 
 	private Integer id;
 	private boolean running;
-	private boolean deleted;
 	private ServerConfigMap serverConfigMap;
 
 
@@ -13,7 +15,6 @@ public class ServerWrapper {
 		this.setId( id );
 		this.setRunning( false );
 		this.setServerConfigMap( serverConfigMap );
-		this.setDeleted( false );
 	}
 
 
@@ -44,15 +45,5 @@ public class ServerWrapper {
 
 	public void setId( Integer id ) {
 		this.id = id;
-	}
-
-
-	public boolean isDeleted() {
-		return deleted;
-	}
-
-
-	public void setDeleted( boolean deleted ) {
-		this.deleted = deleted;
 	}
 }

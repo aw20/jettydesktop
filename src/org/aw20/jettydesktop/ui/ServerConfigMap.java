@@ -3,8 +3,6 @@ package org.aw20.jettydesktop.ui;
 import java.io.Serializable;
 import java.util.HashMap;
 
-import com.google.gson.Gson;
-
 
 public class ServerConfigMap extends HashMap<String, String> implements Serializable {
 
@@ -12,37 +10,6 @@ public class ServerConfigMap extends HashMap<String, String> implements Serializ
 
 
 	public ServerConfigMap() {}
-
-
-	ServerConfigMap( String name, String ip, String port, String folder, String jvm, String memory ) {
-		this.setName( name );
-		this.setIP( ip );
-		this.setPort( port );
-		this.setWebFolder( folder );
-		this.setMemoryJVM( memory );
-		if ( jvm != null ) {
-			this.setCustomJVM( jvm );
-		}
-		else {
-			this.setCurrentJVM();
-		}
-	}
-
-
-	@SuppressWarnings( "serial" )
-	public static ServerConfigMap getDefault() {
-		return new ServerConfigMap() {
-
-			{
-				setName( "" );
-				setIP( "127.0.0.1" );
-				setPort( "80" );
-				setWebFolder( "" );
-				setCurrentJVM();
-				setMemoryJVM( "64" );
-			}
-		};
-	}
 
 
 	public void setName( String name ) {
@@ -134,12 +101,6 @@ public class ServerConfigMap extends HashMap<String, String> implements Serializ
 
 	public void setDefaultWebUri( String args ) {
 		put( "DEFAULTURI", args.trim() );
-	}
-
-
-	public String toJson() {
-		Gson gson = new Gson();
-		return ( gson.toJson( this ) );
 	}
 
 

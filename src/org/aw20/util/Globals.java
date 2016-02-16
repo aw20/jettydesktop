@@ -37,6 +37,7 @@ public class Globals {
 		public final static String INFOTEXTFLOWID = "infoTextFlow";
 		public final static String BTNGETFOLDERID = "btnGetFolder";
 		public final static String BTNBROWSEID = "btnBrowseJvm";
+		public final static String CONSOLESTACKPANE = "consoleStackPane";
 
 		public final static String nameTextBox = "txtName";
 		public final static String ipTextBox = "txtIp";

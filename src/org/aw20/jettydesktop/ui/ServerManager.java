@@ -4,12 +4,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 
+/*
+ * Class to add, remove and get ServerWrappers
+ * Contains servers map
+ */
 public class ServerManager {
 
 	private static Map<Integer, ServerWrapper> servers = null;
 
 
-	ServerManager() {
+	public ServerManager() {
 		servers = new HashMap<Integer, ServerWrapper>();
 	}
 
@@ -26,5 +30,10 @@ public class ServerManager {
 
 	public static void addServer( int id, ServerWrapper server ) {
 		servers.put( id, server );
+	}
+
+
+	public static void removeServer( int id ) {
+		servers.remove( id );
 	}
 }

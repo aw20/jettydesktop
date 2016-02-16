@@ -18,9 +18,6 @@ import javafx.scene.control.TabPane;
 
 public class ServerActions {
 
-	// ServerWrapper1 serverWrapper = ServerWrapper1.getInstance();
-
-
 	public boolean startServer( Executor executor, UIController uiController, ServerController serverController, int serverId, Scene scene ) {
 		// run later on JavaFX thread
 		Platform.runLater( () -> {
@@ -36,24 +33,24 @@ public class ServerActions {
 			// show last updated and memory text
 			scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.lastUpdatedTextFlow + serverId ).setVisible( true );
 			scene.lookup( "#" + Globals.FXVariables.memoryTextFlow + serverId ).setVisible( true );
-
-			uiController.updateConsole( serverId, Globals.ConsoleVariables.STARTING_SERVER, uiController.getConsoleStackPane() );
+			ConsoleController consoleController = new ConsoleController();
+			consoleController.updateConsole( serverId, Globals.ConsoleVariables.STARTING_SERVER, scene );
 		} );
 
 		ServerWrapper server = ServerManager.getServers().get( serverId );
-		// ServerConfigMap scm = serverWrapper.getServer( serverId );
 
+		ServerInfoController serverInfoController = new ServerInfoController();
 		try {
 			if ( !server.getServerConfigMap().getPort().isEmpty() ) {
 				// start server
-				executor = new Executor( serverId, uiController.getConsoleStackPane(), scene, uiController );
+				executor = new Executor( serverId, scene, uiController );
 				// set to running in settings
 				server.setRunning( true );
 				// update icon in server list
-				uiController.updateRunningIcon( true, serverId );
+				serverInfoController.updateRunningIcon( true, serverId, uiController );
 				return true;
 			} else {
-				uiController.updateRunningIcon( false, serverId );
+				serverInfoController.updateRunningIcon( false, serverId, uiController );
 				return false;
 			}
 		} catch ( IOException e ) {
@@ -63,8 +60,9 @@ public class ServerActions {
 	}
 
 
-	public boolean stopServer( UIController uiController, ServerController serverController, Executor executor, int serverId ) {
-		uiController.updateConsole( serverId, Globals.ConsoleVariables.STOPPING_SERVER, uiController.getConsoleStackPane() );
+	public boolean stopServer( UIController uiController, ServerController serverController, Executor executor, int serverId, Scene scene ) {
+		ConsoleController consoleController = new ConsoleController();
+		consoleController.updateConsole( serverId, Globals.ConsoleVariables.STOPPING_SERVER, scene );
 
 		ServerWrapper server = ServerManager.getServers().get( serverId );
 		server.setRunning( false );
@@ -82,8 +80,9 @@ public class ServerActions {
 
 		// if executor shut down is successful
 		if ( executor.isbRun() == false ) {
-			uiController.updateConsole( serverId, Globals.ConsoleVariables.SERVER_STOPPED, uiController.getConsoleStackPane() );
-			uiController.updateRunningIcon( false, serverId );
+			consoleController.updateConsole( serverId, Globals.ConsoleVariables.SERVER_STOPPED, scene );
+			ServerInfoController serverInfoController = new ServerInfoController();
+			serverInfoController.updateRunningIcon( false, serverId, uiController );
 			return true;
 		} else {
 			return false;

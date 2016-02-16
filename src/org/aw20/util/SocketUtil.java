@@ -28,23 +28,25 @@ package org.aw20.util;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+
 public class SocketUtil extends Object {
 
-	public static boolean isRemotePortAlive( String ip, int port ){
+	public static boolean isRemotePortAlive( String ip, int port ) {
 		return isRemotePortAlive( ip, port, 3000 );
 	}
-	
-	public static boolean isRemotePortAlive( String ip, int port, int timeoutMs ){
-		try{
+
+
+	private static boolean isRemotePortAlive( String ip, int port, int timeoutMs ) {
+		try {
 			Socket s = new Socket();
 			s.connect( new InetSocketAddress( ip, port ), timeoutMs );
 			s.close();
 			return true;
-			
-		}catch(Exception e){
-			//e.printStackTrace();
+
+		} catch ( Exception e ) {
+			// e.printStackTrace();
 			return false;
 		}
 	}
-	
+
 }
