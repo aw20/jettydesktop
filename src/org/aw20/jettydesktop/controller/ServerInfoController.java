@@ -15,16 +15,18 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Hyperlink;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 
 
+/*
+ * Class to control server info operations, running status, last updated/memory text, server info pane
+ */
 public class ServerInfoController {
 
 	/*
@@ -63,6 +65,23 @@ public class ServerInfoController {
 	}
 
 
+	// show correct text flows with last updated and memory info
+	public void showCurrentConsoleInfo( UIController uiController, ServerController serverController ) {
+		// show correct textflows with last updated and memory
+		Iterator<Node> itConsoleInfo = uiController.getConsoleInfo().getChildren().iterator();
+		while ( itConsoleInfo.hasNext() ) {
+			TextFlow consoleInfoTextFlow = (TextFlow) itConsoleInfo.next();
+			Platform.runLater( () -> {
+				TextFlow textFlow = consoleInfoTextFlow;
+				textFlow.setVisible( false );
+				if ( textFlow.getId().contains( Integer.toString( serverController.getSelectedServer() ) ) ) {
+					textFlow.setVisible( true );
+				}
+			} );
+		}
+	}
+
+
 	public void showCurrentServerInfoPane( UIController uiController, int selectedServerId ) {
 		final int selectedServer = selectedServerId;
 		// show correct server info
@@ -81,40 +100,6 @@ public class ServerInfoController {
 					serverInfoPane.toFront();
 				}
 			} );
-		}
-	}
-
-
-	public void serverInfoArrowImageClick( MouseEvent e, Scene scene, UIController uiController, int selectedServerId ) {
-		if ( AnchorPane.getTopAnchor( uiController.getTabPaneMaster() ) != 0.0 ) {
-			AnchorPane.setTopAnchor( uiController.getTabPaneMaster(), 0.0 );
-
-			// hide server info in blue pane
-			uiController.getServerInfoImagePane().setPrefHeight( 40.0 );
-			uiController.getServerInfoImagePane().setMinHeight( 40.0 );
-			uiController.getServerInfoImagePane().setMaxHeight( 40.0 );
-
-			uiController.getArrowImage().setRotate( 180.0 );
-			uiController.getServerInfoStackPaneMaster().setVisible( false );
-		} else {
-			AnchorPane.setTopAnchor( uiController.getTabPaneMaster(), 47.0 );
-			// show server info in blue pane
-			uiController.getArrowImage().setRotate( 0.0 );
-			uiController.getServerInfoPane().setMaxHeight( 47.0 );
-			uiController.getServerInfoPane().setMinHeight( 47.0 );
-			uiController.getServerInfoPane().setPrefHeight( 47.0 );
-
-			uiController.getServerInfoImagePane().setPrefHeight( 47.0 );
-			uiController.getServerInfoImagePane().setMinHeight( 47.0 );
-			uiController.getServerInfoImagePane().setMaxHeight( 47.0 );
-
-			uiController.getServerInfoStackPaneMaster().setVisible( true );
-
-			Pane serverInfoPane = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SERVERINFOID + selectedServerId );
-			serverInfoPane.setVisible( true );
-			serverInfoPane.toFront();
-
-			e.consume();
 		}
 	}
 

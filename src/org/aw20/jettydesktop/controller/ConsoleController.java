@@ -1,11 +1,8 @@
 package org.aw20.jettydesktop.controller;
 
-import java.util.Iterator;
-
 import org.aw20.util.Globals;
 
 import javafx.application.Platform;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.StackPane;
@@ -14,6 +11,9 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
 
+/*
+ * Class to control console operations, update, clear
+ */
 public class ConsoleController {
 
 
@@ -42,22 +42,4 @@ public class ConsoleController {
 			textFlowContent.getChildren().clear();
 		} );
 	}
-
-
-	// show correct text flows with last updated and memory info
-	public void showCurrentConsoleInfo( UIController uiController, ServerController serverController ) {
-		// show correct textflows with last updated and memory
-		Iterator<Node> itConsoleInfo = uiController.getConsoleInfo().getChildren().iterator();
-		while ( itConsoleInfo.hasNext() ) {
-			TextFlow consoleInfoTextFlow = (TextFlow) itConsoleInfo.next();
-			Platform.runLater( () -> {
-				TextFlow textFlow = consoleInfoTextFlow;
-				textFlow.setVisible( false );
-				if ( textFlow.getId().contains( Integer.toString( serverController.getSelectedServer() ) ) ) {
-					textFlow.setVisible( true );
-				}
-			} );
-		}
-	}
-
 }

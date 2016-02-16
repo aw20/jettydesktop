@@ -8,12 +8,17 @@ import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.util.Duration;
 
 
+/*
+ * Class to control button operations - hiding/showing/disabling, start/stop button actions and show/hide server info button
+ */
 public class ButtonController {
 
 	/**
@@ -223,6 +228,40 @@ public class ButtonController {
 			buttonController.showConsoleButtonsOnNotRunning( uiController );
 		} else {
 			buttonController.showSettingsButtonsOnNotRunning( uiController );
+		}
+	}
+
+
+	public void serverInfoArrowImageClick( MouseEvent e, Scene scene, UIController uiController, int selectedServerId ) {
+		if ( AnchorPane.getTopAnchor( uiController.getTabPaneMaster() ) != 0.0 ) {
+			AnchorPane.setTopAnchor( uiController.getTabPaneMaster(), 0.0 );
+
+			// hide server info in blue pane
+			uiController.getServerInfoImagePane().setPrefHeight( 40.0 );
+			uiController.getServerInfoImagePane().setMinHeight( 40.0 );
+			uiController.getServerInfoImagePane().setMaxHeight( 40.0 );
+
+			uiController.getArrowImage().setRotate( 180.0 );
+			uiController.getServerInfoStackPaneMaster().setVisible( false );
+		} else {
+			AnchorPane.setTopAnchor( uiController.getTabPaneMaster(), 47.0 );
+			// show server info in blue pane
+			uiController.getArrowImage().setRotate( 0.0 );
+			uiController.getServerInfoPane().setMaxHeight( 47.0 );
+			uiController.getServerInfoPane().setMinHeight( 47.0 );
+			uiController.getServerInfoPane().setPrefHeight( 47.0 );
+
+			uiController.getServerInfoImagePane().setPrefHeight( 47.0 );
+			uiController.getServerInfoImagePane().setMinHeight( 47.0 );
+			uiController.getServerInfoImagePane().setMaxHeight( 47.0 );
+
+			uiController.getServerInfoStackPaneMaster().setVisible( true );
+
+			Pane serverInfoPane = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SERVERINFOID + selectedServerId );
+			serverInfoPane.setVisible( true );
+			serverInfoPane.toFront();
+
+			e.consume();
 		}
 	}
 

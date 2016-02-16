@@ -16,6 +16,9 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TabPane;
 
 
+/*
+ * Class to control server operations, start, stop and navigate to webpage
+ */
 public class ServerActions {
 
 	public boolean startServer( Executor executor, UIController uiController, ServerController serverController, int serverId, Scene scene ) {

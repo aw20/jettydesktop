@@ -36,6 +36,10 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
 
+/*
+ * Class to setup fxml elements for saved servers
+ * Contains instance of uiController
+ */
 public class ServerSetup {
 
 	private UIController uiController;

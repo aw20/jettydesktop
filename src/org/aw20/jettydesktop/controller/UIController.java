@@ -46,7 +46,7 @@ import javafx.stage.Stage;
 
 
 /*
- * Class to control UI operations, such as updating console, display settings/console/splash screen, update UI on server selection
+ * Class to control UI operations, display settings/console/splash screen, update UI on server selection, handle clicks
  * Contains all FXML variables
  */
 public class UIController {
@@ -219,8 +219,7 @@ public class UIController {
 		getServerInfoImagePane().setVisible( true );
 
 		serverInfoController.showCurrentServerInfoPane( this, selectedServerId );
-		ConsoleController consoleController = new ConsoleController();
-		consoleController.showCurrentConsoleInfo( this, serverController );
+		serverInfoController.showCurrentConsoleInfo( this, serverController );
 		showCurrentTab();
 
 		if ( ServerManager.getServers().get( serverController.getSelectedServer() ).isRunning() ) {
@@ -572,7 +571,7 @@ public class UIController {
 
 
 	public void serverInfoArrowImageClick( MouseEvent e, Scene scene ) {
-		serverInfoController.serverInfoArrowImageClick( e, scene, this, serverController.getSelectedServer() );
+		buttonController.serverInfoArrowImageClick( e, scene, this, serverController.getSelectedServer() );
 	}
 
 

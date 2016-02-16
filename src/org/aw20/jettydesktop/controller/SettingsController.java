@@ -19,6 +19,9 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
 
+/*
+ * Class to control settings operations, updating and validating
+ */
 public class SettingsController {
 
 	public void updateSettings( UIController uiController, Main main, ServerController serverController, Executor executor, int savedServerId, boolean newServer, Scene scene, Pane settings, String tempName, String tempIp, String tempPort, String tempWebFolder, String tempUri, String tempCustomJvm, boolean isCustomJvm, String tempJvmArgs, String tempMemory ) {
