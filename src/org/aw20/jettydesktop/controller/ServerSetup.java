@@ -43,10 +43,12 @@ import javafx.stage.Stage;
 public class ServerSetup {
 
 	private UIController uiController;
+	private ServerManager serverManager;
 
 
-	public void initialise( UIController uiController, ServerController serverController ) {
+	public void initialise( UIController uiController, ServerController serverController, ServerManager serverManager ) {
 		this.uiController = uiController;
+		this.serverManager = serverManager;
 		// on start up, because no web app is selected, don't show console/settings tabs
 		if ( serverController.getSelectedServer() == 0 ) {
 			uiController.getTabPane().setVisible( false );
@@ -92,10 +94,10 @@ public class ServerSetup {
 
 		// play/stop button click
 		p.setOnMouseClicked( event -> {
-			if ( ServerManager.getServers().get( serverId ).isRunning() ) {
-				buttonController.stopBtnClick( serverId, scene, serverController, serverActions, executor, uiController );
+			if ( serverManager.getServers().get( serverId ).isRunning() ) {
+				buttonController.stopBtnClick( serverId, scene, serverController, serverActions, executor, uiController, serverManager );
 			} else {
-				buttonController.startBtnClick( serverId, scene, serverController, serverActions, executor, uiController );
+				buttonController.startBtnClick( serverId, scene, serverController, serverActions, executor, uiController, serverManager );
 				uiController.setSelectedTabInstance( uiController.getTabPane().getTabs().get( 1 ) );
 				if ( !uiController.getServerInfoImagePane().isVisible() ) {
 					uiController.getServerInfoPane().setVisible( true );
@@ -112,7 +114,7 @@ public class ServerSetup {
 		polygonPane.setMaxWidth( Globals.StyleVariables.polygonPaneWidth );
 
 		// hyperlink - server name
-		Hyperlink h = new Hyperlink( ServerManager.getServers().get( serverId ).getServerConfigMap().getName(), c );
+		Hyperlink h = new Hyperlink( serverManager.getServers().get( serverId ).getServerConfigMap().getName(), c );
 
 		h.setPadding( new Insets( 0, 0, 0, 10 ) );
 		h.setId( Integer.toString( serverId ) );
@@ -230,7 +232,7 @@ public class ServerSetup {
 	public void setUpSettings( ServerController serverController ) {
 		// load settings into server config map
 		serverController.loadSettings();
-		for ( ServerWrapper serverWrapper : ServerManager.getServers().values() ) {
+		for ( ServerWrapper serverWrapper : serverManager.getServers().values() ) {
 			// add ids to list
 			int id = serverWrapper.getId();
 			uiController.getServerConfigIdList().add( id );
@@ -257,7 +259,7 @@ public class ServerSetup {
 			uiController.getServerInfoImagePane().setVisible( false );
 		}
 
-		for ( ServerWrapper serverWrapper : ServerManager.getServers().values() ) {
+		for ( ServerWrapper serverWrapper : serverManager.getServers().values() ) {
 
 			String id = String.valueOf( serverWrapper.getId() );
 
@@ -292,7 +294,7 @@ public class ServerSetup {
 
 	public void setUpConsoleInfo() {
 		// set server info hidden initially
-		for ( ServerWrapper serverWrapper : ServerManager.getServers().values() ) {
+		for ( ServerWrapper serverWrapper : serverManager.getServers().values() ) {
 
 			String id = String.valueOf( serverWrapper.getId() );
 
@@ -329,7 +331,7 @@ public class ServerSetup {
 		uiController.getListViewAppList().setPadding( new Insets( 0.0 ) );
 
 		// set action for on click server
-		for ( Entry<Integer, ServerWrapper> server : ServerManager.getServers().entrySet() ) {
+		for ( Entry<Integer, ServerWrapper> server : serverManager.getServers().entrySet() ) {
 			addHBoxToList( server.getKey(), scene, false, uiController, serverController, serverActions, exector );
 		}
 
@@ -347,7 +349,7 @@ public class ServerSetup {
 
 	public void addSettingsToStackPane( FXMLLoader settingsLoader, String currentJvm, Stage stage, Main main ) throws IOException {
 		Map<String, Pane> panes = new HashMap<String, Pane>();
-		for ( ServerWrapper serverWrapper : ServerManager.getServers().values() ) {
+		for ( ServerWrapper serverWrapper : serverManager.getServers().values() ) {
 
 			String id = String.valueOf( serverWrapper.getId() );
 
@@ -448,7 +450,7 @@ public class ServerSetup {
 		} );
 		TextFlow textFlow = null;
 		// if there are no webapps - instruct to add one
-		if ( ServerManager.getServers() == null || ServerManager.getServers().isEmpty() ) {
+		if ( serverManager.getServers() == null || serverManager.getServers().isEmpty() ) {
 			textFlow = new TextFlow( new Text( title ), new Text( "\nView " ), hpl, new Text( " for more information" ), new Text( "\nClick an app to start" ) );
 			textFlow.getStyleClass().add( "splashScreenText" );
 			uiController.getSplashPane().add( textFlow, 1, 1 );

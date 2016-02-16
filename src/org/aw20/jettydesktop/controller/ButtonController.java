@@ -129,7 +129,7 @@ public class ButtonController {
 	}
 
 
-	public void startBtnClick( int id, Scene scene, ServerController serverController, ServerActions serverActions, Executor executor, UIController uiController ) {
+	public void startBtnClick( int id, Scene scene, ServerController serverController, ServerActions serverActions, Executor executor, UIController uiController, ServerManager serverManager ) {
 		int selectedServer = id;
 		if ( selectedServer == 0 ) {
 			selectedServer = serverController.getSelectedServer();
@@ -137,56 +137,52 @@ public class ButtonController {
 
 
 		final int finalSelectedServer = selectedServer;
+
 		final Scene finalScene = scene;
 		// on separate thread due to UI not updating until Executor process finished.
 		Thread t1 = new Thread( new Runnable() {
 
 			public void run() {
 
-				serverActions.startServer( executor, uiController, serverController, finalSelectedServer, finalScene );
+				serverActions.startServer( executor, uiController, serverController, finalSelectedServer, finalScene, serverManager );
+				final Executor currentExecutor = Executor.getExecutor( finalSelectedServer );
 
 				Platform.runLater( () -> {
-					for ( Object executor : Executor.getAllInstances() ) {
-						if ( ( (Executor) executor ).getCurrentServer() == finalSelectedServer ) {
 
-							if ( ( (Executor) executor ).isWebAppRunning() ) {// executor is running
-								ButtonController buttonController = new ButtonController();
-								buttonController.showConsoleButtonsOnRunning( uiController );
+					if ( ( (Executor) currentExecutor ).isWebAppRunning() ) {// executor is running
+						showConsoleButtonsOnRunning( uiController );
 
-								ServerManager.getServers().get( finalSelectedServer ).setRunning( true );
+						serverManager.getServers().get( finalSelectedServer ).setRunning( true );
 
-								// target the correct play polygon
-								Polygon p = ( (Polygon) finalScene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.POLYGONID + finalSelectedServer ) );
-								// transform it to a square
-								p.getPoints().setAll(
-										0d, 0d, // (x, y)
-										0d, 12d,
-										12d, 12d,
-										12d, 0d );
-								// colour transition from green to red
-								FillTransition ft = new FillTransition( Duration.millis( 4000 ), p, Color.GREEN, Color.RED );
-								ft.play();
+						// target the correct play polygon
+						Polygon p = ( (Polygon) finalScene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.POLYGONID + finalSelectedServer ) );
+						// transform it to a square
+						p.getPoints().setAll(
+								0d, 0d, // (x, y)
+								0d, 12d,
+								12d, 12d,
+								12d, 0d );
+						// colour transition from green to red
+						FillTransition ft = new FillTransition( Duration.millis( 4000 ), p, Color.GREEN, Color.RED );
+						ft.play();
 
 
-								// open the console tab and correct console pane
-								Tab tab = uiController.getTabPane().getTabs().get( 1 );
-								uiController.getTabPane().getSelectionModel().select( tab );
-								uiController.setSelectedTabInstance( tab );
+						// open the console tab and correct console pane
+						Tab tab = uiController.getTabPane().getTabs().get( 1 );
+						uiController.getTabPane().getSelectionModel().select( tab );
+						uiController.setSelectedTabInstance( tab );
 
-								( (ScrollPane) finalScene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SCROLLPANEID + finalSelectedServer ) ).setVisible( true );
+						( (ScrollPane) finalScene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SCROLLPANEID + finalSelectedServer ) ).setVisible( true );
 
-								// update server info
-								Pane serverInfoPane = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SERVERINFOID + finalSelectedServer );
-								serverInfoPane.setVisible( true );
-								serverInfoPane.toFront();
+						// update server info
+						Pane serverInfoPane = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SERVERINFOID + finalSelectedServer );
+						serverInfoPane.setVisible( true );
+						serverInfoPane.toFront();
 
-							} else {
-								// update console with server not started message
-								ConsoleController consoleController = new ConsoleController();
-								consoleController.updateConsole( finalSelectedServer, "Server not started.", scene );
-							}
-						}
-						break;
+					} else {
+						// update console with server not started message
+						ConsoleController consoleController = new ConsoleController();
+						consoleController.updateConsole( finalSelectedServer, "Server not started.", scene );
 					}
 				} );
 			}
@@ -197,7 +193,7 @@ public class ButtonController {
 	}
 
 
-	public void stopBtnClick( int id, Scene scene, ServerController serverController, ServerActions serverActions, Executor executor, UIController uiController ) {
+	public void stopBtnClick( int id, Scene scene, ServerController serverController, ServerActions serverActions, Executor executor, UIController uiController, ServerManager serverManager ) {
 		int selectedServer = id;
 		if ( selectedServer == 0 ) {
 			selectedServer = serverController.getSelectedServer();
@@ -218,16 +214,15 @@ public class ButtonController {
 		FillTransition ft = new FillTransition( Duration.millis( 2000 ), p, Color.RED, Color.GREEN );
 		ft.play();
 
-		serverActions.stopServer( uiController, serverController, executor, selectedServer, scene );
+		serverActions.stopServer( uiController, serverController, executor, selectedServer, scene, serverManager );
 
-		ServerManager.getServers().get( selectedServer ).setRunning( false );
+		serverManager.getServers().get( selectedServer ).setRunning( false );
 
-		ButtonController buttonController = new ButtonController();
 		// enable and disable correct buttons depending on which tab is selected
 		if ( uiController.getSelectedTabInstance().getId().contains( "console" ) ) {
-			buttonController.showConsoleButtonsOnNotRunning( uiController );
+			showConsoleButtonsOnNotRunning( uiController );
 		} else {
-			buttonController.showSettingsButtonsOnNotRunning( uiController );
+			showSettingsButtonsOnNotRunning( uiController );
 		}
 	}
 

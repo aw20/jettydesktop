@@ -21,7 +21,8 @@ import javafx.scene.control.TabPane;
  */
 public class ServerActions {
 
-	public boolean startServer( Executor executor, UIController uiController, ServerController serverController, int serverId, Scene scene ) {
+
+	public boolean startServer( Executor executor, UIController uiController, ServerController serverController, int serverId, Scene scene, ServerManager serverManager ) {
 		// run later on JavaFX thread
 		Platform.runLater( () -> {
 			serverController.setSelectedServer( serverId );
@@ -40,13 +41,13 @@ public class ServerActions {
 			consoleController.updateConsole( serverId, Globals.ConsoleVariables.STARTING_SERVER, scene );
 		} );
 
-		ServerWrapper server = ServerManager.getServers().get( serverId );
+		ServerWrapper server = serverManager.getServers().get( serverId );
 
 		ServerInfoController serverInfoController = new ServerInfoController();
 		try {
 			if ( !server.getServerConfigMap().getPort().isEmpty() ) {
 				// start server
-				executor = new Executor( serverId, scene, uiController );
+				executor = new Executor( serverId, scene, uiController, serverManager );
 				// set to running in settings
 				server.setRunning( true );
 				// update icon in server list
@@ -63,11 +64,11 @@ public class ServerActions {
 	}
 
 
-	public boolean stopServer( UIController uiController, ServerController serverController, Executor executor, int serverId, Scene scene ) {
+	public boolean stopServer( UIController uiController, ServerController serverController, Executor executor, int serverId, Scene scene, ServerManager serverManager ) {
 		ConsoleController consoleController = new ConsoleController();
 		consoleController.updateConsole( serverId, Globals.ConsoleVariables.STOPPING_SERVER, scene );
 
-		ServerWrapper server = ServerManager.getServers().get( serverId );
+		ServerWrapper server = serverManager.getServers().get( serverId );
 		server.setRunning( false );
 
 		// get correct version of executor on exiting app and stopping all servers

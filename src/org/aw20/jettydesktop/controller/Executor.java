@@ -85,13 +85,23 @@ public class Executor extends Object {
 	}
 
 
+	public static Executor getExecutor( int id ) {
+		for ( Object instance : allInstances ) {
+			if ( ( (Executor) instance ).getCurrentServer() == id ) {
+				return (Executor) instance;
+			}
+		}
+		return null;
+	}
+
+
 	@SuppressWarnings( "unchecked" )
-	public Executor( int serverId, Scene _scene, UIController _uiController ) throws IOException {
+	public Executor( int serverId, Scene _scene, UIController _uiController, ServerManager serverManager ) throws IOException {
 		allInstances.add( this );
 
 		currentServer = serverId;
 		scene = _scene;
-		currentServerConfigMap = ServerManager.getServers().get( currentServer ).getServerConfigMap();
+		currentServerConfigMap = serverManager.getServers().get( currentServer ).getServerConfigMap();
 
 		// Check to see if this server is already running
 		if ( SocketUtil.isRemotePortAlive( currentServerConfigMap.getIP(), Integer.parseInt( currentServerConfigMap.getPort() ) ) ) {

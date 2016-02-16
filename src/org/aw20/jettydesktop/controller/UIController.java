@@ -139,11 +139,19 @@ public class UIController {
 	private ServerSetup serverSetup = new ServerSetup();
 
 	private Tab selectedTabInstance = null;
-	private ServerController serverController = new ServerController();
+
 	private Map<Integer, AnchorPane> serversForAppList = new HashMap<Integer, AnchorPane>();
+	private ServerManager serverManager;
 	private ButtonController buttonController = new ButtonController();
 	private ServerInfoController serverInfoController = new ServerInfoController();
 	private SettingsController settingsController = new SettingsController();
+	private ServerController serverController;
+
+
+	public UIController( ServerManager _serverManager ) {
+		serverManager = _serverManager;
+		serverController = new ServerController( serverManager );
+	}
 
 
 	public Tab getSelectedTabInstance() {
@@ -222,7 +230,7 @@ public class UIController {
 		serverInfoController.showCurrentConsoleInfo( this, serverController );
 		showCurrentTab();
 
-		if ( ServerManager.getServers().get( serverController.getSelectedServer() ).isRunning() ) {
+		if ( serverManager.getServers().get( serverController.getSelectedServer() ).isRunning() ) {
 			buttonController.showConsoleButtonsOnRunning( this );
 		} else {
 			buttonController.showConsoleButtonsOnNotRunning( this );
@@ -240,7 +248,7 @@ public class UIController {
 			if ( getSelectedTabInstance().getId().contains( "console" ) ) {
 				textFlowContent.setVisible( true );
 				textFlowContent.toFront();
-				if ( ServerManager.getServers().get( serverController.getSelectedServer() ).isRunning() ) {
+				if ( serverManager.getServers().get( serverController.getSelectedServer() ).isRunning() ) {
 					buttonController.showConsoleButtonsOnRunning( this );
 				} else {
 					buttonController.showConsoleButtonsOnNotRunning( this );
@@ -249,7 +257,7 @@ public class UIController {
 			else {
 				settings.setVisible( true );
 				settings.toFront();
-				if ( ServerManager.getServers().get( serverController.getSelectedServer() ).isRunning() ) {
+				if ( serverManager.getServers().get( serverController.getSelectedServer() ).isRunning() ) {
 					buttonController.showSettingsButtonsOnRunning( this );
 				} else {
 					buttonController.showSettingsButtonsOnNotRunning( this );
@@ -282,7 +290,7 @@ public class UIController {
 			pSettings.toFront();
 
 			// disable buttons if server running
-			if ( ServerManager.getServers().get( selectedServer ).isRunning() ) {
+			if ( serverManager.getServers().get( selectedServer ).isRunning() ) {
 				buttonController.showSettingsButtonsOnRunning( this );
 			} else {
 				buttonController.showSettingsButtonsOnNotRunning( this );
@@ -310,7 +318,7 @@ public class UIController {
 				} );
 			}
 			// show and disable correct buttons on console showing
-			if ( ServerManager.getServers().get( selectedServer ).isRunning() ) {
+			if ( serverManager.getServers().get( selectedServer ).isRunning() ) {
 				buttonController.showConsoleButtonsOnRunning( this );
 			} else {
 				buttonController.showConsoleButtonsOnNotRunning( this );
@@ -500,7 +508,7 @@ public class UIController {
 		getTabPane().getSelectionModel().select( tab );
 
 		// show correct console buttons
-		if ( ServerManager.getServers().get( serverController.getSelectedServer() ).isRunning() ) {
+		if ( serverManager.getServers().get( serverController.getSelectedServer() ).isRunning() ) {
 			buttonController.showConsoleButtonsOnRunning( this );
 		} else {
 			buttonController.showConsoleButtonsOnNotRunning( this );
@@ -526,7 +534,7 @@ public class UIController {
 
 	public void deleteServer( Main main, ActionEvent e ) {
 		List<HBox> listOfHboxes = getListViewAppList().getItems();
-		String serverToBeDeleted = ServerManager.getServers().get( serverController.getSelectedServer() ).getServerConfigMap().getName();
+		String serverToBeDeleted = serverManager.getServers().get( serverController.getSelectedServer() ).getServerConfigMap().getName();
 
 		Optional<ButtonType> result = main.createNewAlert( AlertType.CONFIRMATION, "", "Delete " + serverToBeDeleted + "?", "Are you sure?" ).showAndWait();
 
@@ -566,7 +574,7 @@ public class UIController {
 
 
 	public boolean validateSettings( Scene scene, Main main ) {
-		return settingsController.validateSettings( scene, main, serverController );
+		return settingsController.validateSettings( scene, main, serverController, serverManager );
 	}
 
 
@@ -576,12 +584,12 @@ public class UIController {
 
 
 	public void handleStartBtnClick( Scene scene, Executor executor ) {
-		buttonController.startBtnClick( 0, scene, serverController, new ServerActions(), executor, this );
+		buttonController.startBtnClick( 0, scene, serverController, new ServerActions(), executor, this, serverManager );
 	}
 
 
 	public void handleStopBtnClick( Scene scene, Executor executor ) {
-		buttonController.stopBtnClick( 0, scene, serverController, new ServerActions(), executor, this );
+		buttonController.stopBtnClick( 0, scene, serverController, new ServerActions(), executor, this, serverManager );
 	}
 
 
@@ -594,7 +602,7 @@ public class UIController {
 		String host = "";
 		String port = "";
 		String defaultUri = "";
-		ServerWrapper serverWrapper = ServerManager.getServers().get( selectedServer );
+		ServerWrapper serverWrapper = serverManager.getServers().get( selectedServer );
 
 
 		webFolder = serverWrapper.getServerConfigMap().getWebFolder();

@@ -47,9 +47,10 @@ public class Main extends Application {
 	private final String viewDir = "/org/aw20/jettydesktop/view/";
 
 	private UIController uiController;
-	private ServerController serverController = new ServerController();
 	private ServerSetup serverSetup;
 	private Executor executor = null;
+	private ServerManager serverManager = new ServerManager();
+	private ServerController serverController = new ServerController( serverManager );
 
 	private Stage stage;
 	private Scene scene;
@@ -66,7 +67,7 @@ public class Main extends Application {
 		FXMLLoader loader = new FXMLLoader( getClass().getResource( viewDir + "JettyDesktopUI.fxml" ) );
 		settingsLoader = new FXMLLoader( getClass().getResource( viewDir + "settings.fxml" ) );
 
-		uiController = new UIController();
+		uiController = new UIController( serverManager );
 
 		serverSetup = new ServerSetup();
 
@@ -85,7 +86,7 @@ public class Main extends Application {
 		scene = new Scene( root, 889, 655 );
 
 		// set up JavaFX variables and window
-		serverSetup.initialise( uiController, serverController );
+		serverSetup.initialise( uiController, serverController, serverManager );
 
 		serverSetup.setUpSpalashScreen( this, title );
 		try {
@@ -231,7 +232,7 @@ public class Main extends Application {
 					public void handle( WindowEvent t ) {
 
 						// if there are no server
-						if ( ServerManager.getServers() == null || ServerManager.getServers().isEmpty() ) {
+						if ( serverManager.getServers() == null || serverManager.getServers().isEmpty() ) {
 							// appFunctions.deleteServers();
 							Platform.exit();
 
@@ -239,7 +240,7 @@ public class Main extends Application {
 						} else {
 							// else count the running servers
 							int runningServers = 0;
-							for ( Entry<Integer, ServerWrapper> server : ServerManager.getServers().entrySet() ) {
+							for ( Entry<Integer, ServerWrapper> server : serverManager.getServers().entrySet() ) {
 								if ( server.getValue().isRunning() ) {
 									runningServers++;
 								}

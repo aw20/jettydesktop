@@ -81,7 +81,7 @@ public class SettingsController {
 	/*
 	 * method to validate settings on save
 	 */
-	public boolean validateSettings( Scene scene, Main main, ServerController serverController ) {
+	public boolean validateSettings( Scene scene, Main main, ServerController serverController, ServerManager serverManager ) {
 		Pane tempSettings;
 		// not new server
 		if ( serverController.getSelectedServer() != 0 ) {
@@ -98,7 +98,7 @@ public class SettingsController {
 		 * if name == server name in settings return false
 		 * if name != server name in settings return true
 		 */
-		for ( Entry<Integer, ServerWrapper> server : ServerManager.getServers().entrySet() ) {
+		for ( Entry<Integer, ServerWrapper> server : serverManager.getServers().entrySet() ) {
 			if ( server.getValue().getServerConfigMap().getName().toLowerCase().equals( tempName.toLowerCase() ) ) {
 
 				if ( !settingsId.equals( String.valueOf( server.getKey() ) ) ) {
