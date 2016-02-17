@@ -24,7 +24,7 @@ import javafx.scene.text.TextFlow;
  */
 public class SettingsController {
 
-	public void updateSettings( UIController uiController, Main main, ServerController serverController, Executor executor, int savedServerId, boolean newServer, Scene scene, Pane settings, String tempName, String tempIp, String tempPort, String tempWebFolder, String tempUri, String tempCustomJvm, boolean isCustomJvm, String tempJvmArgs, String tempMemory ) {
+	public void updateSettings( UIController uiController, Main main, ServerManager serverManager, ServerController serverController, Executor executor, int savedServerId, boolean newServer, Scene scene, Pane settings, String tempName, String tempIp, String tempPort, String tempWebFolder, String tempUri, String tempCustomJvm, boolean isCustomJvm, String tempJvmArgs, String tempMemory ) {
 
 		if ( !newServer ) {
 			// update settings
@@ -57,7 +57,7 @@ public class SettingsController {
 
 			// get new server list item
 			ServerSetup serverSetup = new ServerSetup();
-			HBox hbox = serverSetup.addHBoxToList( savedServerId, scene, true, uiController, serverController, new ServerActions(), executor );
+			HBox hbox = serverSetup.addHBoxToList( savedServerId, scene, true, serverManager, uiController, serverController, new ServerActions(), executor );
 
 			// add console for server
 			TextFlow newTextFlow = new TextFlow();

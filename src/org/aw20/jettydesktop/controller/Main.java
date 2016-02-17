@@ -97,7 +97,7 @@ public class Main extends Application {
 			System.exit( -1 );
 		}
 		serverSetup.setUpSettings( serverController );
-		serverSetup.setUpServerList( scene, uiController, serverController, new ServerActions(), null );
+		serverSetup.setUpServerList( scene, serverManager, uiController, serverController, new ServerActions(), null );
 		serverSetup.setUpServerInfo( serverController, fontWebFolder, fontNameUrl );
 
 		try {
@@ -187,8 +187,7 @@ public class Main extends Application {
 		 * Method to handle click on clear
 		 */
 		uiController.getClearBtn().setOnAction( ( ActionEvent e ) -> {
-			ConsoleController consoleController = new ConsoleController();
-			consoleController.clearConsole( serverController.getSelectedServer(), scene );
+			uiController.clearConsole( scene );
 		} );
 
 

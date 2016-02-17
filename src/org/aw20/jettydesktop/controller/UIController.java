@@ -492,7 +492,7 @@ public class UIController {
 
 		// update settings on user updated fields
 
-		settingsController.updateSettings( this, main, serverController, executor, savedServerId, newServer, scene, tempSettings, tempName, tempIp, tempPort, tempWebFolder, tempUri, tempCustomJvm, isCustomJvm, tempJvmArgs, tempMemory );
+		settingsController.updateSettings( this, main, serverManager, serverController, executor, savedServerId, newServer, scene, tempSettings, tempName, tempIp, tempPort, tempWebFolder, tempUri, tempCustomJvm, isCustomJvm, tempJvmArgs, tempMemory );
 		// close settings and open console
 		tempSettings.setVisible( false );
 		ScrollPane s = ( (ScrollPane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SCROLLPANEID + savedServerId ) );
@@ -590,6 +590,12 @@ public class UIController {
 
 	public void handleStopBtnClick( Scene scene, Executor executor ) {
 		buttonController.stopBtnClick( 0, scene, serverController, new ServerActions(), executor, this, serverManager );
+	}
+
+
+	public void clearConsole( Scene scene ) {
+		ConsoleController consoleController = new ConsoleController();
+		consoleController.clearConsole( serverController.getSelectedServer(), scene );
 	}
 
 

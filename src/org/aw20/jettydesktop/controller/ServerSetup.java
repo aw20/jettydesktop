@@ -67,7 +67,7 @@ public class ServerSetup {
 	}
 
 
-	public HBox addHBoxToList( int serverId, Scene scene, boolean newServer, UIController uiController, ServerController serverController, ServerActions serverActions, Executor executor ) {
+	public HBox addHBoxToList( int serverId, Scene scene, boolean newServer, ServerManager serverManager, UIController uiController, ServerController serverController, ServerActions serverActions, Executor executor ) {
 
 		// running circle
 		Circle c = new Circle( 5.0f, Color.GREY );
@@ -326,13 +326,13 @@ public class ServerSetup {
 	}
 
 
-	public void setUpServerList( Scene scene, UIController uiController, ServerController serverController, ServerActions serverActions, Executor exector ) {
+	public void setUpServerList( Scene scene, ServerManager serverManager, UIController uiController, ServerController serverController, ServerActions serverActions, Executor exector ) {
 		// load server list
 		uiController.getListViewAppList().setPadding( new Insets( 0.0 ) );
 
 		// set action for on click server
 		for ( Entry<Integer, ServerWrapper> server : serverManager.getServers().entrySet() ) {
-			addHBoxToList( server.getKey(), scene, false, uiController, serverController, serverActions, exector );
+			addHBoxToList( server.getKey(), scene, false, serverManager, uiController, serverController, serverActions, exector );
 		}
 
 		for ( Entry<Integer, AnchorPane> h : uiController.getServersForAppList().entrySet() ) {
