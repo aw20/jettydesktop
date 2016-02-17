@@ -18,6 +18,7 @@ import javafx.util.Duration;
 
 /*
  * Class to control button operations - hiding/showing/disabling, start/stop button actions and show/hide server info button
+ * doesn't contain buttons as they are part of the JettyDesktopUI.fxml and the UIController is the controller specified for that particular view
  */
 public class ButtonController {
 

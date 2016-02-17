@@ -410,7 +410,7 @@ public class UIController {
 	}
 
 
-	public void saveBtnClick( Scene scene, Main main, Executor executor, Font fontWebFolder, Font fontNameUrl, String currentJvm, Stage stage, FXMLLoader settingsLoader, UIController uiController ) throws IOException {
+	public void saveBtnClick( Scene scene, Main main, Executor executor, Font fontWebFolder, Font fontNameUrl, String currentJvm, Stage stage, FXMLLoader settingsLoader, UIController uiController ) {
 		boolean newServer = false;
 		Pane tempSettings;
 		// not new server
@@ -422,31 +422,33 @@ public class UIController {
 		}
 
 		// get all user input fields
-		String tempName = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.nameTextBox ) ).getText();
-		String tempIp = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.ipTextBox ) ).getText();
-		String tempPort = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.portTextBox ) ).getText();
-		String tempWebFolder = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.webFolderTextBox ) ).getText();
-		String tempUri = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.uriTextBox ) ).getText();
-		String tempCustomJvm = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.customJvmTextBox ) ).getText();
-		String tempJvmArgs = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.jvmArgsTextBox ) ).getText();
-		String tempMemory = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.memoryTextBox ) ).getText();
+		Map<String, String> tempSettingsVariables = new HashMap<String, String>();
+		tempSettingsVariables.put( "tempName", ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.nameTextBox ) ).getText() );
+		tempSettingsVariables.put( "tempIp", ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.ipTextBox ) ).getText() );
+		tempSettingsVariables.put( "tempPort", ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.portTextBox ) ).getText() );
+		tempSettingsVariables.put( "tempWebFolder", ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.webFolderTextBox ) ).getText() );
+		tempSettingsVariables.put( "tempUri", ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.uriTextBox ) ).getText() );
+		tempSettingsVariables.put( "tempCustomJvm", ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.customJvmTextBox ) ).getText() );
+		tempSettingsVariables.put( "tempJvmArgs", ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.jvmArgsTextBox ) ).getText() );
+		tempSettingsVariables.put( "tempMemory", ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.memoryTextBox ) ).getText() );
+
 		boolean isCustomJvm = ( (RadioButton) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.customJvmRadioBtn ) ).selectedProperty().get();
 
-		int savedServerId = serverController.saveServer( newServer, tempName, tempIp, tempPort, tempWebFolder, tempUri, tempCustomJvm, isCustomJvm, tempJvmArgs, tempMemory );
+		int savedServerId = serverController.saveServer( newServer, tempSettingsVariables, isCustomJvm );
 
 		if ( newServer ) {
 			// add info to server info pane
 			// smaller text for web folder
-			Text text1 = new Text( '\n' + tempWebFolder );
+			Text text1 = new Text( '\n' + tempSettingsVariables.get( "tempWebFolder" ) );
 			text1.setFill( Color.WHITE );
 			text1.setFont( fontWebFolder );
 			text1.setId( Globals.FXVariables.INFOWEBFOLDERID + savedServerId );
 			// larger text for name and url
-			Text text2 = new Text( tempName + " - " );
+			Text text2 = new Text( tempSettingsVariables.get( "tempName" ) + " - " );
 			text2.setFill( Color.WHITE );
 			text2.setFont( fontNameUrl );
 			text2.setId( Globals.FXVariables.INFONAMEID + savedServerId );
-			Text text3 = new Text( tempIp + ":" + tempPort );
+			Text text3 = new Text( tempSettingsVariables.get( "tempIp" ) + ":" + tempSettingsVariables.get( "tempPort" ) );
 			text3.setFill( Color.WHITE );
 			text3.setFont( fontNameUrl );
 			text3.setId( Globals.FXVariables.INFOURLID + savedServerId );
@@ -488,11 +490,13 @@ public class UIController {
 			tfMemory.setId( Globals.FXVariables.memoryTextFlow + savedServerId );
 
 			getConsoleInfo().getChildren().add( tfMemory );
+			settingsController.createSettings( uiController, serverManager, serverController, executor, savedServerId, scene );
+
+		} else {
+
+			settingsController.updateSettings( tempSettings, scene, uiController, tempSettingsVariables, isCustomJvm );
 		}
 
-		// update settings on user updated fields
-
-		settingsController.updateSettings( this, main, serverManager, serverController, executor, savedServerId, newServer, scene, tempSettings, tempName, tempIp, tempPort, tempWebFolder, tempUri, tempCustomJvm, isCustomJvm, tempJvmArgs, tempMemory );
 		// close settings and open console
 		tempSettings.setVisible( false );
 		ScrollPane s = ( (ScrollPane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SCROLLPANEID + savedServerId ) );
@@ -526,7 +530,11 @@ public class UIController {
 			getSettingsStackPane().getChildren().add( newSettings );
 			tempSettings.setVisible( false );
 			// add new empty settings
-			serverSetup.setUpEmptySettings( settingsLoader, currentJvm, stage, uiController );
+			try {
+				serverSetup.setUpEmptySettings( settingsLoader, currentJvm, stage, uiController );
+			} catch ( IOException e ) {
+				main.createNewAlert( AlertType.ERROR, "Error", "An error has occurred setting up empty settings", null );
+			}
 		}
 
 	}

@@ -4,12 +4,10 @@ package org.aw20.jettydesktop.controller;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Vector;
 
 import org.aw20.jettydesktop.ui.ServerManager;
-import org.aw20.jettydesktop.ui.ServerWrapper;
 import org.aw20.util.Globals;
 
 import javafx.application.Application;
@@ -238,12 +236,7 @@ public class Main extends Application {
 							// if there are servers
 						} else {
 							// else count the running servers
-							int runningServers = 0;
-							for ( Entry<Integer, ServerWrapper> server : serverManager.getServers().entrySet() ) {
-								if ( server.getValue().isRunning() ) {
-									runningServers++;
-								}
-							}
+							int runningServers = serverManager.getNumberOfRunningServers();
 
 							// if servers are running call js to run dialog
 							if ( runningServers > 0 ) {

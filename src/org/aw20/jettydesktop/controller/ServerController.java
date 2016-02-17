@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -61,36 +62,36 @@ public class ServerController {
 	}
 
 
-	public int saveServer( boolean newServer, String tempName, String tempIp, String tempPort, String tempWebFolder, String tempUri, String tempCustomJvm, boolean isCustomJvm, String tempJvmArgs, String tempMemory ) {
+	public int saveServer( boolean newServer, Map<String, String> tempSettingsVariables, boolean isCustomJvm ) {
 		int id;
 		if ( newServer ) {
 			// get new id
 			id = getNewId();
 			ServerConfigMap scm = new ServerConfigMap();
 
-			scm.setIP( tempIp );
-			scm.setName( tempName );
-			scm.setPort( tempPort );
-			scm.setWebFolder( tempWebFolder );
+			scm.setIP( tempSettingsVariables.get( "tempIp" ) );
+			scm.setName( tempSettingsVariables.get( "tempName" ) );
+			scm.setPort( tempSettingsVariables.get( "tempPort" ) );
+			scm.setWebFolder( tempSettingsVariables.get( "tempWebFolder" ) );
 
-			if ( tempUri == "" ) {
-				scm.setDefaultWebUri( tempUri );
+			if ( tempSettingsVariables.get( "tempUri" ) == "" ) {
+				scm.setDefaultWebUri( tempSettingsVariables.get( "tempUri" ) );
 			} else {
 				scm.setDefaultWebUri( "/" );
 			}
 
 			if ( isCustomJvm ) {
-				scm.setCustomJVM( tempCustomJvm );
+				scm.setCustomJVM( tempSettingsVariables.get( "tempCustomJvm" ) );
 			} else {
 				scm.setCurrentJVM();
 			}
 
-			if ( tempJvmArgs != "" ) {
-				scm.setDefaultJVMArgs( tempJvmArgs );
+			if ( tempSettingsVariables.get( "tempJvmArgs" ) != "" ) {
+				scm.setDefaultJVMArgs( tempSettingsVariables.get( "tempJvmArgs" ) );
 			}
 
-			if ( tempMemory != null && !tempMemory.isEmpty() ) {
-				scm.setMemoryJVM( tempMemory );
+			if ( tempSettingsVariables.get( "tempMemory" ) != null && !tempSettingsVariables.get( "tempMemory" ).isEmpty() ) {
+				scm.setMemoryJVM( tempSettingsVariables.get( "tempMemory" ) );
 			} else {
 				scm.setMemoryJVM( "64" );
 			}
@@ -102,29 +103,29 @@ public class ServerController {
 			ServerWrapper serverWrapper = serverManager.getServers().get( id );
 
 			// overwrite existing data
-			serverWrapper.getServerConfigMap().setIP( tempIp );
-			serverWrapper.getServerConfigMap().setName( tempName );
-			serverWrapper.getServerConfigMap().setPort( tempPort );
-			serverWrapper.getServerConfigMap().setWebFolder( tempWebFolder );
+			serverWrapper.getServerConfigMap().setIP( tempSettingsVariables.get( "tempIp" ) );
+			serverWrapper.getServerConfigMap().setName( tempSettingsVariables.get( "tempName" ) );
+			serverWrapper.getServerConfigMap().setPort( tempSettingsVariables.get( "tempPort" ) );
+			serverWrapper.getServerConfigMap().setWebFolder( tempSettingsVariables.get( "tempWebFolder" ) );
 
-			if ( tempUri == "" ) {
-				serverWrapper.getServerConfigMap().setDefaultWebUri( tempUri );
+			if ( tempSettingsVariables.get( "tempUri" ) == "" ) {
+				serverWrapper.getServerConfigMap().setDefaultWebUri( tempSettingsVariables.get( "tempUri" ) );
 			} else {
 				serverWrapper.getServerConfigMap().setDefaultWebUri( "/" );
 			}
 
 			if ( isCustomJvm ) {
-				serverWrapper.getServerConfigMap().setCustomJVM( tempCustomJvm );
+				serverWrapper.getServerConfigMap().setCustomJVM( tempSettingsVariables.get( "tempCustomJvm" ) );
 			} else {
 				serverWrapper.getServerConfigMap().setCurrentJVM();
 			}
 
-			if ( tempJvmArgs != "" ) {
-				serverWrapper.getServerConfigMap().setDefaultJVMArgs( tempJvmArgs );
+			if ( tempSettingsVariables.get( "tempJvmArgs" ) != "" ) {
+				serverWrapper.getServerConfigMap().setDefaultJVMArgs( tempSettingsVariables.get( "tempJvmArgs" ) );
 			}
 
-			if ( tempMemory != null && !tempMemory.isEmpty() ) {
-				serverWrapper.getServerConfigMap().setMemoryJVM( tempMemory );
+			if ( tempSettingsVariables.get( "tempMemory" ) != null && !tempSettingsVariables.get( "tempMemory" ).isEmpty() ) {
+				serverWrapper.getServerConfigMap().setMemoryJVM( tempSettingsVariables.get( "tempMemory" ) );
 			} else {
 				serverWrapper.getServerConfigMap().setMemoryJVM( "64" );
 			}

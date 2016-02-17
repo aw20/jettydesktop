@@ -1,9 +1,8 @@
 package org.aw20.jettydesktop.controller;
 
-import java.util.Map.Entry;
+import java.util.Map;
 
 import org.aw20.jettydesktop.ui.ServerManager;
-import org.aw20.jettydesktop.ui.ServerWrapper;
 import org.aw20.util.Globals;
 
 import javafx.scene.Scene;
@@ -24,57 +23,62 @@ import javafx.scene.text.TextFlow;
  */
 public class SettingsController {
 
-	public void updateSettings( UIController uiController, Main main, ServerManager serverManager, ServerController serverController, Executor executor, int savedServerId, boolean newServer, Scene scene, Pane settings, String tempName, String tempIp, String tempPort, String tempWebFolder, String tempUri, String tempCustomJvm, boolean isCustomJvm, String tempJvmArgs, String tempMemory ) {
+	public void createSettings( UIController uiController, ServerManager serverManager, ServerController serverController, Executor executor, int savedServerId, Scene scene ) {
 
-		if ( !newServer ) {
-			// update settings
-			( (TextField) settings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.nameTextBox ) ).setText( tempName );
-			( (TextField) settings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.ipTextBox ) ).setText( tempIp );
-			( (TextField) settings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.portTextBox ) ).setText( tempPort );
-			( (TextField) settings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.webFolderTextBox ) ).setText( tempWebFolder );
-			( (TextField) settings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.uriTextBox ) ).setText( tempUri );
-			( (TextField) settings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.customJvmTextBox ) ).setText( tempCustomJvm );
-			( (TextField) settings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.jvmArgsTextBox ) ).setText( tempJvmArgs );
-			( (TextField) settings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.memoryTextBox ) ).setText( tempMemory );
-			( (RadioButton) settings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.customJvmRadioBtn ) ).selectedProperty().set( isCustomJvm );
+		// add ids to list
+		uiController.getServerConfigIdList().add( savedServerId );
 
-			String id = settings.getId().replace( Globals.FXVariables.SETTINGSID, "" );
+		// get new server list item
+		ServerSetup serverSetup = new ServerSetup();
+		HBox hbox = serverSetup.addHBoxToList( savedServerId, scene, true, serverManager, uiController, serverController, new ServerActions(), executor );
 
-			// update hyperlink in listViewAppList with name
-			( (Hyperlink) scene.lookup( Globals.FXVariables.idSelector + id ) ).setText( tempName );
+		// add console for server
+		TextFlow newTextFlow = new TextFlow();
+		newTextFlow.setId( Globals.FXVariables.CONSOLEID + savedServerId );
+		newTextFlow.setVisible( true );
+		ScrollPane scrollPane = new ScrollPane( newTextFlow );
+		scrollPane.setId( Globals.FXVariables.SCROLLPANEID + savedServerId );
+		uiController.getConsoleStackPane().getChildren().add( scrollPane );
+		scrollPane.setVisible( true );
 
-			HBox hbox = (HBox) scene.lookup( Globals.FXVariables.idSelector + id ).getParent();
-
-			uiController.addCurrentClassToServer( hbox );
-
-			// update info in server info pane
-			( (Text) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.INFOWEBFOLDERID + id ) ).setText( '\n' + tempWebFolder );
-			( (Text) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.INFONAMEID + id ) ).setText( tempName + " - " );
-			( (Text) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.INFOURLID + id ) ).setText( tempIp + ":" + tempPort );
-		} else {
-			// add ids to list
-			uiController.getServerConfigIdList().add( savedServerId );
-
-			// get new server list item
-			ServerSetup serverSetup = new ServerSetup();
-			HBox hbox = serverSetup.addHBoxToList( savedServerId, scene, true, serverManager, uiController, serverController, new ServerActions(), executor );
-
-			// add console for server
-			TextFlow newTextFlow = new TextFlow();
-			newTextFlow.setId( Globals.FXVariables.CONSOLEID + savedServerId );
-			newTextFlow.setVisible( true );
-			ScrollPane scrollPane = new ScrollPane( newTextFlow );
-			scrollPane.setId( Globals.FXVariables.SCROLLPANEID + savedServerId );
-			uiController.getConsoleStackPane().getChildren().add( scrollPane );
-			scrollPane.setVisible( true );
-
-			uiController.getListViewAppList().getItems().add( hbox );
-		}
+		uiController.getListViewAppList().getItems().add( hbox );
 
 		ServerInfoController serverInfoController = new ServerInfoController();
 
 		serverInfoController.refreshServerList( uiController );
 
+	}
+
+
+	public void updateSettings( Pane settings, Scene scene, UIController uiController, Map<String, String> tempSettingsVariables, boolean isCustomJvm ) {
+		// update settings
+		( (TextField) settings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.nameTextBox ) ).setText( tempSettingsVariables.get( "tempName" ) );
+		( (TextField) settings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.ipTextBox ) ).setText( tempSettingsVariables.get( "tempIp" ) );
+		( (TextField) settings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.portTextBox ) ).setText( tempSettingsVariables.get( "tempPort" ) );
+		( (TextField) settings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.webFolderTextBox ) ).setText( tempSettingsVariables.get( "tempWebFolder" ) );
+		( (TextField) settings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.uriTextBox ) ).setText( tempSettingsVariables.get( "tempUri" ) );
+		( (TextField) settings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.customJvmTextBox ) ).setText( tempSettingsVariables.get( "tempCustomJvm" ) );
+		( (TextField) settings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.jvmArgsTextBox ) ).setText( tempSettingsVariables.get( "tempJvmArgs" ) );
+		( (TextField) settings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.memoryTextBox ) ).setText( tempSettingsVariables.get( "tempMemory" ) );
+		( (RadioButton) settings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.customJvmRadioBtn ) ).selectedProperty().set( isCustomJvm );
+
+		String id = settings.getId().replace( Globals.FXVariables.SETTINGSID, "" );
+
+		// update hyperlink in listViewAppList with name
+		( (Hyperlink) scene.lookup( Globals.FXVariables.idSelector + id ) ).setText( tempSettingsVariables.get( "tempName" ) );
+
+		HBox hbox = (HBox) scene.lookup( Globals.FXVariables.idSelector + id ).getParent();
+
+		uiController.addCurrentClassToServer( hbox );
+
+		// update info in server info pane
+		( (Text) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.INFOWEBFOLDERID + id ) ).setText( '\n' + tempSettingsVariables.get( "tempWebFolder" ) );
+		( (Text) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.INFONAMEID + id ) ).setText( tempSettingsVariables.get( "tempName" ) + " - " );
+		( (Text) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.INFOURLID + id ) ).setText( tempSettingsVariables.get( "tempIp" ) + ":" + tempSettingsVariables.get( "tempPort" ) );
+
+		ServerInfoController serverInfoController = new ServerInfoController();
+
+		serverInfoController.refreshServerList( uiController );
 	}
 
 
@@ -93,22 +97,10 @@ public class SettingsController {
 		String tempName = ( (TextField) tempSettings.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.nameTextBox ) ).getText();
 		String settingsId = tempSettings.getId().replace( Globals.FXVariables.SETTINGSID, "" );
 
-		/*
-		 * if name == server name that you're changing - ie remains unchanged, return true
-		 * if name == server name in settings return false
-		 * if name != server name in settings return true
-		 */
-		for ( Entry<Integer, ServerWrapper> server : serverManager.getServers().entrySet() ) {
-			if ( server.getValue().getServerConfigMap().getName().toLowerCase().equals( tempName.toLowerCase() ) ) {
-
-				if ( !settingsId.equals( String.valueOf( server.getKey() ) ) ) {
-					Alert alert = main.createNewAlert( AlertType.WARNING, "Error", "Please choose a different name for the new server", null );
-					alert.showAndWait();
-					return false;
-				} else {
-					return true;
-				}
-			}
+		if ( !serverManager.isValidServerName( tempName, settingsId ) ) {
+			Alert alert = main.createNewAlert( AlertType.WARNING, "Error", "Please choose a different name for the new server", null );
+			alert.showAndWait();
+			return false;
 		}
 
 		return true;
