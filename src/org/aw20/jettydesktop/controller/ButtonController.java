@@ -146,40 +146,42 @@ public class ButtonController {
 			public void run() {
 
 				serverActions.startServer( executor, uiController, serverController, finalSelectedServer, finalScene, serverManager );
-				final Executor currentExecutor = Executor.getExecutor( finalSelectedServer );
+
 
 				Platform.runLater( () -> {
+					final Executor currentExecutor = Executor.getExecutor( finalSelectedServer );
+					if ( currentExecutor != null ) {
+						if ( ( (Executor) currentExecutor ).isWebAppRunning() ) {// executor is running
+							showConsoleButtonsOnRunning( uiController );
 
-					if ( ( (Executor) currentExecutor ).isWebAppRunning() ) {// executor is running
-						showConsoleButtonsOnRunning( uiController );
+							serverManager.getServers().get( finalSelectedServer ).setRunning( true );
 
-						serverManager.getServers().get( finalSelectedServer ).setRunning( true );
-
-						// target the correct play polygon
-						Polygon p = ( (Polygon) finalScene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.POLYGONID + finalSelectedServer ) );
-						// transform it to a square
-						p.getPoints().setAll(
-								0d, 0d, // (x, y)
-								0d, 12d,
-								12d, 12d,
-								12d, 0d );
-						// colour transition from green to red
-						FillTransition ft = new FillTransition( Duration.millis( 4000 ), p, Color.GREEN, Color.RED );
-						ft.play();
+							// target the correct play polygon
+							Polygon p = ( (Polygon) finalScene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.POLYGONID + finalSelectedServer ) );
+							// transform it to a square
+							p.getPoints().setAll(
+									0d, 0d, // (x, y)
+									0d, 12d,
+									12d, 12d,
+									12d, 0d );
+							// colour transition from green to red
+							FillTransition ft = new FillTransition( Duration.millis( 4000 ), p, Color.GREEN, Color.RED );
+							ft.play();
 
 
-						// open the console tab and correct console pane
-						Tab tab = uiController.getTabPane().getTabs().get( 1 );
-						uiController.getTabPane().getSelectionModel().select( tab );
-						uiController.setSelectedTabInstance( tab );
+							// open the console tab and correct console pane
+							Tab tab = uiController.getTabPane().getTabs().get( 1 );
+							uiController.getTabPane().getSelectionModel().select( tab );
+							uiController.setSelectedTabInstance( tab );
 
-						( (ScrollPane) finalScene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SCROLLPANEID + finalSelectedServer ) ).setVisible( true );
+							( (ScrollPane) finalScene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SCROLLPANEID + finalSelectedServer ) ).setVisible( true );
 
-						// update server info
-						Pane serverInfoPane = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SERVERINFOID + finalSelectedServer );
-						serverInfoPane.setVisible( true );
-						serverInfoPane.toFront();
+							// update server info
+							Pane serverInfoPane = (Pane) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SERVERINFOID + finalSelectedServer );
+							serverInfoPane.setVisible( true );
+							serverInfoPane.toFront();
 
+						}
 					} else {
 						// update console with server not started message
 						ConsoleController consoleController = new ConsoleController();
