@@ -21,7 +21,7 @@
  *  
  *  https://github.com/aw20/jettydesktop
  *  
- *  May 2013
+ *  February 2016
  */
 package org.aw20.jettydesktop.rte;
 
@@ -34,13 +34,15 @@ import java.net.Socket;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 
+
 public class JettyRunTime extends Object {
 
 	public static String JETTYSTARTED = "... Jetty has started.";
-	
-	public static void main(String[] args) {
+
+
+	public static void main( String[] args ) {
 		System.out.println( "Jetty Version: " + Server.getVersion() );
-		
+
 		if ( args.length == 3 )
 			System.out.println( "http://*:" + args[0] );
 		else
@@ -51,77 +53,80 @@ public class JettyRunTime extends Object {
 				new JettyRunTime( null, args[0], args[1], args[2] );
 			else
 				new JettyRunTime( args[0], args[1], args[2], args[3] );
-		} catch (Exception e) {
+		} catch ( Exception e ) {
 			System.out.println( e.getMessage() );
 		}
 	}
 
 	private Server server;
-	
-	public JettyRunTime( String ip, String port, String webapp, String adminport ) throws Exception{
+
+
+	public JettyRunTime( String ip, String port, String webapp, String adminport ) throws Exception {
 		System.out.println( "Jetty starting up ... please wait" );
-		
+
 		if ( ip == null )
-			server = new Server( Integer.valueOf(port) );
+			server = new Server( Integer.valueOf( port ) );
 		else
-			server = new Server( InetSocketAddress.createUnresolved(ip, Integer.valueOf(port)) );
-		
-		int aport	= Integer.valueOf(adminport);
-		if ( aport > 0 ){
-			new adminPort(aport);
+			server = new Server( InetSocketAddress.createUnresolved( ip, Integer.valueOf( port ) ) );
+
+		int aport = Integer.valueOf( adminport );
+		if ( aport > 0 ) {
+			new adminPort( aport );
 		}
-		
+
 		WebAppContext context = new WebAppContext();
-		
-		context.setDescriptor( webapp + "/WEB-INF/web.xml");
+
+		context.setDescriptor( webapp + "/WEB-INF/web.xml" );
 		context.setResourceBase( webapp );
-		context.setContextPath("/");
-		context.setParentLoaderPriority(true);
-		context.setDefaultsDescriptor("org/aw20/jettydesktop/rte/webdefault.xml");
-		
-		server.setHandler(context);
+		context.setContextPath( "/" );
+		context.setParentLoaderPriority( true );
+		context.setDefaultsDescriptor( "org/aw20/jettydesktop/rte/webdefault.xml" );
+
+		server.setHandler( context );
 		server.start();
-		
+
 		System.out.println( JETTYSTARTED );
 	}
-	
-	
+
+
 	class adminPort extends Thread {
-		
-		ServerSocket	ss;
+
+		ServerSocket ss;
 		Socket s;
 		int port;
-		PrintWriter	pw;
-		
-		public adminPort( int port ){
+		PrintWriter pw;
+
+
+		public adminPort( int port ) {
 			this.port = port;
-			setDaemon(true);
+			setDaemon( true );
 			start();
 		}
-		
-		public void run(){
-			try {
-				ss	= new ServerSocket(port);
-				s		=	ss.accept();
-				pw	= new	PrintWriter( new OutputStreamWriter( s.getOutputStream() ) ); 
-				
-				for(;;){
-					Thread.sleep(2000);
 
-	      	long freeMem 	= (Runtime.getRuntime().freeMemory() / 1024000);
-	      	long totalMem	= (Runtime.getRuntime().totalMemory() / 1024000);
-	      	long usedMem	= totalMem - freeMem;
-	      	pw.println("Memory Usage: " + usedMem + "MB of " + totalMem + "MB  ");
-	      	pw.flush();
+
+		public void run() {
+			try {
+				ss = new ServerSocket( port );
+				s = ss.accept();
+				pw = new PrintWriter( new OutputStreamWriter( s.getOutputStream() ) );
+
+				for ( ;; ) {
+					Thread.sleep( 2000 );
+
+					long freeMem = ( Runtime.getRuntime().freeMemory() / 1024000 );
+					long totalMem = ( Runtime.getRuntime().totalMemory() / 1024000 );
+					long usedMem = totalMem - freeMem;
+					pw.println( "Memory Usage: " + usedMem + "MB of " + totalMem + "MB  " );
+					pw.flush();
 
 				}
-				
-			} catch (Exception e) {
-				System.out.println(e);
+
+			} catch ( Exception e ) {
+				System.out.println( e );
 			}
-			
+
 		}
-		
+
 	}
-	
+
 }

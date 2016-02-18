@@ -7,7 +7,7 @@
 <?import javafx.geometry.Insets?>
 
 <Pane id="settingsEmpty" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
-  <children>
+  <children> 
      <GridPane id="gridPane">
        <columnConstraints>
          <ColumnConstraints hgrow="SOMETIMES" maxWidth="304.0" minWidth="10.0" prefWidth="143.0" />
@@ -84,10 +84,10 @@
               </padding>
            </Label>
            <fx:define>
-	        <ToggleGroup fx:id="settingsRadioBtns"/>
+	        	<ToggleGroup fx:id="settingsRadioBtns"/>
 	       </fx:define>	
-           	<RadioButton id="radioBtnDefaultJvm" mnemonicParsing="false" toggleGroup="$settingsRadioBtns" GridPane.columnIndex="1" GridPane.rowIndex="9" />
-           	<RadioButton id="radioBtnCustomJvm" mnemonicParsing="false" toggleGroup="$settingsRadioBtns" text="Custom JVM" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+           <RadioButton id="radioBtnDefaultJvm" mnemonicParsing="false" toggleGroup="$settingsRadioBtns" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+           <RadioButton id="radioBtnCustomJvm" mnemonicParsing="false" toggleGroup="$settingsRadioBtns" text="Custom JVM" GridPane.columnIndex="1" GridPane.rowIndex="10" />
            <Button fx:id="btnBrowseJvm" mnemonicParsing="false" text="browse" GridPane.columnIndex="1" GridPane.rowIndex="10">
               <GridPane.margin>
                  <Insets left="310.0" />

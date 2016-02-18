@@ -1,3 +1,28 @@
+/* 
+ *  JettyDesktop is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  Free Software Foundation,version 3.
+ *  
+ *  JettyDesktop is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU General Public License
+ *  If not, see http://www.gnu.org/licenses/
+ *  
+ *  Additional permission under GNU GPL version 3 section 7
+ *  
+ *  If you modify this Program, or any covered work, by linking or combining 
+ *  it with any of the JARS listed in the README.txt (or a modified version of 
+ *  (that library), containing parts covered by the terms of that JAR, the 
+ *  licensors of this Program grant you additional permission to convey the 
+ *  resulting work. 
+ *  
+ *  https://github.com/aw20/jettydesktop
+ *  
+ *  February 2016
+ */
 package org.aw20.jettydesktop.controller;
 
 import java.io.IOException;
@@ -23,7 +48,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.Hyperlink;
 import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
@@ -217,11 +241,11 @@ public class UIController {
 	}
 
 
-	public void handleListViewOnClick( HBox hbox, Scene scene, Hyperlink h, int selectedServerId ) {
+	public void handleListViewOnClick( HBox hbox, Scene scene, int selectedServerId ) {
 		serverController.setSelectedServer( selectedServerId );
 		scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.SETTINGSEMPTYID ).setVisible( false );
 		getTabPane().setVisible( true );
-		serverController.setSelectedServer( Integer.parseInt( h.getId() ) );
+		serverController.setSelectedServer( selectedServerId );
 
 		getServerInfoPane().setVisible( true );
 		getServerInfoImagePane().setVisible( true );
@@ -235,8 +259,6 @@ public class UIController {
 		} else {
 			buttonController.showConsoleButtonsOnNotRunning( this );
 		}
-
-		addCurrentClassToServer( hbox );
 
 		// console is selected
 		String consoleId = ( Globals.FXVariables.CONSOLEID + serverController.getSelectedServer() );
@@ -272,11 +294,9 @@ public class UIController {
 		}
 		// get list cell of hbox
 		// apply css to it on selection
-		if ( hbox.getStyleClass().contains( Globals.StyleClasses.CURRENT ) ) {
-			hbox.getParent().setStyle( Globals.StyleVariables.backgroundColourDarkerGrey );
-		} else {
-			hbox.getParent().setStyle( Globals.StyleVariables.backgroundColourLighterGrey );
-		}
+
+		// hbox.getParent().setStyle( Globals.StyleVariables.backgroundColourDarkerGrey );
+
 	}
 
 
@@ -360,20 +380,6 @@ public class UIController {
 	}
 
 
-	public void addCurrentClassToServer( HBox hbox ) {
-
-		// remove "current" from others
-		List<HBox> listOfHboxes = listViewAppList.getItems();
-		for ( HBox item : listOfHboxes ) {
-			item.getStyleClass().remove( Globals.StyleClasses.CURRENT );
-			item.getParent().setStyle( Globals.StyleVariables.backgroundColourLighterGrey );
-		}
-
-		// set app to "current"
-		hbox.getStyleClass().add( Globals.StyleClasses.CURRENT );
-	}
-
-
 	public void addWebAppBtnClick( Scene scene ) {
 		AnchorPane.setTopAnchor( getTabPaneMaster(), 0.0 );
 
@@ -393,13 +399,6 @@ public class UIController {
 		getServerInfoPane().setVisible( false );
 
 		buttonController.showButtonsOnNewWebApp( this );
-
-		// remove "current" class from others
-		List<HBox> listOfHboxes = getListViewAppList().getItems();
-		for ( HBox item : listOfHboxes ) {
-			item.getStyleClass().remove( Globals.StyleClasses.CURRENT );
-			item.getParent().setStyle( Globals.StyleVariables.backgroundColourLighterGrey );
-		}
 
 		serverController.setSelectedServer( 0 );
 
@@ -541,7 +540,6 @@ public class UIController {
 
 
 	public void deleteServer( Main main, ActionEvent e ) {
-		List<HBox> listOfHboxes = getListViewAppList().getItems();
 		String serverToBeDeleted = serverManager.getServers().get( serverController.getSelectedServer() ).getServerConfigMap().getName();
 
 		Optional<ButtonType> result = main.createNewAlert( AlertType.CONFIRMATION, "", "Delete " + serverToBeDeleted + "?", "Are you sure?" ).showAndWait();
@@ -549,7 +547,6 @@ public class UIController {
 		// OK button clicked
 		if ( result.get() == ButtonType.OK ) {
 			e.consume();
-
 
 			// show splash screen
 			getSplashPane().setVisible( true );
@@ -559,13 +556,6 @@ public class UIController {
 
 			getServerInfoImagePane().setVisible( false );
 			getServerInfoPane().setVisible( false );
-
-			// remove "current" from others
-
-			for ( HBox item : listOfHboxes ) {
-				item.getStyleClass().remove( Globals.StyleClasses.CURRENT );
-				item.getParent().setStyle( Globals.StyleVariables.backgroundColourLighterGrey );
-			}
 
 			// hide buttons
 			buttonController.showNoButtons( this );

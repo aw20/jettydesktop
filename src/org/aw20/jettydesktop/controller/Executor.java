@@ -21,7 +21,7 @@
  *  
  *  https://github.com/aw20/jettydesktop
  *  
- *  May 2013
+ *  February 2016
  */
 package org.aw20.jettydesktop.controller;
 

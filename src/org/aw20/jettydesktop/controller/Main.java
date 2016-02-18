@@ -1,3 +1,28 @@
+/* 
+ *  JettyDesktop is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  Free Software Foundation,version 3.
+ *  
+ *  JettyDesktop is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU General Public License
+ *  If not, see http://www.gnu.org/licenses/
+ *  
+ *  Additional permission under GNU GPL version 3 section 7
+ *  
+ *  If you modify this Program, or any covered work, by linking or combining 
+ *  it with any of the JARS listed in the README.txt (or a modified version of 
+ *  (that library), containing parts covered by the terms of that JAR, the 
+ *  licensors of this Program grant you additional permission to convey the 
+ *  resulting work. 
+ *  
+ *  https://github.com/aw20/jettydesktop
+ *  
+ *  February 2016
+ */
 package org.aw20.jettydesktop.controller;
 
 
@@ -8,7 +33,6 @@ import java.util.Optional;
 import java.util.Vector;
 
 import org.aw20.jettydesktop.ui.ServerManager;
-import org.aw20.util.Globals;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -20,7 +44,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
-import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
@@ -84,7 +107,8 @@ public class Main extends Application {
 		scene = new Scene( root, 889, 655 );
 
 		// set up JavaFX variables and window
-		serverSetup.initialise( uiController, serverController, serverManager );
+
+		serverSetup.initialise( uiController, serverController, serverManager, scene, new ServerActions(), null );
 
 		serverSetup.setUpSpalashScreen( this, title );
 		try {
@@ -95,7 +119,7 @@ public class Main extends Application {
 			System.exit( -1 );
 		}
 		serverSetup.setUpSettings( serverController );
-		serverSetup.setUpServerList( scene, serverManager, uiController, serverController, new ServerActions(), null );
+
 		serverSetup.setUpServerInfo( serverController, fontWebFolder, fontNameUrl );
 
 		try {
@@ -129,11 +153,11 @@ public class Main extends Application {
 					HBox hbox = uiController.getListViewAppList().getSelectionModel().getSelectedItem();
 
 					// get selected server id
-					String serverId = hbox.getId().replace( Globals.FXVariables.HBOXID, "" );
-					Hyperlink h = (Hyperlink) hbox.getChildren().get( 0 );
-					serverController.setSelectedServer( Integer.parseInt( serverId ) );
+					Label label = (Label) hbox.getChildren().get( 1 );
 
-					uiController.handleListViewOnClick( hbox, scene, h, Integer.parseInt( serverId ) );
+					serverController.setSelectedServer( Integer.parseInt( label.getId() ) );
+
+					uiController.handleListViewOnClick( hbox, scene, Integer.parseInt( label.getId() ) );
 				}
 			}
 		} );

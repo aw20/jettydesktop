@@ -1,3 +1,28 @@
+/* 
+ *  JettyDesktop is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  Free Software Foundation,version 3.
+ *  
+ *  JettyDesktop is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU General Public License
+ *  If not, see http://www.gnu.org/licenses/
+ *  
+ *  Additional permission under GNU GPL version 3 section 7
+ *  
+ *  If you modify this Program, or any covered work, by linking or combining 
+ *  it with any of the JARS listed in the README.txt (or a modified version of 
+ *  (that library), containing parts covered by the terms of that JAR, the 
+ *  licensors of this Program grant you additional permission to convey the 
+ *  resulting work. 
+ *  
+ *  https://github.com/aw20/jettydesktop
+ *  
+ *  February 2016
+ */
 package org.aw20.jettydesktop.controller;
 
 import java.io.File;
@@ -10,6 +35,8 @@ import org.aw20.jettydesktop.ui.ServerManager;
 import org.aw20.jettydesktop.ui.ServerWrapper;
 import org.aw20.util.Globals;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -19,8 +46,11 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
@@ -30,10 +60,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 
 /*
@@ -45,10 +77,28 @@ public class ServerSetup {
 	private UIController uiController;
 	private ServerManager serverManager;
 
+	private ObservableList<HBox> listOfServers = FXCollections.observableArrayList();
 
-	public void initialise( UIController uiController, ServerController serverController, ServerManager serverManager ) {
+
+	static class HBoxCell extends ListCell<HBox> {
+
+		@Override
+		public void updateItem( HBox item, boolean empty ) {
+			super.updateItem( item, empty );
+			HBox hbox = new HBox();
+			if ( item != null ) {
+				hbox = item;
+				setGraphic( hbox );
+			}
+
+		}
+	}
+
+
+	public void initialise( UIController uiController, ServerController serverController, ServerManager serverManager, Scene scene, ServerActions serverActions, Executor executor ) {
 		this.uiController = uiController;
 		this.serverManager = serverManager;
+		serverController.loadSettings();
 		// on start up, because no web app is selected, don't show console/settings tabs
 		if ( serverController.getSelectedServer() == 0 ) {
 			uiController.getTabPane().setVisible( false );
@@ -63,15 +113,40 @@ public class ServerSetup {
 		uiController.getVboxAppListScrollPane().setFitToWidth( true );
 		uiController.getVboxAppListScrollPane().setFitToHeight( true );
 
+		setUpServerList( scene, serverManager, uiController, serverController, new ServerActions(), null );
+
+
+		uiController.getListViewAppList().setItems( listOfServers );
+
+		uiController.getListViewAppList().setCellFactory( new Callback<ListView<HBox>, ListCell<HBox>>() {
+
+			public ListCell<HBox> call( ListView<HBox> list ) {
+				return new HBoxCell();
+			}
+		} );
+
 		uiController.getBtnAddWebApp().setText( "+ add webapp" );
+
+		uiController.getListViewAppList().getSelectionModel().setSelectionMode( SelectionMode.SINGLE );
+		uiController.getListViewAppList().setFixedCellSize( 40 );
+
+		// re order server list
+		ServerInfoController serverInfoController = new ServerInfoController();
+		serverInfoController.refreshServerList( uiController );
 	}
 
 
 	public HBox addHBoxToList( int serverId, Scene scene, boolean newServer, ServerManager serverManager, UIController uiController, ServerController serverController, ServerActions serverActions, Executor executor ) {
 
 		// running circle
+
 		Circle c = new Circle( 5.0f, Color.GREY );
 		c.setId( Globals.FXVariables.RUNNINGID + serverId );
+		c.setTranslateY( 16.0 );
+		c.setTranslateX( 8.0 );
+
+		Pane pane = new Pane( c );
+		pane.setMinWidth( 24 );
 
 		// play/stop polygon
 		Polygon p = new Polygon();
@@ -87,7 +162,7 @@ public class ServerSetup {
 		p.setVisible( false );
 
 		// initialises at 0, 0
-		p.setTranslateY( 10.0 );
+		p.setTranslateY( 11.0 );
 		p.setTranslateX( 12.0 );
 
 		ButtonController buttonController = new ButtonController();
@@ -113,50 +188,44 @@ public class ServerSetup {
 		polygonPane.setMinWidth( Globals.StyleVariables.polygonPaneWidth );
 		polygonPane.setMaxWidth( Globals.StyleVariables.polygonPaneWidth );
 
-		// hyperlink - server name
-		Hyperlink h = new Hyperlink( serverManager.getServers().get( serverId ).getServerConfigMap().getName(), c );
+		// label = server name
+		Label labelServerName = new Label( serverManager.getServers().get( serverId ).getServerConfigMap().getName() );
 
-		h.setPadding( new Insets( 0, 0, 0, 10 ) );
-		h.setId( Integer.toString( serverId ) );
-		h.getStyleClass().add( "serverListHyperlink" );
-		h.setPrefWidth( Globals.StyleVariables.hyperlinkWidth - 18 );
-		h.setMinWidth( Globals.StyleVariables.hyperlinkWidth - 18 );
-		h.setMaxWidth( Globals.StyleVariables.hyperlinkWidth - 18 );
+		Font font = Font.font( "Arial", FontWeight.BOLD, 15 );
 
-		HBox hbox = new HBox( h, polygonPane );
+		labelServerName.setFont( font );
+		labelServerName.setTextFill( Color.WHITESMOKE );
+		labelServerName.setPadding( new Insets( 0, 0, 0, 10 ) );
+		labelServerName.setId( Integer.toString( serverId ) );
+		labelServerName.getStyleClass().add( "serverListHyperlink" );
+		labelServerName.setPrefWidth( Globals.StyleVariables.hyperlinkWidth - 18 - 24 );
+		labelServerName.setMinWidth( Globals.StyleVariables.hyperlinkWidth - 18 - 24 );
+		labelServerName.setMaxWidth( Globals.StyleVariables.hyperlinkWidth - 18 - 24 );
+
+		HBox hbox = new HBox( pane, labelServerName, polygonPane );
 
 		hbox.getStyleClass().add( "hboxServer" );
 		hbox.setPrefWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 18 );
 		hbox.setMaxWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 18 );
 		hbox.setMinWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 18 );
+		hbox.setPrefHeight( 28 );
+		hbox.setPrefHeight( 28 );
+		hbox.setPrefHeight( 28 );
 		hbox.setId( Globals.FXVariables.HBOXID + serverId );
 
 		AnchorPane a = new AnchorPane();
+
 		a.getChildren().add( hbox );
 
 		AnchorPane.setLeftAnchor( hbox, 0.0 );
 		AnchorPane.setRightAnchor( hbox, 0.0 );
 
-		// server list on hover actions
-		polygonPane.setOnMouseEntered( event -> {
+		hbox.setOnMouseEntered( event -> {
 			p.setVisible( true );
 		} );
 
-		polygonPane.setOnMouseExited( event -> {
+		hbox.setOnMouseExited( event -> {
 			p.setVisible( false );
-		} );
-
-		h.setOnMouseEntered( event -> {
-			p.setVisible( true );
-		} );
-
-		h.setOnMouseExited( event -> {
-			p.setVisible( false );
-		} );
-
-		// server list on click action
-		h.setOnAction( event -> {
-			uiController.handleListViewOnClick( hbox, scene, h, serverId );
 		} );
 
 		uiController.getServersForAppList().put( serverId, a );
@@ -231,7 +300,7 @@ public class ServerSetup {
 
 	public void setUpSettings( ServerController serverController ) {
 		// load settings into server config map
-		serverController.loadSettings();
+
 		for ( ServerWrapper serverWrapper : serverManager.getServers().values() ) {
 			// add ids to list
 			int id = serverWrapper.getId();
@@ -332,18 +401,9 @@ public class ServerSetup {
 
 		// set action for on click server
 		for ( Entry<Integer, ServerWrapper> server : serverManager.getServers().entrySet() ) {
-			addHBoxToList( server.getKey(), scene, false, serverManager, uiController, serverController, serverActions, exector );
+			listOfServers.add( addHBoxToList( server.getKey(), scene, false, serverManager, uiController, serverController, serverActions, exector ) );
+			// addHBoxToList( server.getKey(), scene, false, serverManager, uiController, serverController, serverActions, exector );
 		}
-
-		for ( Entry<Integer, AnchorPane> h : uiController.getServersForAppList().entrySet() ) {
-			AnchorPane hbox = h.getValue();
-			uiController.getListViewAppList().getItems().add( (HBox) hbox.getChildren().get( 0 ) );
-		}
-
-		// re order server list
-		ServerInfoController serverInfoController = new ServerInfoController();
-		serverInfoController.refreshServerList( uiController );
-
 	}
 
 

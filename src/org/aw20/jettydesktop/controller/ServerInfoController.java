@@ -1,3 +1,28 @@
+/* 
+ *  JettyDesktop is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  Free Software Foundation,version 3.
+ *  
+ *  JettyDesktop is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU General Public License
+ *  If not, see http://www.gnu.org/licenses/
+ *  
+ *  Additional permission under GNU GPL version 3 section 7
+ *  
+ *  If you modify this Program, or any covered work, by linking or combining 
+ *  it with any of the JARS listed in the README.txt (or a modified version of 
+ *  (that library), containing parts covered by the terms of that JAR, the 
+ *  licensors of this Program grant you additional permission to convey the 
+ *  resulting work. 
+ *  
+ *  https://github.com/aw20/jettydesktop
+ *  
+ *  February 2016
+ */
 package org.aw20.jettydesktop.controller;
 
 import java.util.ArrayList;
@@ -14,7 +39,7 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -116,8 +141,8 @@ public class ServerInfoController {
 			HBox hbox = node;
 			ObservableList<Node> hboxChild = (ObservableList<Node>) hbox.getChildren();
 			for ( Node nodeChild : hboxChild ) {
-				if ( nodeChild instanceof javafx.scene.control.Hyperlink ) {
-					names.add( ( (Hyperlink) nodeChild ).getText() );
+				if ( nodeChild instanceof Label ) {
+					names.add( ( (Label) nodeChild ).getText() );
 				}
 			}
 		}
@@ -132,12 +157,15 @@ public class ServerInfoController {
 				HBox hbox = (HBox) node;
 				ObservableList<Node> hboxChild = (ObservableList<Node>) hbox.getChildren();
 				for ( Node nodeChild : hboxChild ) {
-					if ( nodeChild instanceof javafx.scene.control.Hyperlink ) {
-						if ( ( (Hyperlink) nodeChild ).getText().equals( name ) ) {
+					if ( nodeChild instanceof Label ) {
+						if ( ( (Label) nodeChild ).getText().equals( name ) ) {
 							Platform.runLater( () -> {
 								hbox.setPrefWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 18 );
 								hbox.setMaxWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 18 );
 								hbox.setMinWidth( Globals.StyleVariables.polygonPaneWidth + Globals.StyleVariables.hyperlinkWidth - 18 );
+								hbox.setPrefHeight( 28 );
+								hbox.setPrefHeight( 28 );
+								hbox.setPrefHeight( 28 );
 								VBox.setMargin( hbox, new Insets( 0, 0, 0, 0 ) );
 
 								uiController.getListViewAppList().getItems().add( hbox );

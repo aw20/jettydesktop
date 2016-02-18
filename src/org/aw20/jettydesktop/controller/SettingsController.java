@@ -1,3 +1,28 @@
+/* 
+ *  JettyDesktop is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  Free Software Foundation,version 3.
+ *  
+ *  JettyDesktop is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU General Public License
+ *  If not, see http://www.gnu.org/licenses/
+ *  
+ *  Additional permission under GNU GPL version 3 section 7
+ *  
+ *  If you modify this Program, or any covered work, by linking or combining 
+ *  it with any of the JARS listed in the README.txt (or a modified version of 
+ *  (that library), containing parts covered by the terms of that JAR, the 
+ *  licensors of this Program grant you additional permission to convey the 
+ *  resulting work. 
+ *  
+ *  https://github.com/aw20/jettydesktop
+ *  
+ *  February 2016
+ */
 package org.aw20.jettydesktop.controller;
 
 import java.util.Map;
@@ -8,7 +33,7 @@ import org.aw20.util.Globals;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
@@ -43,9 +68,11 @@ public class SettingsController {
 
 		uiController.getListViewAppList().getItems().add( hbox );
 
+
 		ServerInfoController serverInfoController = new ServerInfoController();
 
 		serverInfoController.refreshServerList( uiController );
+
 
 	}
 
@@ -64,12 +91,8 @@ public class SettingsController {
 
 		String id = settings.getId().replace( Globals.FXVariables.SETTINGSID, "" );
 
-		// update hyperlink in listViewAppList with name
-		( (Hyperlink) scene.lookup( Globals.FXVariables.idSelector + id ) ).setText( tempSettingsVariables.get( "tempName" ) );
-
-		HBox hbox = (HBox) scene.lookup( Globals.FXVariables.idSelector + id ).getParent();
-
-		uiController.addCurrentClassToServer( hbox );
+		// update label in listViewAppList with name
+		( (Label) scene.lookup( Globals.FXVariables.idSelector + id ) ).setText( tempSettingsVariables.get( "tempName" ) );
 
 		// update info in server info pane
 		( (Text) scene.lookup( Globals.FXVariables.idSelector + Globals.FXVariables.INFOWEBFOLDERID + id ) ).setText( '\n' + tempSettingsVariables.get( "tempWebFolder" ) );

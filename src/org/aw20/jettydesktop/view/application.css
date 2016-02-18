@@ -1,4 +1,28 @@
-/* JavaFX CSS - Leave this comment until you have at least create one rule which uses -fx-Property */
+/* 
+ *  JettyDesktop is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  Free Software Foundation,version 3.
+ *  
+ *  JettyDesktop is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU General Public License
+ *  If not, see http://www.gnu.org/licenses/
+ *  
+ *  Additional permission under GNU GPL version 3 section 7
+ *  
+ *  If you modify this Program, or any covered work, by linking or combining 
+ *  it with any of the JARS listed in the README.txt (or a modified version of 
+ *  (that library), containing parts covered by the terms of that JAR, the 
+ *  licensors of this Program grant you additional permission to convey the 
+ *  resulting work. 
+ *  
+ *  https://github.com/aw20/jettydesktop
+ *  
+ *  February 2016
+ */
 
 .content{
 	-fx-background-color: #0076a8;
@@ -87,12 +111,6 @@
 }
 
 
-/* list of servers */
-#vboxAppList{
-	-fx-background-color: #222d35;
-	-fx-text-fill: gray;
-}
-
 #btnAddWebApp {
 	-fx-alignment: CENTER;
     -fx-text-fill: white;
@@ -155,27 +173,6 @@
 	-fx-background-radius: 0 0 0 0;
 }
 
-#hboxServer {
-    -fx-background-color: #222d35;
-}
-
-#hboxServer:hover {
-    -fx-background-color: #1c252c;
-}
-
-.serverListHyperlink{
-	-fx-background-color: transparent;
-    -fx-text-fill: white;
-    -fx-font-size: 16px;
-    -fx-underline: false;
-    -fx-padding: 5 0.0 0.0 0.0;
-}
-
-.serverListHyperlink:hover, serverListHyperlink:pressed, .serverListHyperlink:focused{
-    -fx-border-color: transparent;
-	-fx-underline: false;
-}
-
 .githubHyperlink{
 	/*-fx-text-fill: #38393C;*/
     -fx-underline: false;
@@ -222,23 +219,30 @@
 	-fx-padding: 0 50 0 0;
 }
 
+/* list of servers */
+.serverListHyperlink{
+	-fx-background-color: transparent;
+    -fx-text-fill: whitesmoke;
+    -fx-font-size: 16px;
+    -fx-underline: false;
+    -fx-padding: 5 0.0 0.0 0.0;
+}
+
 #vboxAppListScrollPane > .stack-pane{
 	-fx-border-color: #222d35;
 }
 
 .list-cell{
     -fx-background-color: #222d35;
-    -fx-text-fill: white;
     -fx-border-color: transparent;
     -fx-underline: false;
     -fx-cursor: default;
-    /*-fx-min-height: 32px;
-    -fx-max-height: 32px;*/
 }
-/*hide horizontal scrollbar*/
+
+
 .list-cell:filled:selected, .list-cell:filled:hover {
     -fx-background-color: #1c252c;
-    -fx-text-fill: rgba(255, 255, 255, 0.9);
+    -fx-text-fill: red;
     -fx-border-color: transparent;
     -fx-underline: false;
     -fx-cursor: hand;
