@@ -30,8 +30,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.aw20.util.Globals;
-import org.aw20.util.StringUtil;
+import org.aw20.jettydesktop.util.Globals;
+import org.aw20.jettydesktop.util.StringUtil;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;

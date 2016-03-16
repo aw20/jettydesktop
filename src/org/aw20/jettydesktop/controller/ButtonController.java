@@ -26,7 +26,7 @@
 package org.aw20.jettydesktop.controller;
 
 import org.aw20.jettydesktop.ui.ServerManager;
-import org.aw20.util.Globals;
+import org.aw20.jettydesktop.util.Globals;
 
 import javafx.animation.FillTransition;
 import javafx.application.Platform;

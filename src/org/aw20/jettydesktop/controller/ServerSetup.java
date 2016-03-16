@@ -33,7 +33,7 @@ import java.util.Map.Entry;
 
 import org.aw20.jettydesktop.ui.ServerManager;
 import org.aw20.jettydesktop.ui.ServerWrapper;
-import org.aw20.util.Globals;
+import org.aw20.jettydesktop.util.Globals;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

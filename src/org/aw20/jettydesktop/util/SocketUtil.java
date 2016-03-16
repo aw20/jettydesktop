@@ -23,7 +23,7 @@
  *  
  *  February 2016
  */
-package org.aw20.util;
+package org.aw20.jettydesktop.util;
 
 import java.net.InetSocketAddress;
 import java.net.Socket;

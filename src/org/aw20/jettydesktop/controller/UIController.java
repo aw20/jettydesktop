@@ -36,7 +36,7 @@ import java.util.Optional;
 
 import org.aw20.jettydesktop.ui.ServerManager;
 import org.aw20.jettydesktop.ui.ServerWrapper;
-import org.aw20.util.Globals;
+import org.aw20.jettydesktop.util.Globals;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;

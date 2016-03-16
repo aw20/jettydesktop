@@ -42,7 +42,7 @@ import java.util.Vector;
 import org.aw20.jettydesktop.rte.JettyRunTime;
 import org.aw20.jettydesktop.ui.ServerConfigMap;
 import org.aw20.jettydesktop.ui.ServerManager;
-import org.aw20.util.SocketUtil;
+import org.aw20.jettydesktop.util.SocketUtil;
 
 import javafx.scene.Scene;
 

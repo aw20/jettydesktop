@@ -28,7 +28,7 @@ package org.aw20.jettydesktop.controller;
 import java.util.Map;
 
 import org.aw20.jettydesktop.ui.ServerManager;
-import org.aw20.util.Globals;
+import org.aw20.jettydesktop.util.Globals;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;

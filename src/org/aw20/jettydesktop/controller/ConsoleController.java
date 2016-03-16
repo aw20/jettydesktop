@@ -25,7 +25,7 @@
  */
 package org.aw20.jettydesktop.controller;
 
-import org.aw20.util.Globals;
+import org.aw20.jettydesktop.util.Globals;
 
 import javafx.application.Platform;
 import javafx.scene.Scene;
